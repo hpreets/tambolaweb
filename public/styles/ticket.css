@@ -104,6 +104,17 @@ body {
 	background: #ff4dc4;
 }
 
+
+.backgroundorange {
+	background: orange;
+}
+.backgroundgreen {
+	background: green;
+}
+.backgroundred {
+	background: red;
+}
+
 .modal .modal-body {
    max-height: 300px;
    overflow-y: auto;
