@@ -2,7 +2,6 @@ var db = firebase.firestore();
 var user = firebase.auth().currentUser;
 var functions = firebase.functions();
 let uid;
-// alert('Hi');
 
 firebase.auth().onAuthStateChanged((user) => {
     if (user) {
@@ -188,18 +187,4 @@ $(function onDocReady() {
         $('.emailshare').attr('href', 'mailto:?subject=Learn about Sikh History in a fun way: Sikh History Tambola.&body=' + currURL);
         $('.whatsappshare').attr('href', 'whatsapp://send?text=Learn about Sikh History in a fun way: Sikh History Tambola. ' + currURL);
     });
-    
-
-
-    /* $('.facebookshare').attr('href', 'https://facebook.com/sharer/sharer.php?u=' + currURL);
-    $('.twittershare').attr('href', 'https://twitter.com/intent/tweet/?text=Learn about Sikh History in a fun way: Sikh History Tambola.&url=' + currURL);
-    $('.linkedinshare').attr('href', 'https://www.linkedin.com/shareArticle?mini=true&title=Learn about Sikh History in a fun way: Sikh History Tambola.&summary=Learn about Sikh History in a fun way: Sikh History Tambola.&url=' + currURL);
-    $('.emailshare').attr('href', 'mailto:?subject=Learn about Sikh History in a fun way: Sikh History Tambola.&body=' + currURL);
-    $('.whatsappshare').attr('href', 'whatsapp://send?text=Learn about Sikh History in a fun way: Sikh History Tambola. ' + currURL); */
 });
-
-// document.onload = function() {
-//     console.log('ON LOAD');
-//     // $('.btnTicket').click();
-//     $('.btnLogout').click(signout);
-// }
