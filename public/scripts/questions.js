@@ -168,72 +168,34 @@ function generateTicket(e) {
     if (currDateTime > gameDateTime) {
         // alert('Time for play');
         window.location = '/ticket.html';
-
-        /* db.collection("settings").doc("currgame").get().then((doc) => {
-            console.log(doc);
-            console.log(doc.data());
-            gameid = doc.data().gameid;
-        });
-
-        let gameId = sessionStorage.getItem('gameid');
-        let tkt;
-        console.log(gameId + "_" + uid);
-
-        / * db.collection("tickets").doc(gameId + "_" + uid).get().then((doc) => {
-            console.log(doc.data()); // test
-        }); * /
-
-        db.collection("tickets").doc(gameId + "_" + uid).get()
-        .then((doc) => {
-            if (doc.data()) {
-                console.log(doc);
-                tkt = doc.data();
-                console.log(tkt);
-                return tkt;
-            }
-
-            let createTkt = functions.httpsCallable('createTicket');
-            console.log('Calling createTkt');
-            return createTkt();
-        })
-        .then((doc) => {
-            console.log(doc);
-            tkt = doc;
-            console.log(doc);
-            return doc;
-        }); */
-
-        /* let tkt = getTicket();
-        console.log('tkt FROM getTicket ::' + tkt);
-        if (tkt == null) {
-            console.log('tkt IS NULL');
-            var createTkt = firebase.functions().httpsCallable('createTicket');
-            createTkt()
-            .then((result) => {
-                // console.log(result);
-                tkt = result;
-            })
-            .catch((error) => {
-                // Getting the Error details.
-                var code = error.code;
-                var message = error.message;
-                var details = error.details;
-                console.log("Error ::" + error);
-                // ...
-            });
-        } */
-        // console.log(tkt);
     }
     else {
         alert('The ticket would be available 15 minutes before the game.');
     }
 }
 
-
 $(function onDocReady() {
 	console.log('Inside onDocReady');
     $('#btnLogout').click(signout);
     $('#btnTicket').click(generateTicket);
+
+    $('.sharewrapper').load('pagelets/share.html', function() {
+        let currURL = $(location).attr('href');
+        console.log(currURL);
+        $('.facebookshare').attr('href', 'https://facebook.com/sharer/sharer.php?u=' + currURL);
+        $('.twittershare').attr('href', 'https://twitter.com/intent/tweet/?text=Learn about Sikh History in a fun way: Sikh History Tambola.&url=' + currURL);
+        $('.linkedinshare').attr('href', 'https://www.linkedin.com/shareArticle?mini=true&title=Learn about Sikh History in a fun way: Sikh History Tambola.&summary=Learn about Sikh History in a fun way: Sikh History Tambola.&url=' + currURL);
+        $('.emailshare').attr('href', 'mailto:?subject=Learn about Sikh History in a fun way: Sikh History Tambola.&body=' + currURL);
+        $('.whatsappshare').attr('href', 'whatsapp://send?text=Learn about Sikh History in a fun way: Sikh History Tambola. ' + currURL);
+    });
+    
+
+
+    /* $('.facebookshare').attr('href', 'https://facebook.com/sharer/sharer.php?u=' + currURL);
+    $('.twittershare').attr('href', 'https://twitter.com/intent/tweet/?text=Learn about Sikh History in a fun way: Sikh History Tambola.&url=' + currURL);
+    $('.linkedinshare').attr('href', 'https://www.linkedin.com/shareArticle?mini=true&title=Learn about Sikh History in a fun way: Sikh History Tambola.&summary=Learn about Sikh History in a fun way: Sikh History Tambola.&url=' + currURL);
+    $('.emailshare').attr('href', 'mailto:?subject=Learn about Sikh History in a fun way: Sikh History Tambola.&body=' + currURL);
+    $('.whatsappshare').attr('href', 'whatsapp://send?text=Learn about Sikh History in a fun way: Sikh History Tambola. ' + currURL); */
 });
 
 // document.onload = function() {
