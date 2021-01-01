@@ -14,11 +14,11 @@ firebase.auth().onAuthStateChanged((user) => {
         uEmailAddress = user.email;
         uPhoneNumber = user.phoneNumber;
         generateTicket(null);
-        // getCoveredQuestions();
-        listenToQuestions();
         // getClaimedPrizes();
         listenToClaimedPrizes();
         // registerPrize();
+        // getCoveredQuestions();
+        listenToQuestions();
     } 
     else {
         logMessage('User is NULL');
@@ -373,6 +373,7 @@ function listenToQuestions() {
         logMessage("Current data: ", doc.data());
         prizeDetailsFromNextQues = prizeDetails;
         updateUIOnQuestions(doc.data());
+        updateUIOnPrizesToRed();
     });
 
     /* setTimeout(function() {
@@ -487,11 +488,38 @@ function updateUIOnPrizes(pList) {
             console.log("updateUIOnPrizes ::: pdoc :::" + pdoc);
             console.log("updateUIOnPrizes ::: prize :::" + prize);
             if (prize === true) {
-                $('.prize' + pdoc).css('background', 'red');
+                // $('.prize' + pdoc).css('background', 'red');
+                $('.prize' + pdoc).removeClass('backgroundgreen');
+                $('.prize' + pdoc).addClass('backgroundorange');
             }
         });
-        if (pList.FH == true) alert('Game is over. Thanks for playing.');
+        if (pList.FH == true  
+                &&  pList.EF == true  
+                &&  pList.FL == true  
+                &&  pList.ML == true  
+                &&  pList.LL == true) {
+            alert('Game is over; \'Full House\' won. If you too have the winning answer in your ticket, please mark it to register your win too. Thanks for playing.');
+        }
     }
+}
+
+function changeBackgroundColor(item) {
+    if (item.hasClass('backgroundorange')) {
+        item.removeClass('backgroundorange');
+        item.addClass('backgroundred');
+    }
+}
+
+function updateUIOnPrizesToRed() {
+    changeBackgroundColor($('.prizeEF'));
+    changeBackgroundColor($('.prizeFL'));
+    changeBackgroundColor($('.prizeML'));
+    changeBackgroundColor($('.prizeLL'));
+    changeBackgroundColor($('.prizeFH'));
+    /* if ($('.prize').hasClass('backgroundorange')) {
+        $('.prize').removeClass('backgroundorange');
+        $('.prize').addClass('backgroundred');
+    } */
 }
 
 
