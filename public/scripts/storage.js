@@ -52,6 +52,15 @@ function checkLogin(auth, successFunction, failureFunction) {
     });
 }
 
+function signout(redirectTo) {
+    firebase.auth().signOut().then(function() {
+        // Sign-out successful.
+        window.location = ((redirectTo === null  ||  redirectTo ===undefined) ? '/questions.html' : redirectTo);
+    }).catch(function(error) {
+        // An error happened.
+    });
+}
+
 /* ************************************************** */
 /* ****************** COMMON UI ********************* */
 /* ************************************************** */
@@ -72,6 +81,25 @@ function hideHeaderButtons(loggedIn) {
 
 function createNode(element) {
 	return document.createElement(element);
+}
+
+/**
+ * Displays Sharing button on UI. Picks data from share.html; also sets the href for buttons
+ */
+function loadSharingButtons() {
+    $('.sharewrapper').load('pagelets/share.html', function() {
+        let currURL = $(location).attr('href');
+        console.log(currURL);
+        $('.facebookshare').attr('href', 'https://facebook.com/sharer/sharer.php?u=' + currURL);
+        $('.twittershare').attr('href', 'https://twitter.com/intent/tweet/?text=Learn about Sikh History in a fun way: Sikh History Tambola.&url=' + currURL);
+        $('.linkedinshare').attr('href', 'https://www.linkedin.com/shareArticle?mini=true&title=Learn about Sikh History in a fun way: Sikh History Tambola.&summary=Learn about Sikh History in a fun way: Sikh History Tambola.&url=' + currURL);
+        $('.emailshare').attr('href', 'mailto:?subject=Learn about Sikh History in a fun way: Sikh History Tambola.&body=' + currURL);
+        $('.whatsappshare').attr('href', 'whatsapp://send?text=Learn about Sikh History in a fun way: Sikh History Tambola. ' + currURL);
+    });
+}
+
+function loadHeaderActions(success) {
+    $('#headerActions').load('pagelets/headeraction.html', success);
 }
 
 
@@ -95,4 +123,8 @@ function getFSSettingsData(success, failure) {
 
 function getFSCurrGameQuestions(gameId, success, failure) {
     getFirestoreData("gameques", gameId, success, failure);
+}
+
+function getFSPrizeDetail(gameId, success, failure) {
+    getFirestoreData("prizes", gameId, success, failure);
 }

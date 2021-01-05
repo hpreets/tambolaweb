@@ -1,10 +1,14 @@
-var db = firebase.firestore();
-var user = firebase.auth().currentUser;
-var functions = firebase.functions();
-let uid;
+// var db = firebase.firestore();
+// var user = firebase.auth().currentUser;
+// var functions = firebase.functions();
+// let uid;
 // alert('Hi');
 
-firebase.auth().onAuthStateChanged((user) => {
+const container = $('.container-fluid');
+// let qList = null;
+let gameid;
+
+/* firebase.auth().onAuthStateChanged((user) => {
     if (user) {
         console.log('User is NOT NULL ::' + user.uid + "; displayname ::" + user.displayName);
         $('#loggedInUser').text(user.displayName);
@@ -14,13 +18,20 @@ firebase.auth().onAuthStateChanged((user) => {
         console.log('User is NULL');
         hideButtons(false);
     }
-  });
+}); */
   
 
-function createNode(element) {
+/* function createNode(element) {
 	return document.createElement(element);
-}
+} */
 
+/**
+ * Create a UI row for each winner 
+ * @param {*} winners - comma separate winner email addresses
+ * @param {*} prizeId - prizeId like EF, FL, ML etc.
+ * @param {*} prizeName - prize text to be displayed on UI
+ * @param {*} container - parent element to which row to be added
+ */
 function createWinnerRow(winners, prizeId, prizeName, container) {
     console.log('winners ::' + winners);
     let row = createNode('div');
@@ -39,16 +50,52 @@ function createWinnerRow(winners, prizeId, prizeName, container) {
 }
 
 
+/**
+ * Called when prize data is fetched from firestore
+ * @param {*} doc - JSON data - prize data
+ */
+function successPrizeDataFetch(doc) {
+    console.log("Picking data from firestore");
+    wList = doc.data();
+    let winners = iterateWinners(wList);
+    console.log(winners);
+    createWinnerRow(winners, 'EF', 'Early Five', container);
+    createWinnerRow(winners, 'FL', 'First Line', container);
+    createWinnerRow(winners, 'ML', 'Middle Line', container);
+    createWinnerRow(winners, 'LL', 'Last Line', container);
+    createWinnerRow(winners, 'FH', 'Full House', container);
+}
 
-// Read Data
-const container = $('.container-fluid');
-let qList = null;
-let gameid;
+/**
+ * Method called when current game settings data is fetched from firestore.
+ * @param {*} doc - JSON data - current settings data
+ */
+function successCurrGameFetch(doc) {
+    gameid = doc.data().gameid;
+    prevgameid = doc.data().prevgameid;
+    getFSPrizeDetail(prevgameid, successPrizeDataFetch, null);
+    /* db.collection("prizes").doc(prevgameid).get()
+    .then((doc) => {
+        console.log("Picking data from firestore");
+        wList = doc.data();
+        let winners = iterateWinners(wList);
+        console.log(winners);
+        createWinnerRow(winners, 'EF', 'Early Five', container);
+        createWinnerRow(winners, 'FL', 'First Line', container);
+        createWinnerRow(winners, 'ML', 'Middle Line', container);
+        createWinnerRow(winners, 'LL', 'Last Line', container);
+        createWinnerRow(winners, 'FH', 'Full House', container);
+    }); */
+}
 
+/**
+ * First method that initiates data fetch and UI creation
+ */
 function init() {
     // sessionStorage.clear();
     // clearStorage();
-    db.collection("settings").doc("currgame").get()
+    getFSSettingsData(successCurrGameFetch, null);
+    /* db.collection("settings").doc("currgame").get()
     .then((doc) => {
         gameid = doc.data().gameid;
         prevgameid = doc.data().prevgameid;
@@ -64,9 +111,13 @@ function init() {
             createWinnerRow(winners, 'LL', 'Last Line', container);
             createWinnerRow(winners, 'FH', 'Full House', container);
         });
-    });
+    }); */
 }
 
+/**
+ * Iterate through winners data and create UI
+ * @param {*} wList - JSON data - winner data
+ */
 function iterateWinners(wList) {
     let winners = {};
     if (wList) {
@@ -86,6 +137,10 @@ function iterateWinners(wList) {
     return winners;
 }
 
+/**
+ * Retrieve winner email address from JSON key
+ * @param {*} winnerDet - JSON data - winner data key
+ */
 function retrieveEmail(winnerDet) {
     let retVal = '';
     for (var i=2; i<winnerDet.length; i++) {
@@ -94,7 +149,7 @@ function retrieveEmail(winnerDet) {
     return retVal;
 }
 
-function hideButtons(loggedIn) {
+/* function hideButtons(loggedIn) {
     if (!loggedIn) {
         $('#btnSignup').hide();
         $('#btnLogin').show();
@@ -107,21 +162,18 @@ function hideButtons(loggedIn) {
         $('#btnSignup').hide();
         $('#btnLogin').hide();
     }
-}
+} */
 
 
-function signout() {
-    firebase.auth().signOut().then(function() {
-        // Sign-out successful.
-        window.location = '/questions.html';
-    }).catch(function(error) {
-        // An error happened.
-    });
-}
+/* function signout() {
+    redirectTo('/questions.html');
+} */
 
 
 $(function onDocReady() {
 	console.log('Inside onDocReady');
+    loadHeaderActions();
+    loadSharingButtons();
     $('#btnLogout').click(signout);
 });
 
@@ -132,7 +184,7 @@ $(function onDocReady() {
 // }
 
 
-function setCurrGameQuestions() {
+/* function setCurrGameQuestions() {
     db.collection("gameques").doc("20201228").set({});
     let gameques = db.collection("gameques").doc("20201228");
     let quesList = {};
@@ -150,8 +202,8 @@ function setCurrGameQuestions() {
         console.log(quesList);
         gameques.update(quesList, { merge: true });
     });
-}
+} */
 
-
+checkLogin(firebase.auth());
 init();
 // setCurrGameQuestions();
