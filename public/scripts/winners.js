@@ -6,7 +6,7 @@
 
 const container = $('.container-fluid');
 // let qList = null;
-let gameid;
+// let gameid;
 
 /* firebase.auth().onAuthStateChanged((user) => {
     if (user) {
