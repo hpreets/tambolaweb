@@ -1,4 +1,6 @@
 var db = firebase.firestore();
+var secondsInterval = 21;
+let gameid;
 
 /* ************************************************** */
 /* ******************** CACHE *********************** */
@@ -43,21 +45,22 @@ function checkLogin(auth, successFunction, failureFunction) {
             $('#loggedInUser').text(user.displayName);
             uid = user.uid;
             hideHeaderButtons(true);
-            if (successFunction !== null  &&  successFunction !== undefined) successFunction();
+            if (successFunction !== null  &&  successFunction !== undefined) successFunction(user);
         } else {
             console.log('User is NULL');
             hideHeaderButtons(false);
-            if (failureFunction !== null  &&  failureFunction !== undefined) failureFunction();
+            if (failureFunction !== null  &&  failureFunction !== undefined) failureFunction(user);
         }
     });
 }
 
-function signout(redirectTo) {
+function signout(e) {
     firebase.auth().signOut().then(function() {
         // Sign-out successful.
-        window.location = ((redirectTo === null  ||  redirectTo ===undefined) ? '/questions.html' : redirectTo);
+        // window.location = ((redirectTo === null  ||  redirectTo ===undefined) ? '/questions.html' : redirectTo);
+        window.location = '/questions.html';
     }).catch(function(error) {
-        // An error happened.
+        alert(error);
     });
 }
 
@@ -77,6 +80,8 @@ function hideHeaderButtons(loggedIn) {
         $('#btnSignup').hide();
         $('#btnLogin').hide();
     }
+    $('#btnHome').show();
+    $('#btnWinners').show();
 }
 
 function createNode(element) {
@@ -99,26 +104,89 @@ function loadSharingButtons() {
 }
 
 function loadHeaderActions(success) {
-    $('#headerActions').load('pagelets/headeraction.html', success);
+    $('#headerActions').load('pagelets/headeraction.html', 
+        function() {
+            $('#btnLogout').click(signout);
+            $('#btnTicket').click(generateTicket);
+            if (success !== undefined) success();
+        }
+    );
+}
+
+/**
+ * Handler for Ticket button
+ * @param {*} e - event
+ */
+function generateTicket(e) {
+    e.preventDefault();
+    console.log( getFromStorage('gamedatetime') );
+    let gameDateTime = new Date(getFromStorage('gamedatetime')*1000);
+    var currDateTime = new Date();
+    currDateTime.setMinutes( currDateTime.getMinutes() + 15 );
+    currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
+    console.log( currDateTime );
+    console.log( gameDateTime );
+    if (currDateTime > gameDateTime) {
+        // alert('Time for play');
+        window.location = '/ticket.html';
+    }
+    else {
+        alert('The ticket would be available 15 minutes before the game.');
+    }
 }
 
 
 /* ************************************************** */
 /* ****************** FIRESTORE ********************* */
 /* ************************************************** */
+function getFirestoreDataColl(collName, where, order, limit, success, failure) {
+    let collData = db.collection(collName);
+    if (where !== null) collData = collData.where('keywords', 'array-contains-any', where);
+    else if (order !== null) collData = collData.orderBy(order);
+    if (limit !== null) collData = collData.limit(limit);
+    console.log(collData);
+    collData.get()
+    .then((querySnapshot) => {
+        console.log('Calling collection success');
+        if (success !== null  &&  success !== undefined) success(querySnapshot);
+    })
+    .catch((error) => {
+        console.log(error);
+        if (failure !== null  &&  failure !== undefined) failure(error);
+    });
+}
+
+function getFSQuestionList(where, order, limit, success, failure) {
+    getFirestoreDataColl("questions", where, order, limit, success, failure);
+}
+
+
 function getFirestoreData(collName, docName, success, failure) {
     db.collection(collName).doc(docName).get()
     .then((doc) => {
         console.log('Calling success');
-        success(doc);
+        if (success !== null  &&  success !== undefined) success(doc);
     })
     .catch((error) => {
         if (failure !== null  &&  failure !== undefined) failure(error);
     });
 }
 
+function addSettingsToCache(doc) {
+    console.log('INSIDE addSettingsToCache');
+    addToStorage('gameid', doc.data().gameid);
+    addToStorage('queschanged', doc.data().queschanged.seconds);
+    addToStorage('gamedatetime', doc.data().gamedatetime.seconds);
+}
+
 function getFSSettingsData(success, failure) {
-    getFirestoreData("settings", "currgame", success, failure);
+    getFirestoreData("settings", "currgame", 
+        function(doc) {
+            addSettingsToCache(doc);
+            if (success !== undefined) success(doc);
+        }, 
+        failure
+    );
 }
 
 function getFSCurrGameQuestions(gameId, success, failure) {
@@ -127,4 +195,43 @@ function getFSCurrGameQuestions(gameId, success, failure) {
 
 function getFSPrizeDetail(gameId, success, failure) {
     getFirestoreData("prizes", gameId, success, failure);
+}
+
+function getFSPrizeDetailLatest(success, failure) {
+    getFirestoreData("prizes", "latest", success, failure);
+}
+
+function getFSUserTicket(gameId, uid, success, failure) {
+    getFirestoreData("tickets", gameId + "_" + uid, success, failure);
+}
+
+function listenToFirestoreData(collName, docName, success, failure) {
+    return db.collection(collName).doc(docName)
+    .onSnapshot((doc) => {
+        console.log('Calling success');
+        success(doc);
+    });
+}
+
+function listenToFSQuestions(gameId, success, failure) {
+    return listenToFirestoreData("gameques", gameId, success, failure);
+}
+
+function listenToLatestPrize(success, failure) {
+    return listenToFirestoreData("prizes", "latest", success, failure);
+}
+
+/* ************************************************** */
+/* ****************** FIRESTORE ********************* */
+/* ************************************************** */
+function callCloudFunction(functionName, params, success, failure) {
+    var addMessage = functions.httpsCallable(functionName);
+    addMessage(params)
+    .then((result) => {
+        if (success !== undefined) success(result);
+    })
+    .catch((e) => {
+        console.error(e);
+        if (failure !== undefined) failure(e);
+    });
 }
