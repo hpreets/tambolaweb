@@ -1,6 +1,6 @@
 const container = $('.container-fluid');
 let qList = null;
-let gameid;
+
 
 
 /**
@@ -61,6 +61,7 @@ function createQuestionRow(ques, answ, index, container) {
  */
 function init() {
     // clearStorage();
+    console.log(gameid);
     getFSSettingsData(successCurrGameFetch, null);
 }
 
@@ -69,10 +70,14 @@ function init() {
  * @param {*} doc - JSON Data - current game settings
  */
 function successCurrGameFetch(doc) {
+    console.log('INSIDE successCurrGameFetch');
     gameid = doc.data().gameid;
+
     if (getFromStorage('gameid') != null  
             &&  doc.data().gameid == getFromStorage('gameid')  
-            &&  doc.data().queschanged.seconds == getFromStorage('queschanged')) {
+            &&  doc.data().queschanged.seconds == getFromStorage('queschanged')
+            &&  getFromStorage('qlist') != null
+            ) {
         // Questions not changed, use the data from cache
         console.log("Picking data from Cache");
         qList = JSON.parse(getFromStorage("qlist"));
@@ -81,28 +86,28 @@ function successCurrGameFetch(doc) {
     else {
         // Clear all storage including storage of ticket and other pages
         clearStorage();
+        addSettingsToCache(doc);
 
         // Picking data from game questions - gameques/<gameid>/questions
         getFSCurrGameQuestions(gameid, successQuestionListFetch, null);
     }
-    addToStorage('gameid', doc.data().gameid);
-    addToStorage('queschanged', doc.data().queschanged.seconds);
-    addToStorage('gamedatetime', doc.data().gamedatetime.seconds);
 
-    $('.gamedate').text( new Date(doc.data().gamedatetime.seconds*1000) );
+    $('.gamedate').text( new Date(getFromStorage('queschanged')*1000) );
 }
+
 
 /**
  * Called when question list for current game is fetched from Firestore
  * @param {*} doc - JSON Data - question list
  */
 function successQuestionListFetch(doc) {
-    console.log("Picked data from firestore");
+    console.log("Picked data from firestore ::");
     qList = doc.data();
     addToStorage("qlist", JSON.stringify(qList));
     qList = JSON.parse(getFromStorage("qlist"));
     iterateQuestions(qList);
 }
+
 
 /**
  * Iterate JSON data to create UI
@@ -112,56 +117,12 @@ function iterateQuestions(qList) {
     let index = 0;
     Object.keys(qList).forEach((qdockey) => {
         let qdoc = qList[qdockey];
-        createQuestionRow(qdoc.question, qdoc.answer, index, container);
-        index++
+        if (qdockey !== '_gameover') {
+            console.log('qdockey ::' + qdockey + '; qdoc ::' + qdoc);
+            createQuestionRow(qdoc.question, qdoc.answer, index, container);
+            index++
+        }
     });
-}
-
-/**
- * Handler for Signout button
- */
-/* function signout() {
-    firebase.auth().signOut().then(function() {
-        // Sign-out successful.
-        window.location = '/questions.html';
-    }).catch(function(error) {
-        // An error happened.
-    });
-} */
-
-/* function getTicket() {
-    let gameId = getFromStorage('gameid');
-    db.collection("tickets").doc(gameId + "_" + uid).get()
-    .then((doc) => {
-        return doc.data();
-    })
-    .catch((error) => {
-        console.error("Error getting ticket: ", error);
-    });
-    return null;
-} */
-
-
-/**
- * Handler for Ticket button
- * @param {*} e - event
- */
-function generateTicket(e) {
-    e.preventDefault();
-    console.log( getFromStorage('gamedatetime') );
-    let gameDateTime = new Date(getFromStorage('gamedatetime')*1000);
-    var currDateTime = new Date();
-    currDateTime.setMinutes( currDateTime.getMinutes() + 15 );
-    currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
-    console.log( currDateTime );
-    console.log( gameDateTime );
-    if (currDateTime > gameDateTime) {
-        // alert('Time for play');
-        window.location = '/ticket.html';
-    }
-    else {
-        alert('The ticket would be available 15 minutes before the game.');
-    }
 }
 
 
@@ -172,8 +133,6 @@ $(function onDocReady() {
 	console.log('Inside onDocReady');
     loadHeaderActions();
     loadSharingButtons();
-    $('#btnLogout').click(signout);
-    $('#btnTicket').click(generateTicket);
 });
 
 checkLogin(firebase.auth(), successLogin, failureLogin);
