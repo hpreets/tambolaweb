@@ -21,59 +21,61 @@ admin.initializeApp();
 // Cloud Firestore under the path /messages/:documentId/original
 exports.createTicketV2 = functions.region('asia-south1').https.onCall(async (data, context) => {
 
-  functions.logger.info('INSIDE createTicketV2');
-  let ticket = {};
-  
-  var db = admin.firestore();
+    // functions.logger.info('INSIDE createTicketV2');
+    let ticket = {};
 
-  const uid = context.auth.uid; // "6tb9RSlJpZy66hxw2FCCYbHe1izU"; // context.auth.uid;
-  functions.logger.info("uid ::" + uid + "; context.auth.uid ::" + context.auth.uid);
+    var db = admin.firestore();
 
-  let tjson = {};
-  let gameid = null;
-  let answersArr = null;
+    const uid = context.auth.uid; // "6tb9RSlJpZy66hxw2FCCYbHe1izU"; // context.auth.uid;
+    // functions.logger.info("uid ::" + uid + "; context.auth.uid ::" + context.auth.uid);
 
-  const currGame = await db.collection("settings").doc("currgame").get();
-  if (currGame.data()) {
-    functions.logger.info("currGame data ::" + currGame);
-    functions.logger.info("currGame data in JSON ::" + JSON.stringify(currGame.data()));
-    gameid = currGame.data().gameid;
-    functions.logger.info("gameid ::" + gameid);
-    answersArr = currGame.data().answers.split('#');
-    functions.logger.info("answersArr ::" + answersArr);
+    let tjson = {};
+    let gameid = null;
+    let answersArr = null;
 
-    if (!gameid) {
-      // Throwing an HttpsError so that the client gets the error details.
-      throw new functions.https.HttpsError('failed-precondition', 'Not able to fetch gameid.');
+    const currGame = await db.collection("settings").doc("currgame").get();
+    if (currGame.data()) {
+        if (currGame.data().gameover === false) {
+            // functions.logger.info("currGame data ::" + currGame);
+            functions.logger.info("currGame data in JSON ::" + JSON.stringify(currGame.data()));
+            gameid = currGame.data().gameid;
+            // functions.logger.info("gameid ::" + gameid);
+            answersArr = currGame.data().answers.split('#');
+            // functions.logger.info("answersArr ::" + answersArr);
+
+            if (!gameid) {
+                // Throwing an HttpsError so that the client gets the error details.
+                throw new functions.https.HttpsError('failed-precondition', 'Not able to fetch gameid.');
+            }
+            const tkt = await db.collection("tickets").doc(gameid + "_" + uid).get();
+            if (!tkt.data()) {
+
+                functions.logger.info('Generating ticket for ' + gameid + "_" + uid);
+                let rowctr = 1;
+                let colctr = 1;
+                for (let ctr = 0; ctr < 15; ctr++) {
+                    let rndInt = Math.floor(Math.random() * Math.floor(90-ctr)); // getRandomInt(90-ctr);
+                    tjson['c'+ rowctr + colctr] = answersArr[rndInt];
+                    answersArr.splice(rndInt, 1);
+                    rowctr++;
+                    if (rowctr >= 4) rowctr = 1;
+                    colctr++;
+                    if (colctr >= 6) colctr = 1;
+                }
+                
+                // functions.logger.info("tjson ::" + JSON.stringify(tjson));
+                ticket.ticket = tjson;
+                ticket.bogiecount = 0;
+                ticket.uid = uid;
+                functions.logger.info("ticket ::" + JSON.stringify(ticket));
+                await db.collection("tickets").doc(gameid + "_" + uid).set(ticket);
+            }
+            else {
+                ticket = tkt.data();
+            }
+        }
     }
-    const tkt = await db.collection("tickets").doc(gameid + "_" + uid).get();
-    if (!tkt.data()) {
-
-      functions.logger.info('Generating ticket for ' + gameid + "_" + uid);
-      let rowctr = 1;
-      let colctr = 1;
-      for (let ctr = 0; ctr < 15; ctr++) {
-        let rndInt = Math.floor(Math.random() * Math.floor(90-ctr)); // getRandomInt(90-ctr);
-        tjson['c'+ rowctr + colctr] = answersArr[rndInt];
-        answersArr.splice(rndInt, 1);
-        rowctr++;
-        if (rowctr >= 4) rowctr = 1;
-        colctr++;
-        if (colctr >= 6) colctr = 1;
-      }
-    
-      functions.logger.info("tjson ::" + JSON.stringify(tjson));
-      ticket.ticket = tjson;
-      ticket.bogiecount = 0;
-      ticket.uid = uid;
-      functions.logger.info("ticket ::" + JSON.stringify(ticket));
-      await db.collection("tickets").doc(gameid + "_" + uid).set(ticket);
-    }
-    else {
-      ticket = tkt.data();
-    }
-  }
-  return ticket;
+    return ticket;
 
 });
 
