@@ -20,7 +20,7 @@ firebase.auth().onAuthStateChanged((user) => {
 
 
 // Read Data
-let gameid;
+// let gameid;
 
 function hideButtons(loggedIn) {
     if (!loggedIn) {
@@ -62,7 +62,10 @@ function setCurrGameQuestions() {
             quesList[answer] = qdoc;
         });
         console.log(quesList);
-        gameques.update(quesList, { merge: true });
+        gameques.update(quesList, { merge: true })
+        .then(() => {
+            $('#messageText').text('Current Game Questions are reset successfully.');
+        });
     });
 }
 
@@ -73,4 +76,4 @@ $(function onDocReady() {
 	$('#resetQues').click(setCurrGameQuestions);
 });
 
-setCurrGameQuestions();
+// setCurrGameQuestions();
