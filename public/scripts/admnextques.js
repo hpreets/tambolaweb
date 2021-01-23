@@ -3,6 +3,20 @@ var db = firebase.firestore();
 var user = firebase.auth().currentUser;
 var functions = firebase.functions();
 let uid;
+
+// Read Data
+const container = $('.container-fluid');
+let qList = null;
+// let gameid;
+let answerCtr = 0;
+let coveredAnswersArr = [];
+let coveredAnswersStr = '';
+
+var count = secondsInterval;
+var counter;
+let prizeDetails;
+let allPrizesWon = false;
+
 // alert('Hi');
 
 firebase.auth().onAuthStateChanged((user) => {
@@ -12,76 +26,19 @@ firebase.auth().onAuthStateChanged((user) => {
         uid = user.uid;
 		hideButtons(true);
 		init();
+		listenToClaimedPrizes();
     } else {
         console.log('User is NULL');
         hideButtons(false);
     }
-  });
-  
+});
 
-  /*
-async function createTodoEntry(entryName) {
-	console.log('Inside createTodoEntry ...');
-	// event.preventDefault();
-	if (entryName == undefined ||  entryName == null) entryName = "My todo at " + new Date();
-	const todo = { name: entryName, description: "Hello world!" };
-	await API.graphql(graphqlOperation(createTodo, {input: todo}));
-}
-
-async function pickNextQues() {
-	let uncoveredButtons = $('.uncovered');
-	console.log(uncoveredButtons.length);
-	let nextQuesBtn = uncoveredButtons[Math.floor(Math.random() * uncoveredButtons.length)];
-	if (nextQuesBtn !== undefined) {
-		console.log(nextQuesBtn);
-		console.log(nextQuesBtn.innerHTML);
-		console.log(nextQuesBtn.attributes['data-question'].value);
-		// console.log(nextQuesBtn.data('question'));
-		$(nextQuesBtn).addClass('active');
-		$(nextQuesBtn).removeClass('uncovered');
-
-		await postData(
-			'https://kt702dv0v5.execute-api.ap-south-1.amazonaws.com/Dev/setnextques', 
-			{ "key": nextQuesBtn.innerHTML }
-		)
-		.then(data => {
-			console.log(data); // JSON data parsed by `data.json()` call
-		});
-
-		// Creation too has to be handled from app only. Directly creating record in DDB does not update here.
-		createTodoEntry(nextQuesBtn.attributes['data-question'].value);
-
-	}
-}
-
-// Example POST method implementation:
-async function postData(url = '', data = {}) {
-	console.log('Inside postData - ' + JSON.stringify(data));
-	// Default options are marked with *
-	const response = await fetch(url, {
-		method: 'POST', // *GET, POST, PUT, DELETE, etc.
-		mode: 'cors', // no-cors, *cors, same-origin
-		cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-		credentials: 'same-origin', // include, *same-origin, omit
-		headers: {
-		'Content-Type': 'application/json'
-		// 'Content-Type': 'application/x-www-form-urlencoded',
-		},
-		redirect: 'follow', // manual, *follow, error
-		referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-		body: JSON.stringify(data) // body data type must match "Content-Type" header
-	});
-	return response.json(); // parses JSON response into native JavaScript objects
-}
-
-*/
 
 function createNode(element) {
 	return document.createElement(element);
 }
 
 function createAnswerButton(ques, answ, coveredCtr) {
-	// console.log(answ);
 
 	let btn = createNode('button');
 	$(btn).addClass('btn btn-success col-lg-1');
@@ -94,15 +51,6 @@ function createAnswerButton(ques, answ, coveredCtr) {
 	return btn;
 }
 
-
-
-// Read Data
-const container = $('.container-fluid');
-let qList = null;
-let gameid;
-let answerCtr = 0;
-let coveredAnswersArr = [];
-let coveredAnswersStr = '';
 
 function init() {
     db.collection("settings").doc("currgame").get()
@@ -227,29 +175,27 @@ function signout() {
 }
 
 
-
-$(function onDocReady() {
-	console.log('Inside onDocReady');
-	$('#btnLogout').click(signout);
-	$('#btnNextQues').click(pickNextQues);
-});
-
-// document.onload = function() {
-//     console.log('ON LOAD');
-//     // $('.btnTicket').click();
-//     $('.btnLogout').click(signout);
-// }
-
 function pickNextQuesFromBtn() {
 	processNextQues(this);
 }
 
+
 function pickNextQues() {
-	let uncoveredButtons = $('.uncovered');
-	console.log(uncoveredButtons.length);
-	let nextQuesBtn = uncoveredButtons[Math.floor(Math.random() * uncoveredButtons.length)];
-	processNextQues(nextQuesBtn);
+	if (!allPrizesWon) {
+		let uncoveredButtons = $('.uncovered');
+		console.log(uncoveredButtons.length);
+		let nextQuesBtn = uncoveredButtons[Math.floor(Math.random() * uncoveredButtons.length)];
+		processNextQues(nextQuesBtn);
+	}
+	else {
+		// Update the Latest Prize data and set GameOver = true;
+		// This will be used by the Ticket screen to stop taking any further inputs.
+		// db.collection("prizes").doc("latest").update({ gameover : true });
+		db.collection("gameques").doc(gameid).update({ _gameover : true });
+		stopTimer();
+	}
 }
+
 
 function processNextQues(nextQuesBtn) {
 	if (nextQuesBtn !== undefined) {
@@ -263,6 +209,7 @@ function processNextQues(nextQuesBtn) {
 		updateCoveredIndex(nextQuesBtn.innerHTML);
 	}
 }
+
 
 function updateCoveredIndex(answer) {
 	answerCtr++;
@@ -278,8 +225,77 @@ function updateCoveredIndex(answer) {
 		.then(function() {
 			coveredAnswersStr += answer + "#";
 			console.log("Document 2 successfully updated! :: coveredAnswersStr ::" + coveredAnswersStr);
-			
+
+			count = secondsInterval;
 		});
 
 	});
 }
+
+
+function timer(){
+	count = count-1;
+	if(count < 0){
+		pickNextQues();
+	}
+	$('.timer').html(count);
+}
+
+function startTimer() {
+	counter = setInterval(timer, 1000);
+}
+
+
+function stopTimer() {
+	clearInterval(counter);
+}
+
+
+function listenToClaimedPrizes() {
+    realTimePrizeUpdateUnsubscribe = listenToLatestPrize(successListenToClaimedPrizes);
+}
+
+function successListenToClaimedPrizes(doc) {
+    logMessage("Current data: ", doc.data());
+	prizeDetails = doc.data();
+	if (prizeDetails.FH == true  
+		&&  prizeDetails.EF == true  
+		&&  prizeDetails.FL == true  
+		&&  prizeDetails.ML == true  
+		&&  prizeDetails.LL == true) {
+			allPrizesWon = true;
+	}
+}
+
+
+function onPageUnload() {
+    logMessage('*****************************************');
+    logMessage('*****************************************');
+    logMessage('*****************************************');
+    logMessage('*****************************************');
+    logMessage('*****************************************');
+    logMessage('*****************************************');
+    logMessage('Page Unloading');
+    logMessage('*****************************************');
+    logMessage('*****************************************');
+    logMessage('*****************************************');
+    logMessage('*****************************************');
+    logMessage('*****************************************');
+    logMessage('*****************************************');
+    realTimePrizeUpdateUnsubscribe();
+}
+
+
+/* TODO: */
+/* CREATE A BUTTON CLICKING ON WHICH WILL START THE COUNTER */
+/* LISTEN TO PRIZE LIST TO SEE IF 'FH' HAS B BEEN WON. IF YES, STOP THE COUNTER */
+$(function onDocReady() {
+	console.log('Inside onDocReady');
+	$('#btnLogout').click(signout);
+	$('#btnNextQues').click(pickNextQues);
+
+	$('#startTimer').click(startTimer);
+	$('#stopTimer').click(stopTimer);
+});
+
+window.addEventListener('beforeunload', onPageUnload);
