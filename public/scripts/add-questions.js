@@ -2,101 +2,121 @@ ques = [
     {
       "answer": "38",
       "question": "How many Pauris in Japji Saheb",
+      "keywords": ["japji", "pauri", "38"],
       "FIELD3": null
     },
     {
       "answer": "40",
       "question": "How many Pauris in complete Anand Saheb",
+      "keywords": ["anand", "pauri", "40"],
       "FIELD3": 3
     },
     {
       "answer": "Akal Takht",
       "question": "Guru Hargobind Saheb built it in 1609 in Amritsar marking it as throne of Supreme Power.",
+      "keywords": ["akal", "takht", "hargobid", "amritsar", "1609"],
       "FIELD3": null
     },
     {
       "answer": "Amritsar",
       "question": "Which city was founded by Guru Ram Das ji.",
+      "keywords": ["amritsar", "ram", "das", "ramdas", "city"],
       "FIELD3": null
     },
     {
       "answer": "Anandpur",
       "question": "Which fort did Guru Gobind Singh ji leave in Dec 1704 before separating from his family at the banks of river Sirsa.",
+      "keywords": ["anandpur", "gobind", "singh", "dec", "1704", "sirsa"],
       "FIELD3": 29
     },
     {
       "answer": "Baba Ajit Singh",
       "question": "The eldest son of Guru Gobind Singh ji who attained Shaheedi in Chamkaur.",
+      "keywords": ["ajit", "singh", "gobind", "chamkaur", "martyr"],
       "FIELD3": 9
     },
     {
       "answer": "Baba Budha ji",
       "question": "First Granthi of Darbar Saheb at Amritsar.",
+      "keywords": ["budha", "granthi", "darbar", "sahib", "amritsar"],
       "FIELD3": 31
     },
     {
       "answer": "Baba Deep Singh",
       "question": "Who took revenge from Ahmad Shah Abdali for blowing up Darbar Saheb and desecrating Sarovar by freeing the it from Afgan forces even while supporting his head over his hand.",
+      "keywords": ["baba", "deep", "singh", "darbar", "sahib", "amritsar", "ahmad", "shah", "abdali", "sarovar"],
       "FIELD3": 34
     },
     {
       "answer": "Baba Fareed ji",
       "question": "The Bhagat who lived during 12th century and his bani is included in Guru Granth Saheb.",
+      "keywords": ["baba", "fareed", "bhagat", "century", "sahib", "guru", "granth", "sahib", "bani"],
       "FIELD3": null
     },
     {
       "answer": "Baba Fateh Singh",
       "question": "The youngest martyr among Guru's son",
+      "keywords": ["baba", "fateh", "singh", "martyr", "guru", "gobind", "youngest", "son"],
       "FIELD3": null
     },
     {
       "answer": "Babar",
       "question": "Who was the Mughal emperor during Guru Nanak Sahib times?",
+      "keywords": ["babar", "mughal", "guru", "nanak"],
       "FIELD3": 5
     },
     {
       "answer": "Banda Singh Bahadar",
       "question": "Guru Gobind Singh ji met whom, who ultimately attacked and conquered Sirhind where the Nawab had ordered the live-burial of the younger Sahebzadas?",
+      "keywords": ["bandar", "singh", "bahadar", "gobind", "singh", "sirhind", "son"],
       "FIELD3": 21
     },
     {
       "answer": "Bhagat Kabeer",
       "question": "Which Bhagat ji lived in Banaras and received wrath of Brahmins of those times.",
+      "keywords": ["bhagat", "kabeer", "banaras", "brahmin"],
       "FIELD3": null
     },
     {
       "answer": "Bhagat Namdev",
       "question": "Which Bhagat ji lived in Maharastra and was close friend of Bhagat Tirlochan ji.",
+      "keywords": ["bhagat", "namdev", "maharastra", "tirlochan"],
       "FIELD3": 35
     },
     {
       "answer": "Bhagat Ramanand",
       "question": "This Bhagat ji brought Bhagat Kabeer ji into spirituality.",
+      "keywords": ["bhagat", "ramanand", "kabeer", "spirituality"],
       "FIELD3": null
     },
     {
       "answer": "Bhagat Ravidas",
       "question": "Which Bhagat ji used to earn his livelihood by making leather footwear.",
+      "keywords": ["bhagat", "ravidas", "leather", "footwear", "livelihood"],
       "FIELD3": 10
     },
     {
       "answer": "Bhai Bachitter Singh",
       "question": "During the battle of Anandpur, which Sikh fought and defeated an intoxicated elephant that was planned to break the doors open of Anandpur.",
+      "keywords": ["bachitter", "singh", "anandpur", "battle", "sikh", "elephant", "intoxicated"],
       "FIELD3": 23
     },
     {
       "answer": "Bhai Daya Singh",
       "question": "First of Panj Pyara",
+      "keywords": ["daya", "singh", "panj", "pyara", "punj"],
       "FIELD3": null
     },
     {
       "answer": "Bhai Diala",
       "question": "Which Sikh living body was placed in hot boiling water in Delhi during Shaheedi of Guru Teg Bahadar ji.",
+      "keywords": ["Diala", "boiling", "water", "hot", "martyr", "guru" "teg", "bahadar", "delhi"],
       "FIELD3": 7
     },
     {
       "answer": "Bhai Ghanaiya",
       "question": "Which Sikh gave water to all dying soldiers irrespective of whether they were Sikhs or Muslims?",
+      "keywords": ["Diala", "boiling", "water", "hot", "martyr", "guru" "teg", "bahadar", "delhi"],
       "FIELD3": null
     },
     {
@@ -468,6 +488,7 @@ for (var i = 0; i < ques.length; i++){
         var attrValue = obj[key];
         if (key == 'question') qjson.question = attrValue;
         else if (key == 'answer') qjson.answer = attrValue;
+        else if (key == 'keywords') qjson.keywords = attrValue;
     }
     qjson.addedOn = firebase.firestore.Timestamp.now();
     console.log(qjson);
