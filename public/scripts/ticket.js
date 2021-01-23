@@ -1,5 +1,9 @@
+// TEST UNSUBSCRIBE
+// CHECK IF THESE VARIABLES ARE REQUIRED
+
+
 var db = firebase.firestore();
-var user = firebase.auth().currentUser;
+// var user = firebase.auth().currentUser;
 var functions = firebase.app().functions('asia-south1');
 let uid;
 let uEmailAddress;
@@ -7,7 +11,19 @@ let uPhoneNumber;
 let prizeDetails;
 let prizeDetailsFromNextQues;
 
-firebase.auth().onAuthStateChanged((user) => {
+const container = $('.container-fluid');
+let qList = null;
+let gameId;
+let realTimeUpdateUnsubscribe;
+let realTimePrizeUpdateUnsubscribe;
+// let quesListCache; // Temp. Remove after testing
+let bogieCount = 0;
+
+
+/**
+ * Check whether user is authenticated and take action likewise.
+ */
+/* firebase.auth().onAuthStateChanged((user) => {
     if (user) {
         logMessage('User is NOT NULL ::' + user.uid + "; displayname ::" + user.displayName);
         uid = user.uid;
@@ -23,32 +39,44 @@ firebase.auth().onAuthStateChanged((user) => {
     else {
         logMessage('User is NULL');
     }
-});
+}); */
   
+/**
+ * Called when user is logged in
+ */
+successLogin = function(user) {
+    uEmailAddress = user.email;
+    uPhoneNumber = user.phoneNumber;
+    generateTicket();
+    listenToClaimedPrizes();
+    listenToQuestions();
+};
 
+noLogin = function(user) {
+    window.location = '/login.html';
+};
 
 
 // Read Data
-const container = $('.container-fluid');
-let qList = null;
-let gameId;
-let realTimeUpdateUnsubscribe;
-let realTimePrizeUpdateUnsubscribe;
-// let quesListCache; // Temp. Remove after testing
-let bogieCount = 0;
 
-
+/**
+ * Fetch currgame settings and set it in storage if not already present.
+ * Called from generateTicket()
+ */
 function init() {
-    if (sessionStorage.getItem('gameid') == null) {
-        db.collection("settings").doc("currgame").get()
+    if (getFromStorage('gameid') == null) {
+        /* db.collection("settings").doc("currgame").get()
         .then((doc) => {
             sessionStorage.setItem('gameid', doc.data().gameid);
             sessionStorage.setItem('gamedatetime', doc.data().gamedatetime.seconds);
-        });
+        }); */
+        getFSSettingsData();
     }
 }
 
-
+/**
+ * NOT USED CURRENTLY - PLEASE VALIDATE
+ */
 function getTicket() {
     init();
     gameId = sessionStorage.getItem('gameid');
@@ -63,13 +91,17 @@ function getTicket() {
 }
 
 
-function generateTicket(e) {
-    // e.preventDefault();
+/**
+ * Called on page load if user is authenticated. This method checks in 
+ * firestore if ticket is already generated. If not, it calls the 
+ * cloud function to generate a ticket.
+ */
+function generateTicket() {
     resetTicketStorage();
 
     init();
-    logMessage( sessionStorage.getItem('gamedatetime') );
-    let gameDateTime = new Date(sessionStorage.getItem('gamedatetime')*1000);
+    console.log( 'FROM STORAGE :: gamedatetime ::' + getFromStorage('gamedatetime') );
+    let gameDateTime = new Date(getFromStorage('gamedatetime')*1000);
     var currDateTime = new Date();
     currDateTime.setMinutes( currDateTime.getMinutes() + 15 );
     currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
@@ -77,65 +109,21 @@ function generateTicket(e) {
     logMessage( gameDateTime );
     if (currDateTime > gameDateTime) {
 
-        gameId = sessionStorage.getItem('gameid');
+        gameId = getFromStorage('gameid');
         let tkt;
         console.log(gameId + "_" + uid);
         console.log(getFromStorage('ticket'));
 
         if (!getFromStorage('ticket')) {
-
-            /* db.collection("tickets").doc(gameId + "_" + uid).get().then((doc) => {
-                logMessage(doc.data()); // test
-            }); */
-
             console.log('Picking ticket from firestore');
-            tkt = db.collection("tickets").doc(gameId + "_" + uid).get()
-            .then((doc) => {
-                if (doc.data()) {
-                    console.log('doc.data() is not null');
-                    console.log(doc);
-                    tkt = doc.data();
-                    console.log(tkt);
-                    return doc;
-                }
-
-                let createTkt = functions.httpsCallable('createTicketV2');
-                console.log('Calling createTkt');
-                return createTkt();
-            })
-            .then((doc) => {
-                if (doc.data === 'function' && doc.data()) {
-                    console.log('doc.data is a null');
-                    console.log(doc);
-                    tkt = doc.data();
-                    console.log(doc);
-                    return doc;
-                }
-                console.log('Returning data from firestore');
-                return db.collection("tickets").doc(gameId + "_" + uid).get();
-            })
-            .then((doc) => {
-                if (doc.data()) {
-                    console.log(doc);
-                    tkt = doc.data();
-                    logMessage(doc);
-                    logMessage('Adding ticket to storage');
-                    // initTicketDataInStorage(tkt); // Not required since bogiecount can differ in each load.
-                    // addToStorage('ticket', JSON.stringify(tkt));
-                    loadTicket(tkt);
-                    setBogieCount(tkt);
-                    return tkt;
-                }
-            })
-            .catch((e) => {
-                console.error(e);
-            });
+            getFSUserTicket(gameId, uid, successFetchTicketFirstTime, null);
         }
         else {
             // tkt = JSON.parse(getFromStorage('ticket'))
             console.log('Picked from Cache');
             tkt = getTicketFromStorage();
-            loadTicket(tkt);
+            // loadTicket(tkt);
+            processTicket(tkt, getFromStorage('bogieCount'));
         }
         logMessage(tkt);
     }
@@ -144,11 +132,57 @@ function generateTicket(e) {
     }
 }
 
-function setBogieCount(tkt) {
-    bogieCount = tkt.bogiecount;
-    console.log('bogieCount ::' + bogieCount);
+function successFetchTicketFirstTime(doc) {
+    console.log('successFetchTicketFirstTime ::' + doc);
+    if (doc.data()) {
+        processTicket(doc.data(), getFromStorage('bogieCount'));
+        return doc;
+    }
+
+    console.log('Calling createTkt');
+    callCloudFunction('createTicketV2', null, successFunctionCreateTicket, null);
 }
 
+function successFunctionCreateTicket(retData) {
+    console.log('successFunctionCreateTicket :: retData :: ' + JSON.stringify(retData.data));
+    if (retData && retData.data) {
+        processTicket(retData.data, retData.data.bogiecount);
+        return retData;
+    }
+    console.log('Returning data from firestore');
+}
+
+
+function processTicket(ticketData, bCount) {
+    console.log('doc.data() is not null ::' + ticketData);
+    if (ticketData.ticket !== undefined) {
+        console.log(JSON.stringify(ticketData));
+        tkt = ticketData;
+        console.log(tkt);
+        initTicketDataInStorage(tkt); // Not required since bogiecount can differ in each load.
+        // addToStorage('ticket', JSON.stringify(tkt));
+        loadTicket(tkt);
+        setBogieCount(bCount);
+        return tkt;
+    }
+}
+
+/**
+ * Sets bogieCount variable based on bogiecount received from ticket from firestore.
+ * This method is called from generateTicket(e)
+ * @param {*} tkt - Ticket Json
+ */
+function setBogieCount(count) {
+    bogieCount = count;
+    console.log('bogieCount ::' + bogieCount);
+    addToStorage('bogieCount', bogieCount);
+}
+
+/**
+ * Generates UI for ticket. Also sets which entries have been selected 
+ * already. It fetches "selected" data from localstorage.
+ * @param {*} tdata - Ticket Json
+ */
 function loadTicket(tdata) {
     // logMessage(JSON.stringify(tdata));
     $('.tktcell11').text(tdata.ticket['c11']);
@@ -186,31 +220,6 @@ function loadTicket(tdata) {
     if (tdataSel['tktcell35']) $('.tktcell35').addClass('green');
 }
 
-/**
- * On Load functionality. Handles
- *  (1) OnClick for ticket cells
- */
-$(function onDocReady() {
-    logMessage('Inside onDocReady');
-
-    $('.ticket').on('click', function(){
-        $(this).toggleClass('green');
-        var classList = $(this).attr("class");
-        var classArr = classList.split(/\s+/);
-        $.each(classArr, function(index, value) {
-            logMessage('' + index + '---' + value);
-            if (value.includes('tktcell')) {
-                updateSelectionDataInStorage(value);
-            }
-        });
-        checkforPrizeAndClaim();
-    });
-
-    /* $('.language').on('click', function() {
-        logMessage('Inside language click');
-        updateUIOnQuestions(quesListCache);
-    }); */
-});
 
 function checkforPrizeAndClaim() {
     let tdataSel = getSelectionDataFromStorage();
@@ -222,70 +231,70 @@ function checkforPrizeAndClaim() {
     let selectedCountML = 0;
     let selectedCountLL = 0;
 
-        Object.keys(tdataSel).forEach((qdoc) => {
-            if (tdataSel[qdoc]) {
+    Object.keys(tdataSel).forEach((qdoc) => {
+        if (tdataSel[qdoc]) {
 
-                let selectedCell = qdoc.replace('tktcell', 'c');
-                if (retStr.length > 0) retStr = retStr + '#' + selectedCell;
-                else retStr = selectedCell;
+            let selectedCell = qdoc.replace('tktcell', 'c');
+            if (retStr.length > 0) retStr = retStr + '#' + selectedCell;
+            else retStr = selectedCell;
 
-                selectedCount++;
-                if (selectedCell.search('c1') == 0) selectedCountFL++;
-                if (selectedCell.search('c2') == 0) selectedCountML++;
-                if (selectedCell.search('c3') == 0) selectedCountLL++;
-            }
-        });
-        console.log('retStr :: ' + retStr);
-        console.log('selectedCount ::' + selectedCount);
-        console.log('selectedCountFL ::' + selectedCountFL);
-        console.log('selectedCountML ::' + selectedCountML);
-        console.log('selectedCountLL ::' + selectedCountLL);
-        console.log(prizeDetailsFromNextQues == undefined);
-        console.log((prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.EF != true)));
-
-        if (selectedCount == 5  &&  (prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.EF != true  /* && EF not already claimed */))) {
-            console.log('Claim for EF');
-            prizeIds = 'EF';
+            selectedCount++;
+            if (selectedCell.search('c1') == 0) selectedCountFL++;
+            if (selectedCell.search('c2') == 0) selectedCountML++;
+            if (selectedCell.search('c3') == 0) selectedCountLL++;
         }
-        else if (selectedCountFL == 5  &&  (prizeDetailsFromNextQues == undefined  ||  (selectedCountML == 5  &&  selectedCountLL == 5  &&  prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.FH != true))) {
-            console.log('Claim for FULL HOUSE');
-            if (prizeIds.length > 0) prizeIds += '#FH'; else prizeIds += 'FH';
+    });
+    console.log('retStr :: ' + retStr);
+    console.log('selectedCount ::' + selectedCount);
+    console.log('selectedCountFL ::' + selectedCountFL);
+    console.log('selectedCountML ::' + selectedCountML);
+    console.log('selectedCountLL ::' + selectedCountLL);
+    console.log(prizeDetailsFromNextQues == undefined);
+    console.log((prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.EF != true)));
+
+    if (selectedCount == 5  &&  (prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.EF != true  /* && EF not already claimed */))) {
+        console.log('Claim for EF');
+        prizeIds = 'EF';
+    }
+    else if (selectedCountFL == 5  &&  (prizeDetailsFromNextQues == undefined  ||  (selectedCountML == 5  &&  selectedCountLL == 5  &&  prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.FH != true))) {
+        console.log('Claim for FULL HOUSE');
+        if (prizeIds.length > 0) prizeIds += '#FH'; else prizeIds += 'FH';
+        retStr = '';
+    }
+    if (selectedCountFL == 5  &&  (prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.FL != true  /* && FL not already claimed */))) {
+        console.log('Claim for FL');
+        if (prizeIds.length > 0) prizeIds += '#FL'; 
+        else {
+            prizeIds += 'FL';
             retStr = '';
         }
-        if (selectedCountFL == 5  &&  (prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.FL != true  /* && FL not already claimed */))) {
-            console.log('Claim for FL');
-            if (prizeIds.length > 0) prizeIds += '#FL'; 
-            else {
-                prizeIds += 'FL';
-                retStr = '';
-            }
+    }
+    else if (selectedCountML == 5  &&  (prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.ML != true  /* && ML not already claimed */))) {
+        console.log('Claim for ML');
+        if (prizeIds.length > 0) prizeIds += '#ML'; 
+        else {
+            prizeIds += 'ML';
+            retStr = '';
         }
-        else if (selectedCountML == 5  &&  (prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.ML != true  /* && ML not already claimed */))) {
-            console.log('Claim for ML');
-            if (prizeIds.length > 0) prizeIds += '#ML'; 
-            else {
-                prizeIds += 'ML';
-                retStr = '';
-            }
+    }
+    else if (selectedCountLL == 5  &&  (prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.LL != true /* && LL not already claimed */))) {
+        console.log('Claim for LL');
+        if (prizeIds.length > 0) prizeIds += '#LL'; 
+        else {
+            prizeIds += 'LL';
+            retStr = '';
         }
-        else if (selectedCountLL == 5  &&  (prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.LL != true /* && LL not already claimed */))) {
-            console.log('Claim for LL');
-            if (prizeIds.length > 0) prizeIds += '#LL'; 
-            else {
-                prizeIds += 'LL';
-                retStr = '';
-            }
-        }
+    }
 
-        if (prizeIds !== '') {
-            let prizeRet = registerPrize(prizeIds, retStr);
-            console.log('prizeRet ::' + prizeRet);
-            // console.log('prizeRet.bogie ::' + prizeRet.bogie);
-            /* if (prizeRet != undefined  &&  prizeRet.bogie == true) {
-                alert('It was a bogie. Please play with caution, you may not be allowed to continue playing if you bogie 3 times.');
-                bogieCount++;
-            } */
-        }
+    if (prizeIds !== '') {
+        let prizeRet = registerPrize(prizeIds, retStr);
+        console.log('prizeRet ::' + prizeRet);
+        // console.log('prizeRet.bogie ::' + prizeRet.bogie);
+        /* if (prizeRet != undefined  &&  prizeRet.bogie == true) {
+            alert('It was a bogie. Please play with caution, you may not be allowed to continue playing if you bogie 3 times.');
+            bogieCount++;
+        } */
+    }
 
         // return retStr;
     // if (tdataSel['tktcell11']) $('.tktcell11').addClass('green');
@@ -331,7 +340,7 @@ function initTicketDataInStorage(data) {
 }
 
 function addTicketToStorage(data) {
-    addToStorage("ticket", JSON.stringify(data));
+    // addToStorage("ticket", JSON.stringify(data));
 }
 
 function getTicketFromStorage() {
@@ -352,43 +361,64 @@ function getSelectionDataFromStorage() {
 }
 
 function resetTicketStorage() {
-    removeFromStorage('ticket');
+    // removeFromStorage('ticket');
     // removeFromStorage('ticketSel');
 }
 
 function getCoveredQuestions() {
-    tkt = db.collection("gameques").doc(gameId).get()
+    getFSCurrGameQuestions(gameId, successGetCoveredQuestions, null);
+    /* tkt = db.collection("gameques").doc(gameId).get()
     .then((doc) => {
         if (doc.data()) {
             logMessage(doc.data());
             // quesListCache = doc.data();
             updateUIOnQuestions(doc.data());
         }
-    });
+    }); */
 }
 
+function successGetCoveredQuestions(doc) {
+    if (doc.data()) {
+        logMessage(doc.data());
+        // quesListCache = doc.data();
+        updateUIOnQuestions(doc.data());
+    }
+}
+
+
 function listenToQuestions() {
-    realTimeUpdateUnsubscribe = db.collection("gameques").doc(gameId)
+    realTimeUpdateUnsubscribe = listenToFSQuestions(gameId, successListenToQuestions, null);
+    /* realTimeUpdateUnsubscribe = db.collection("gameques").doc(gameId)
     .onSnapshot(function(doc) {
         logMessage("Current data: ", doc.data());
         prizeDetailsFromNextQues = prizeDetails;
         updateUIOnQuestions(doc.data());
         updateUIOnPrizesToRed();
-    });
+    }); */
+}
 
-    /* setTimeout(function() {
-        realTimeUpdateUnsubscribe();
-    }, 5000); */
+function successListenToQuestions(doc) {
+    logMessage("successListenToQuestions :: Current data ::", doc.data());
+    prizeDetailsFromNextQues = prizeDetails;
+    updateUIOnQuestions(doc.data());
+    updateUIOnPrizesToRed();
 }
 
 function updateUIOnQuestions(qList) {
+    if (qList._gameover == true) {
+        alert('Game is over; \'Full House\' won. Please join us again for the next game.');
+        clearInterval(counter);
+    }
+
     let covQues = [];
     // let qList = doc.data();
     Object.keys(qList).forEach((qdoc) => {
-        let ques = qList[qdoc];
-        if (ques.coveredIndex != null) {
-            logMessage(ques);
-            covQues.push(ques);
+        if (qdoc != '_gameover') { // Indicator of whether game is in progress or is over.
+            let ques = qList[qdoc];
+            if (ques.coveredIndex != null) {
+                logMessage(ques);
+                covQues.push(ques);
+            }
         }
     });
     if (covQues.length > 0) {
@@ -410,16 +440,27 @@ function updateUIOnQuestions(qList) {
         logMessage(covQues[0].question);
         $('#question').text(covQues[0].question);
         if (prizeDetailsFromNextQues != undefined  &&  !prizeDetailsFromNextQues.FH) {
-            $('#question').css('background', 'red');
-            animateHTML($('#question'), 'red', '#b3d9ff', 1000);
+            $('#question').css('background', '#8aff80');
+            animateHTML($('#question'), '#8aff80', '#b3d9ff', 1000);
         }
         addQuestionsToModalDialog(covQues);
+
+        count = secondsInterval; // Set the timer
+        if (counter == null) counter = setInterval(timer, 1000);
     }
     else {
         $('#question').text('');
     }
 }
 
+/**
+ * To animate when a new question is displayed. This is a generic method 
+ * and can be used to animate background of any div.
+ * @param {*} htmlNode - The node whoe background has to be animated.
+ * @param {*} color1 - color 1
+ * @param {*} color2 - color 2
+ * @param {*} timeout - time in ms for switching between two colors.
+ */
 function animateHTML(htmlNode, color1, color2, timeout) {
     setTimeout(function() {
         htmlNode.css('background', color1);
@@ -458,25 +499,39 @@ function addQuestionsToModalDialog(covQues) {
 
 
 function getClaimedPrizes() {
-    tkt = db.collection("prizes").doc("latest").get()
+    getFSPrizeDetailLatest(successGetClaimedPrizes);
+    /* tkt = db.collection("prizes").doc("latest").get()
     .then((doc) => {
         if (doc.data()) {
             logMessage(doc.data());
             updateUIOnPrizes(doc.data());
         }
-    });
+    }); */
+}
+
+function successGetClaimedPrizes(doc) {
+    if (doc.data()) {
+        logMessage(doc.data());
+        updateUIOnPrizes(doc.data());
+    }
 }
 
 function listenToClaimedPrizes() {
-    realTimePrizeUpdateUnsubscribe = db.collection("prizes").doc("latest")
+    realTimePrizeUpdateUnsubscribe = listenToLatestPrize(successListenToClaimedPrizes);
+    /* db.collection("prizes").doc("latest")
     .onSnapshot(function(doc) {
         logMessage("Current data: ", doc.data());
         updateUIOnPrizes(doc.data());
-    });
+    }); */
 
     /* setTimeout(function() {
         realTimeUpdateUnsubscribe();
     }, 5000); */
+}
+
+function successListenToClaimedPrizes(doc) {
+    logMessage("Current data: ", doc.data());
+    updateUIOnPrizes(doc.data());
 }
 
 function updateUIOnPrizes(pList) {
@@ -497,9 +552,11 @@ function updateUIOnPrizes(pList) {
                 &&  pList.EF == true  
                 &&  pList.FL == true  
                 &&  pList.ML == true  
-                &&  pList.LL == true) {
+                &&  pList.LL == true
+                &&  pList._gameover == false) {
             alert('Game is over; \'Full House\' won. If you too have the winning answer in your ticket, please mark it to register your win too. Thanks for playing.');
         }
+
     }
 }
 
@@ -516,10 +573,6 @@ function updateUIOnPrizesToRed() {
     changeBackgroundColor($('.prizeML'));
     changeBackgroundColor($('.prizeLL'));
     changeBackgroundColor($('.prizeFH'));
-    /* if ($('.prize').hasClass('backgroundorange')) {
-        $('.prize').removeClass('backgroundorange');
-        $('.prize').addClass('backgroundred');
-    } */
 }
 
 
@@ -541,9 +594,6 @@ function onPageUnload() {
     realTimePrizeUpdateUnsubscribe();
 }
 
-// $('.question').on("unload", onPageUnload);
-
-window.addEventListener('beforeunload', onPageUnload);
 
 function getMarkedAnswersInString() {
     let tdataSel = getSelectionDataFromStorage();
@@ -557,16 +607,11 @@ function getMarkedAnswersInString() {
     });
     console.log(retStr);
     return retStr;
-    // if (tdataSel['tktcell11']) $('.tktcell11').addClass('green');
-    // if (tdataSel['tktcell12']) $('.tktcell12').addClass('green');
 }
 
 
 
-
-
 function registerPrize(prizeIds, efCells) {
-
     var addMessage = functions.httpsCallable('registerPrize');
     addMessage({ 
         emailAddress : uEmailAddress,
@@ -580,164 +625,51 @@ function registerPrize(prizeIds, efCells) {
         if (result.data != undefined &&  result.data.bogie == true) {
             alert('It was a bogie. Please play with caution, you may not be allowed to continue playing if you bogie 3 times.');
             bogieCount++;
+            addToStorage('bogieCount', bogieCount);
         }
     });
-
-    /* console.log('INSIDE registerPrize');
-    
-    // var db = admin.firestore();
-  
-    const userId = uid; // '2CcF64X5WzgS50UB8ZMw5RjHP1o1'; // context.auth.uid;
-    const uEmail = uEmailAddress;
-    const uPhone = uPhoneNumber;
-    // let prizeIds = 'EF'; // data.prizeid;
-    // let efCells = getMarkedAnswersInString(); // data.efCells;
-  
-    let gameid = null;
-    let covAnswersArr = null;
-  
-    // STEP 1 : Fetch game details - GAMEID, COVEREDANSWERS including LATESTANSWER
-    db.collection("settings").doc("currgame").get().then((currGame) => {
-        if (currGame.data()) {
-            let latestAnswer;
-            let latestAnswerIndex;
-        
-            console.log("currGame data ::" + currGame);
-            console.log("currGame data in JSON ::" + JSON.stringify(currGame.data()));
-            gameid = currGame.data().gameid;
-            console.log("gameid ::" + gameid);
-            covAnswersArr = currGame.data().coveredAnswers.split('#');
-            if (covAnswersArr.length > 0) {
-                latestAnswer = covAnswersArr[covAnswersArr.length - 2];
-                latestAnswerIndex = covAnswersArr.length - 2;
-                console.log("covAnswersArr ::" + covAnswersArr);
-                console.log("latestAnswerIndex ::" + latestAnswerIndex);
-            
-                if (!gameid) {
-                    // Throwing an HttpsError so that the client gets the error details.
-                    throw new functions.https.HttpsError('failed-precondition', 'Not able to fetch gameid.');
-                }
-            
-                // STEP 2 : Fetch user ticket for current game
-                db.collection("tickets").doc(gameid + "_" + userId).get().then((tkt) => {
-                    if (tkt.data()) {
-                        
-                        let ticket = tkt.data();
-                        let isBogie = false;
-                        let isPrizeGiven = false;
-                        
-                        console.log("ticket ::" + JSON.stringify(ticket));
-                        let prizeArr = prizeIds.split('#');
-
-                        prizeArr.forEach((prizeId) => {
-                            let answerArr = [];
-                            let validPrizeRequest = true;
-                            let isLateResponse = false;
-
-                            // STEP 3 : Based on PRIZEID, pick up corresponding cells to be validated and add values to answerArr
-                            if (prizeId === 'FL') answerArr = [ ticket.ticket.c11, ticket.ticket.c12, ticket.ticket.c13, ticket.ticket.c14, ticket.ticket.c15 ];
-                            else if (prizeId === 'ML') answerArr = [ ticket.ticket.c21, ticket.ticket.c22, ticket.ticket.c23, ticket.ticket.c24, ticket.ticket.c25 ];
-                            else if (prizeId === 'LL') answerArr = [ ticket.ticket.c31, ticket.ticket.c32, ticket.ticket.c33, ticket.ticket.c34, ticket.ticket.c35 ];
-                            
-                            if (prizeId === 'EF') {
-                                try {
-                                    // Split efCells and then set the answerArr likewise
-                                    console.log("efCells ::" + efCells);
-                                    let efCellIds = efCells.split('#');
-                                    console.log("efCellIds ::" + efCellIds);
-                                    console.log("ticket.ticket[efCellIds[0] ::" + ticket.ticket[efCellIds[0]]);
-                                    answerArr.push(ticket.ticket[efCellIds[0]]);
-                                    answerArr.push(ticket.ticket[efCellIds[1]]);
-                                    answerArr.push(ticket.ticket[efCellIds[2]]);
-                                    answerArr.push(ticket.ticket[efCellIds[3]]);
-                                    answerArr.push(ticket.ticket[efCellIds[4]]);
-                                }
-                                catch (e) {
-                                    validPrizeRequest = false;
-                                }
-                            }
-                            else if (prizeId === 'FH') {
-                                // answerArr contains all cells
-                                answerArr = [ 
-                                    ticket.ticket.c11, ticket.ticket.c12, ticket.ticket.c13, ticket.ticket.c14, ticket.ticket.c15, 
-                                    ticket.ticket.c21, ticket.ticket.c22, ticket.ticket.c23, ticket.ticket.c24, ticket.ticket.c25,
-                                    ticket.ticket.c31, ticket.ticket.c32, ticket.ticket.c33, ticket.ticket.c34, ticket.ticket.c35
-                                ];
-                            }
-                            console.log("answerArr ::" + answerArr);
-                            console.log("validPrizeRequest ::" + validPrizeRequest);
-                    
-                            if (answerArr.length > 0) {
-                                // STEP 4 : Check that all answers of the PRIZEID have been covered
-                                if (validPrizeRequest) {
-                                    answerArr.forEach(element => {
-                                        if (!covAnswersArr.includes(element)) validPrizeRequest = false;
-                                    });
-                                    console.log("After 1st loop, validPrizeRequest ::" + validPrizeRequest);
-                        
-                                    // STEP 5 : Also check that last answer is also part of prized cells
-                                    if (validPrizeRequest) {
-                                        if (!answerArr.includes(latestAnswer)) {
-                                            validPrizeRequest = false;
-                                            isLateResponse = true;
-                                        }
-                                    }
-                                    console.log("After 2nd loop, validPrizeRequest ::" + validPrizeRequest);
-                                }
-                    
-                                if (!validPrizeRequest) {
-                                    // STEP 6.1 : If the request is NOT VALID i.e. not all user answers match covered answer, increase bogie count
-                                    // For invalid request - increase bogie count
-                                    if (!isLateResponse) isBogie = true;
-                                }
-                                else {
-                                    isPrizeGiven = true;
-
-                                    // STEP 6.2 : If everything is VALID, update PrizeId to TRUE. This doc is being used on TICKET as SPANSHOT to show which all prizes have been claimed.
-                                    let updates = "{ \"" + prizeId + "\" : true }";
-                                    console.log('UPDATING SNAPSHOT DATA :::' + updates);
-                                    // Update prizes collection to mark which prize has been claimed
-                                    db.collection("prizes").doc("latest").set(JSON.parse(updates), { merge: true });
-                        
-                                    // STEP 6.3 : Set which user claimed what prize on which answer
-                                    updates = "{ \"" + latestAnswerIndex + "_" + prizeId + "_" + uEmail + "\" : false }";
-                                    // updates = "{ \"" + latestAnswerIndex + "_" + prizeId + "." + uEmail + "\" : firebase.firestore.FieldValue.arrayUnion(\"" + uEmail + "\") }";
-                                    // updates = "{ \"" + latestAnswerIndex + "_" + prizeId + "." + uEmail + "\" : false ) }";
-                                    console.log('UPDATING USER PRIZE DATA :::' + updates);
-                                    db.collection("prizes").doc(gameid).set(JSON.parse(updates), { merge: true });
-
-                                    return {
-                                        success : true
-                                    };
-                                }
-                            }
-                        });
-
-                        // This is to avoid incrementing bogie multiple times if multiple prizes are being claimed
-                        if (isBogie  &&  !isPrizeGiven) {
-                            // let updates = "{ \"bogiecount\" : FieldValue.increment(1) }";
-                            let updates = { "bogiecount" : firebase.firestore.FieldValue.increment(1) };
-                            console.log('BOGIE :::' + updates);
-                            db.collection("tickets").doc(gameid + "_" + userId).update(updates)
-                            .then((doc) => {
-                                console.log('Bogie count updated...');
-
-                                // Remove following two lines when adding it to Function
-                                bogieCount++;
-                                alert('It was a bogie. Please play with caution, you may not be allowed to continue playing if you bogie 3 times. Bogie count ::' + bogieCount);
-                                
-                                return {
-                                    bogie : true
-                                };
-                            });
-                        }
-                    }
-                });
-            }
-        }
-    });
-
-    return {
-        noAction : true
-    }; */
 }
+
+/**
+ * On Load functionality. Handles
+ *  (1) OnClick for ticket cells
+ */
+$(function onDocReady() {
+    logMessage('Inside onDocReady');
+
+    $('.ticket').on('click', function(){
+        $(this).toggleClass('green');
+        var classList = $(this).attr("class");
+        var classArr = classList.split(/\s+/);
+        $.each(classArr, function(index, value) {
+            logMessage('' + index + '---' + value);
+            if (value.includes('tktcell')) {
+                updateSelectionDataInStorage(value);
+            }
+        });
+        checkforPrizeAndClaim();
+    });
+
+    /* $('.language').on('click', function() {
+        logMessage('Inside language click');
+        updateUIOnQuestions(quesListCache);
+    }); */
+});
+
+
+// var count = secondsInterval;
+var counter = null; // setInterval(timer, 1000);
+
+function timer(){	
+	if(count <= 0){
+		// Nothing
+    }
+    else {
+        count = count-1;
+    }
+	$('.timer').html(count);
+}
+
+
+window.addEventListener('beforeunload', onPageUnload);
+checkLogin(firebase.auth(), successLogin, noLogin);
