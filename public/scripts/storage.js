@@ -1,4 +1,6 @@
 var db = firebase.firestore();
+if (location.hostname === "localhost") { db.useEmulator("localhost", 8081); }
+// firebase.firestore.setLogLevel("debug");
 var secondsInterval = 21;
 let gameid;
 
@@ -210,6 +212,9 @@ function listenToFirestoreData(collName, docName, success, failure) {
     .onSnapshot((doc) => {
         console.log('Calling success');
         success(doc);
+    }, (error) => {
+        console.log('Calling failure');
+        failure(error);
     });
 }
 
@@ -221,8 +226,9 @@ function listenToLatestPrize(success, failure) {
     return listenToFirestoreData("prizes", "latest", success, failure);
 }
 
+
 /* ************************************************** */
-/* ****************** FIRESTORE ********************* */
+/* ****************** FUNCTION ********************** */
 /* ************************************************** */
 function callCloudFunction(functionName, params, success, failure) {
     var addMessage = functions.httpsCallable(functionName);

@@ -1,5 +1,4 @@
-
-var db = firebase.firestore();
+// var db = firebase.firestore();
 var user = firebase.auth().currentUser;
 var functions = firebase.functions();
 let uid;
@@ -70,10 +69,40 @@ function setCurrGameQuestions() {
 }
 
 
+function createQuestions() {
+    console.log('ques ::' + ques);
+    var qjson = {};
+    for (var i = 0; i < ques.length; i++) {
+        var obj = ques[i];
+        for (var key in obj){
+            var attrName = key;
+            var attrValue = obj[key];
+            if (key == 'question') qjson.question = attrValue;
+            else if (key == 'answer') qjson.answer = attrValue;
+            else if (key == 'keywords') qjson.keywords = attrValue;
+        }
+        qjson.addedOn = firebase.firestore.Timestamp.now();
+        qjson.status = 'active';
+        console.log(qjson);
+    
+        // Add to firestore
+        db.collection("questions").add(qjson)
+        .then(function(docRef) {
+            console.log("Document written with ID: ", docRef.id);
+        })
+        .catch(function(error) {
+            console.error("Error adding document: ", error);
+        });
+    }
+    
+}
+
+
 $(function onDocReady() {
 	console.log('Inside onDocReady');
 	$('#btnLogout').click(signout);
 	$('#resetQues').click(setCurrGameQuestions);
+	$('#createQuestions').click(createQuestions);
 });
 
 // setCurrGameQuestions();
