@@ -387,14 +387,11 @@ function successGetCoveredQuestions(doc) {
 
 
 function listenToQuestions() {
-    realTimeUpdateUnsubscribe = listenToFSQuestions(gameId, successListenToQuestions, null);
-    /* realTimeUpdateUnsubscribe = db.collection("gameques").doc(gameId)
-    .onSnapshot(function(doc) {
-        logMessage("Current data: ", doc.data());
-        prizeDetailsFromNextQues = prizeDetails;
-        updateUIOnQuestions(doc.data());
-        updateUIOnPrizesToRed();
-    }); */
+    realTimeUpdateUnsubscribe = listenToFSQuestions(gameId, successListenToQuestions, failureListenToQuestions);
+}
+
+function failureListenToQuestions(error) {
+    console.log("failureListenToQuestions :: Error ::", error);
 }
 
 function successListenToQuestions(doc) {
