@@ -92,7 +92,7 @@ function successCurrGameFetch(doc) {
         getFSCurrGameQuestions(gameid, successQuestionListFetch, null);
     }
 
-    $('.gamedate').text( new Date(getFromStorage('queschanged')*1000) );
+    $('.gamedate').text( new Date(getFromStorage('gamedatetime')*1000) );
 }
 
 
