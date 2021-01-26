@@ -18,10 +18,52 @@ function init() {
 function successQListFetch(querySnapshot) {
 	console.log("inside successQListFetch :: ");
 	querySnapshot.forEach(function(doc) {
-		// doc.data() is never undefined for query doc snapshots
 		console.log(doc.id, " => ", doc.data());
 	});
 	console.log('Returning from successQListFetch');
+}
+
+/**
+ * method to create a new question in "questions" collection
+ */
+function createQues() {
+	var ques;
+	var ans;
+	var pques;
+	var pans;
+	var info;
+	var status;
+	var keywords;
+	addToQuestionCollection(ques, ans, pques, pans, info, status, keywords, successCreateQues, failureCreateQues);
+}
+function successCreateQues(doc) {
+	console.log('SuccessCreateQues :::');
+	console.log(doc.id);
+}
+function failureCreateQues(error) {
+	console.log('FailureCreateQues :::' + error);
+}
+
+/**
+ * method to update a new question in "questions" collection
+ */
+function updateQues() {
+	var quesDocId
+	var ques;
+	var ans;
+	var pques;
+	var pans;
+	var info;
+	var status;
+	var keywords;
+	updateQuestionInCollection(quesDocId, ques, ans, pques, pans, info, status, keywords, successUpdateQues, failureUpdateQues);
+}
+function successUpdateQues(doc) {
+	console.log('SuccessUpdateQues :::');
+	console.log(doc.id);
+}
+function failureUpdateQues(error) {
+	console.log('FailureUpdateQues :::' + error);
 }
 
 $(function onDocReady() {
