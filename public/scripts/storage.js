@@ -226,6 +226,48 @@ function listenToLatestPrize(success, failure) {
     return listenToFirestoreData("prizes", "latest", success, failure);
 }
 
+function createQuestionJSON(ques, ans, pques, pans, info, status, keywords) {
+    let qjson = {};
+    qjson.question = ques;
+    qjson.question = ans;
+    qjson.info = info;
+    qjson.pquestion = pques;
+    qjson.panswer = pans;
+    qjson.status = status;
+    qjson.keywords = keywords;
+    qjson.addedOn = firebase.firestore.Timestamp.now();
+    return qjson;
+}
+function addToQuestionCollection(data, success, failure) {
+    db.collection("questions").add(data)
+    .then(function(doc) {
+        console.log("Document written with ID: ", doc.id);
+        if (success !== null  &&  success !== undefined) success(doc);
+    })
+    .catch(function(error) {
+        console.error("Error adding document: ", error);
+        if (failure !== null  &&  failure !== undefined) failure(error);
+    });
+}
+function addToQuestionCollection(ques, ans, pques, pans, info, status, keywords, success, failure) {
+    let qjson = createQuestionJSON(ques, ans, pques, pans, info, status, keywords);
+    addToQuestionCollection(qjson, success, failure);
+}
+function updateQuestionInCollection(qdocId, ques, ans, pques, pans, info, status, keywords, success, failure) {
+    let qjson = createQuestionJSON(ques, ans, pques, pans, info, status, keywords);
+    updateQuestionInCollection(qdocId, qjson, success, failure);
+}
+function updateQuestionInCollection(qDocId, data, success, failure) {
+    db.collection("questions").doc(qDocId).update(data)
+    .then(function(doc) {
+        console.log("Document written with ID: ", doc.id);
+        if (success !== null  &&  success !== undefined) success(doc);
+    })
+    .catch(function(error) {
+        console.error("Error adding document: ", error);
+        if (failure !== null  &&  failure !== undefined) failure(error);
+    });
+}
 
 /* ************************************************** */
 /* ****************** FUNCTION ********************** */
