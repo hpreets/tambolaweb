@@ -31,9 +31,9 @@
 }
 
 @media only screen and (min-width: 700px) {
-    .whatsapp {
-        display: none
-    }
+  .whatsapp {
+    display: none
+  }
 }
 
 .resp-sharing-button__link,
@@ -174,3 +174,50 @@
   border-color: #1DA851;
 }
 
+.ques-form {
+  width: 75%;
+  margin: 25px auto;
+}
+
+html, body {
+  overflow-x: hidden;
+}
+
+@media screen and (max-width: 575px) {
+  .main-heading {
+    margin-top: 10px;
+  }
+}
+
+.quesList {
+  margin-top: 30px;
+}
+
+@media screen and (max-width: 762px) {
+  .qHeading {
+    font-size: 25px;
+  }
+  .addQues, .go {
+    font-size: small;
+  }
+  .search-box {
+    width: 150px;
+    font-size: small;
+  }
+}
+
+@media screen and (max-width: 587px) {
+  .qHeading {
+    font-size: 15px;
+  }
+  .addQues, .go {
+    font-size: x-small;
+  }
+  .search-box {
+    width: 105px !important;
+    font-size: x-small;
+  }
+  .search-form {
+    margin-top: 16px;
+  }
+}
