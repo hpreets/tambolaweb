@@ -1,5 +1,5 @@
 var db = firebase.firestore();
-if (location.hostname === "localhost") { db.useEmulator("localhost", 8081); }
+if (location.hostname === "localhost") { db.useEmulator("localhost", 8082); }
 // firebase.firestore.setLogLevel("debug");
 var secondsInterval = 21;
 let gameid;
@@ -73,12 +73,12 @@ function hideHeaderButtons(loggedIn) {
     if (!loggedIn) {
         $('#btnSignup').hide();
         $('#btnLogin').show();
-        $('#btnTicket').hide();
-        $('#btnLogout').hide();
+        $('#btnTicketLi').hide();
+        $('#btnLogoutLi').hide();
     }
     else {
-        $('#btnTicket').show();
-        $('#btnLogout').show();
+        $('#btnTicketLi').show();
+        $('#btnLogoutLi').show();
         $('#btnSignup').hide();
         $('#btnLogin').hide();
     }
@@ -125,7 +125,7 @@ function generateTicket(e) {
     let gameDateTime = new Date(getFromStorage('gamedatetime')*1000);
     var currDateTime = new Date();
     currDateTime.setMinutes( currDateTime.getMinutes() + 15 );
-    currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
+    // currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
     console.log( currDateTime );
     console.log( gameDateTime );
     if (currDateTime > gameDateTime) {
