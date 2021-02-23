@@ -181,7 +181,7 @@ function pickNextQuesFromBtn() {
 
 
 function pickNextQues() {
-	if (!allPrizesWon) {
+	if (!allPrizesWon  &&  $('.uncovered').length > 0) {
 		let uncoveredButtons = $('.uncovered');
 		console.log(uncoveredButtons.length);
 		let nextQuesBtn = uncoveredButtons[Math.floor(Math.random() * uncoveredButtons.length)];
@@ -190,8 +190,14 @@ function pickNextQues() {
 	else {
 		// Update the Latest Prize data and set GameOver = true;
 		// This will be used by the Ticket screen to stop taking any further inputs.
-		// db.collection("prizes").doc("latest").update({ gameover : true });
 		db.collection("gameques").doc(gameid).update({ _gameover : true });
+
+		/*
+		 * Since gameover cannot be set from the function registerPrize since 
+		 * there can be multiple users with common last answer. So we are 
+		 * setting gameover property here.
+		 */
+		db.collection("settings").doc("currgame").update({ gameover : true });
 		stopTimer();
 	}
 }
@@ -235,14 +241,28 @@ function updateCoveredIndex(answer) {
 
 function timer(){
 	count = count-1;
-	if(count < 0){
+	console.log(count);
+	if(count == 0) {
 		pickNextQues();
 	}
+	/* if(count == -20) {
+		db.collection("gameques").doc(gameid).update({ _gameover : true });
+		stopTimer();
+	} */
 	$('.timer').html(count);
 }
 
 function startTimer() {
 	counter = setInterval(timer, 1000);
+
+	/**
+	 * This will start the timer at client side too indicating that 
+	 * game is starting in next X seconds.
+	 */
+	if (counter == undefined || counter == null) { // Set this value only the first time.
+		db.collection("gameques").doc(gameid).update({ _gameover : false });
+	}
+
 }
 
 
@@ -258,7 +278,8 @@ function listenToClaimedPrizes() {
 function successListenToClaimedPrizes(doc) {
     logMessage("Current data: ", doc.data());
 	prizeDetails = doc.data();
-	if (prizeDetails.FH == true  
+	if (prizeDetails !== undefined
+		&&  prizeDetails.FH == true  
 		&&  prizeDetails.EF == true  
 		&&  prizeDetails.FL == true  
 		&&  prizeDetails.ML == true  
