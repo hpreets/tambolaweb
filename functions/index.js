@@ -228,8 +228,14 @@ exports.registerPrize = functions.region('asia-south1').https.onCall(async (data
                                         updateSuccess = true;
 
                                         if (prizeId === 'FH') {
+                                            /* 
+                                             * 22-Feb-2021 - This is commented since if two person gets 
+                                             * a common answer for FH, the name of first user is registered 
+                                             * and others are ignored. The gameover property will now be 
+                                             * set from admnextques page. 
+                                             * */
                                             // Set GameOver = true;
-                                            await db.collection("settings").doc("currgame").update({ gameover : true });
+                                            // await db.collection("settings").doc("currgame").update({ gameover : true });
                                         }
                                     }
                                 }
