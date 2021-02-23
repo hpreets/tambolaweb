@@ -73,6 +73,7 @@ function successPrizeDataFetch(doc) {
 function successCurrGameFetch(doc) {
     gameid = doc.data().gameid;
     prevgameid = doc.data().prevgameid;
+    if (prevgameid === null) prevgameid = gameid;
     getFSPrizeDetail(prevgameid, successPrizeDataFetch, null);
     /* db.collection("prizes").doc(prevgameid).get()
     .then((doc) => {
