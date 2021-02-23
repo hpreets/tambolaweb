@@ -174,3 +174,11 @@
   border-color: #1DA851;
 }
 
+.nav-item {
+  border-left: #ffffff;
+  border-left-width: thin;
+  border-left-style: solid;
+}
+
+
+
