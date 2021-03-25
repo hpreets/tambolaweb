@@ -1,4 +1,6 @@
 var db = firebase.firestore();
+if (location.hostname === "localhost") { db.useEmulator("localhost", 8080); }
+firebase.firestore.setLogLevel("debug");
 var secondsInterval = 21;
 let gameid;
 
@@ -142,7 +144,7 @@ function generateTicket(e) {
 function getFirestoreDataColl(collName, where, order, limit, success, failure) {
     let collData = db.collection(collName);
     if (where !== null) collData = collData.where('keywords', 'array-contains-any', where);
-    else if (order !== null) collData = collData.orderBy(order);
+    else if (order !== null) collData = collData.orderBy(order, "desc");
     if (limit !== null) collData = collData.limit(limit);
     console.log(collData);
     collData.get()
@@ -210,6 +212,9 @@ function listenToFirestoreData(collName, docName, success, failure) {
     .onSnapshot((doc) => {
         console.log('Calling success');
         success(doc);
+    }, (error) => {
+        console.log('Calling failure');
+        failure(error);
     });
 }
 
@@ -221,8 +226,64 @@ function listenToLatestPrize(success, failure) {
     return listenToFirestoreData("prizes", "latest", success, failure);
 }
 
+function createQuestionJSON(ques, ans, pques, pans, info, status, keywords) {
+    let qjson = {};
+    qjson.question = ques;
+    qjson.answer = ans;
+    qjson.info = info;
+    qjson.pquestion = pques;
+    qjson.panswer = pans;
+    qjson.status = status;
+    qjson.keywords = keywords;
+    qjson.addedOn = firebase.firestore.Timestamp.now();
+    return qjson;
+}
+function addToQuestionColl(data, success, failure) {
+    db.collection("questions").add(data)
+    .then(function(doc) {
+        console.log("Document written with ID: ", doc.id);
+        if (success !== null  &&  success !== undefined) success(doc);
+    })
+    .catch(function(error) {
+        console.error("Error adding document: ", error);
+        if (failure !== null  &&  failure !== undefined) failure(error);
+    });
+}
+function addToQuestionCollection(ques, ans, pques, pans, info, status, keywords, success, failure) {
+    let qjson = createQuestionJSON(ques, ans, pques, pans, info, status, keywords);
+    addToQuestionColl(qjson, success, failure);
+}
+function updateQuestionInCollection(qdocId, ques, ans, pques, pans, info, status, keywords, success, failure) {
+    let qjson = createQuestionJSON(ques, ans, pques, pans, info, status, keywords);
+    updateQuestionInColl(qdocId, qjson, success, failure);
+}
+function updateQuestionInColl(qDocId, data, success, failure) {
+    db.collection("questions").doc(qDocId).update(data)
+    .then(function(doc) {
+        console.log("Document written with ID: ", qDocId);
+        if (success !== null  &&  success !== undefined) success(doc);
+    })
+    .catch(function(error) {
+        console.error("Error adding document: ", error);
+        if (failure !== null  &&  failure !== undefined) failure(error);
+    });
+}
+function deleteRec(collName, docName, success, failure) {
+  db.collection(collName).doc(docName).delete()
+  .then(() => {
+      console.log("Document successfully deleted!");
+      if (success !== null  &&  success !== undefined) success(docName);
+  }).catch((error) => {
+      console.error("Error removing document: ", error);
+      if (failure !== null  &&  failure !== undefined) failure(error);
+  });
+}
+function deleteQuestion(docName, success, failure) {
+  deleteRec("questions", docName, success, failure);
+}
+
 /* ************************************************** */
-/* ****************** FIRESTORE ********************* */
+/* ****************** FUNCTION ********************** */
 /* ************************************************** */
 function callCloudFunction(functionName, params, success, failure) {
     var addMessage = functions.httpsCallable(functionName);
