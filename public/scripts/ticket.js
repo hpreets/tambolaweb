@@ -54,9 +54,7 @@ successLogin = function(user) {
     listenToQuestions();
 };
 
-noLogin = function(user) {
-    window.location = '/login.html';
-};
+
 
 
 // Read Data
@@ -399,7 +397,7 @@ function failureListenToQuestions(error) {
 function successListenToQuestions(doc) {
     logMessage("successListenToQuestions :: Current data ::", doc.data());
     prizeDetailsFromNextQues = prizeDetails;
-    updateUIOnQuestions(doc.data());
+    if (doc.data() != undefined) updateUIOnQuestions(doc.data());
     updateUIOnPrizesToRed();
 }
 
