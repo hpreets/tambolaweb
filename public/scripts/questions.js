@@ -31,24 +31,26 @@ function createQuestionRow(ques, answ, index, container) {
     let counter = index + 1;
 
     let row = createNode('div');
-    let snodiv = createNode('div');
+    // let snodiv = createNode('div');
     let quesdiv = createNode('div');
     let answdiv = createNode('div');
     
-    $(snodiv).addClass('col-lg-1 col-sm-12');
-    $(quesdiv).addClass('col-lg-7 col-md-auto col-sm-12');
-    $(answdiv).addClass('col-lg-4 col-sm-12');
-    $(snodiv).html(rowsno);
-    $(quesdiv).html(rowquestion);
-    $(answdiv).html(rowanswer);
-    row.append(snodiv, quesdiv, answdiv);
+    // $(snodiv).addClass('col-lg-1 col-sm-12');
+    // $(quesdiv).addClass('col-lg-7 col-md-auto col-sm-12');
+    $(quesdiv).addClass('col-lg-8 col-md-auto col-sm-12');
+    $(answdiv).addClass('col-lg-4 col-sm-12 text-primary');
+    // $(snodiv).html(rowsno);
+    $(quesdiv).html(rowsno + ' ' + rowquestion);
+    $(answdiv).html(' - ' + rowanswer);
+    // row.append(snodiv, quesdiv, answdiv);
+    row.append(quesdiv, answdiv);
     $(row).addClass('line row');
     
     container.append(row);
 
     if(counter % 10 == 0){
         let ad = createNode('div');
-        $(ad).text('advertisement');
+        $(ad).text('adv.');
         $(ad).addClass('display-3');
         container.append(ad);
     }
@@ -73,10 +75,10 @@ function successCurrGameFetch(doc) {
     console.log('INSIDE successCurrGameFetch');
     gameid = doc.data().gameid;
 
-    if (getFromStorage('gameid') != null  
+    if (/* getFromStorage('gameid') != null  
             &&  doc.data().gameid == getFromStorage('gameid')  
             &&  doc.data().queschanged.seconds == getFromStorage('queschanged')
-            &&  getFromStorage('qlist') != null
+            && */  getFromStorage('qlist') != null
             ) {
         // Questions not changed, use the data from cache
         console.log("Picking data from Cache");
@@ -85,8 +87,8 @@ function successCurrGameFetch(doc) {
     }
     else {
         // Clear all storage including storage of ticket and other pages
-        clearStorage();
-        addSettingsToCache(doc);
+        // clearStorage();
+        // addSettingsToCache(doc);
 
         // Picking data from game questions - gameques/<gameid>/questions
         getFSCurrGameQuestions(gameid, successQuestionListFetch, null);
@@ -118,7 +120,7 @@ function iterateQuestions(qList) {
     Object.keys(qList).forEach((qdockey) => {
         let qdoc = qList[qdockey];
         if (qdockey !== '_gameover') {
-            console.log('qdockey ::' + qdockey + '; qdoc ::' + qdoc);
+            // console.log('qdockey ::' + qdockey + '; qdoc ::' + qdoc);
             createQuestionRow(qdoc.question, qdoc.answer, index, container);
             index++
         }
