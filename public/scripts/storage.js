@@ -1,8 +1,9 @@
 var db = firebase.firestore();
-if (location.hostname === "localhost") { db.useEmulator("localhost", 8082); }
+if (location.hostname === "localhost") { db.useEmulator("localhost", 8080); }
 // firebase.firestore.setLogLevel("debug");
 var secondsInterval = 21;
 let gameid;
+let userEmail;
 
 /* ************************************************** */
 /* ******************** CACHE *********************** */
@@ -43,9 +44,10 @@ function checkLogin(auth, successFunction, failureFunction) {
     console.log('Inside checkLogin');
     auth.onAuthStateChanged((user) => {
         if (user) {
-            console.log('User is NOT NULL ::' + user.uid + "; displayname ::" + user.displayName);
+            console.log('User is NOT NULL ::' + user.uid + "; displayname ::" + user.displayName + '; email ::' + user.email);
             $('#loggedInUser').text(user.displayName);
             uid = user.uid;
+            userEmail = user.email;
             hideHeaderButtons(true);
             if (successFunction !== null  &&  successFunction !== undefined) successFunction(user);
         } else {
@@ -66,6 +68,10 @@ function signout(e) {
     });
 }
 
+noLogin = function(user) {
+    window.location = '/login.html';
+}
+
 /* ************************************************** */
 /* ****************** COMMON UI ********************* */
 /* ************************************************** */
@@ -75,10 +81,12 @@ function hideHeaderButtons(loggedIn) {
         $('#btnLogin').show();
         $('#btnTicketLi').hide();
         $('#btnLogoutLi').hide();
+        $('#btnMySettingsLi').hide();
     }
     else {
         $('#btnTicketLi').show();
         $('#btnLogoutLi').show();
+        $('#btnMySettingsLi').show();
         $('#btnSignup').hide();
         $('#btnLogin').hide();
     }
@@ -125,7 +133,7 @@ function generateTicket(e) {
     let gameDateTime = new Date(getFromStorage('gamedatetime')*1000);
     var currDateTime = new Date();
     currDateTime.setMinutes( currDateTime.getMinutes() + 15 );
-    // currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
+    currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
     console.log( currDateTime );
     console.log( gameDateTime );
     if (currDateTime > gameDateTime) {
@@ -137,6 +145,12 @@ function generateTicket(e) {
     }
 }
 
+function appendLeadingZeroes(n){
+    if(n <= 9){
+        return "0" + n;
+    }
+    return n
+}
 
 /* ************************************************** */
 /* ****************** FIRESTORE ********************* */
@@ -170,24 +184,42 @@ function getFirestoreData(collName, docName, success, failure) {
         if (success !== null  &&  success !== undefined) success(doc);
     })
     .catch((error) => {
-        if (failure !== null  &&  failure !== undefined) failure(error);
+        if (jQuery.isFunction(failure)  &&  failure !== null  &&  failure !== undefined) failure(error);
     });
 }
 
 function addSettingsToCache(doc) {
-    console.log('INSIDE addSettingsToCache');
-    addToStorage('gameid', doc.data().gameid);
-    addToStorage('queschanged', doc.data().queschanged.seconds);
-    addToStorage('gamedatetime', doc.data().gamedatetime.seconds);
+    if (doc !== undefined && doc.data() !== undefined  &&  doc.data() !== null) {
+        console.log('INSIDE addSettingsToCache');
+        addToStorage('gameid', doc.data().gameid);
+        if (doc.data().queschanged !== undefined) addToStorage('queschanged', doc.data().queschanged.seconds);
+        if (doc.data().gamedatetime !== undefined) addToStorage('gamedatetime', doc.data().gamedatetime.seconds);
+        console.log('INSIDE addSettingsToCache ::' + doc.data().gameid);
+        console.log('INSIDE addSettingsToCache ::' + getFromStorage('gameid'));
+    }
+    else {
+        console.log('INSIDE addSettingsToCache :: doc.data() IS UNDEFINED');
+    }
 }
 
 function getFSSettingsData(success, failure) {
     getFirestoreData("settings", "currgame", 
         function(doc) {
+            if (getFromStorage('gameid') != null  
+            &&  doc.data().gameid == getFromStorage('gameid')  
+            &&  doc.data().queschanged.seconds == getFromStorage('queschanged')
+            ) {
+                //
+            }
+            else clearStorage();
+            
             addSettingsToCache(doc);
             if (success !== undefined) success(doc);
         }, 
-        failure
+        function (err) {
+            console.log(err);
+            if (jQuery.isFunction(failure)  &&  failure !== undefined) failure(err);
+        }
     );
 }
 
@@ -205,6 +237,10 @@ function getFSPrizeDetailLatest(success, failure) {
 
 function getFSUserTicket(gameId, uid, success, failure) {
     getFirestoreData("tickets", gameId + "_" + uid, success, failure);
+}
+
+function getFSUserDetail(success, failure) {
+    getFirestoreData("users", userEmail, success, failure);
 }
 
 function listenToFirestoreData(collName, docName, success, failure) {
@@ -238,7 +274,7 @@ function createQuestionJSON(ques, ans, pques, pans, info, status, keywords) {
     qjson.addedOn = firebase.firestore.Timestamp.now();
     return qjson;
 }
-function addToQuestionCollection(data, success, failure) {
+function addToQuestionColl(data, success, failure) {
     db.collection("questions").add(data)
     .then(function(doc) {
         console.log("Document written with ID: ", doc.id);
@@ -251,13 +287,13 @@ function addToQuestionCollection(data, success, failure) {
 }
 function addToQuestionCollection(ques, ans, pques, pans, info, status, keywords, success, failure) {
     let qjson = createQuestionJSON(ques, ans, pques, pans, info, status, keywords);
-    addToQuestionCollection(qjson, success, failure);
+    addToQuestionColl(qjson, success, failure);
 }
 function updateQuestionInCollection(qdocId, ques, ans, pques, pans, info, status, keywords, success, failure) {
     let qjson = createQuestionJSON(ques, ans, pques, pans, info, status, keywords);
-    updateQuestionInCollection(qdocId, qjson, success, failure);
+    updateQuestionInColl(qdocId, qjson, success, failure);
 }
-function updateQuestionInCollection(qDocId, data, success, failure) {
+function updateQuestionInColl(qDocId, data, success, failure) {
     db.collection("questions").doc(qDocId).update(data)
     .then(function(doc) {
         console.log("Document written with ID: ", doc.id);
@@ -267,6 +303,33 @@ function updateQuestionInCollection(qDocId, data, success, failure) {
         console.error("Error adding document: ", error);
         if (failure !== null  &&  failure !== undefined) failure(error);
     });
+}
+
+function saveMerge(collName, docName, docJSON, success, failure) {
+    db.collection(collName).doc(docName).set(docJSON)
+    .then(function(doc) {
+        console.log("saveMerge :: Document written with ID: ", doc);
+        if (success !== null  &&  success !== undefined) success(doc);
+    })
+    .catch(function(error) {
+        console.error("saveMerge :: Error adding document: ", error);
+        if (failure !== null  &&  failure !== undefined) failure(error);
+    });
+}
+
+function deleteRec(collName, docName, success, failure) {
+    db.collection(collName).doc(docName).delete()
+    .then(() => {
+        console.log("Document successfully deleted!");
+        if (success !== null  &&  success !== undefined) success(doc);
+    }).catch((error) => {
+        console.error("Error removing document: ", error);
+        if (failure !== null  &&  failure !== undefined) failure(error);
+    });
+}
+
+function deleteQuestion(docName, success, failure) {
+    deleteRec("questions", docName, success, failure);
 }
 
 /* ************************************************** */
@@ -283,3 +346,4 @@ function callCloudFunction(functionName, params, success, failure) {
         if (failure !== undefined) failure(e);
     });
 }
+
