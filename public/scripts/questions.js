@@ -7,13 +7,13 @@ let qList = null;
  * Called when user is logged in
  */
 successLogin = function() {
-    console.log('Inside successLogin');
+  console.log('Inside successLogin');
 };
 /**
  * Called when user is NOT logged in
  */
 failureLogin = function() {
-    console.log('Inside failureLogin');
+  console.log('Inside failureLogin');
 };
 
 
@@ -56,15 +56,13 @@ function createQuestionRow(ques, answ, index, container) {
     }
 }
 
-
-
 /**
  * First method that initiates data fetch from Firestore / Cache
  */
 function init() {
-    // clearStorage();
-    console.log(gameid);
-    getFSSettingsData(successCurrGameFetch, null);
+  // clearStorage();
+  console.log(gameid);
+  getFSSettingsData(successCurrGameFetch, null);
 }
 
 /**
@@ -104,11 +102,11 @@ function successCurrGameFetch(doc) {
  * @param {*} doc - JSON Data - question list
  */
 function successQuestionListFetch(doc) {
-    console.log("Picked data from firestore ::");
-    qList = doc.data();
-    addToStorage("qlist", JSON.stringify(qList));
-    qList = JSON.parse(getFromStorage("qlist"));
-    iterateQuestions(qList);
+  console.log("Picked data from firestore ::");
+  qList = doc.data();
+  addToStorage("qlist", JSON.stringify(qList));
+  qList = JSON.parse(getFromStorage("qlist"));
+  iterateQuestions(qList);
 }
 
 
