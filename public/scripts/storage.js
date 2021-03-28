@@ -1,6 +1,6 @@
 var db = firebase.firestore();
 if (location.hostname === "localhost") { db.useEmulator("localhost", 8080); }
-// firebase.firestore.setLogLevel("debug");
+firebase.firestore.setLogLevel("debug");
 var secondsInterval = 21;
 let gameid;
 let userEmail;
@@ -265,7 +265,7 @@ function listenToLatestPrize(success, failure) {
 function createQuestionJSON(ques, ans, pques, pans, info, status, keywords) {
     let qjson = {};
     qjson.question = ques;
-    qjson.question = ans;
+    qjson.answer = ans;
     qjson.info = info;
     qjson.pquestion = pques;
     qjson.panswer = pans;
@@ -296,7 +296,7 @@ function updateQuestionInCollection(qdocId, ques, ans, pques, pans, info, status
 function updateQuestionInColl(qDocId, data, success, failure) {
     db.collection("questions").doc(qDocId).update(data)
     .then(function(doc) {
-        console.log("Document written with ID: ", doc.id);
+        console.log("Document written with ID: ", qDocId);
         if (success !== null  &&  success !== undefined) success(doc);
     })
     .catch(function(error) {
