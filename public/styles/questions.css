@@ -182,3 +182,125 @@
 
 
 
+.ques-form {
+  width: 75%;
+  margin: 25px auto;
+}
+
+@media screen and (max-width: 575px) {
+  .main-heading {
+    margin-top: 10px;
+  }
+}
+
+html, body {
+  overflow-x: hidden;
+  height: 100vh;
+}
+
+.ques {
+  margin-top: 30px;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  padding: 10px;
+  z-index: 1;
+  background-color: rgb(66, 103, 178);
+  color: white;
+}
+
+@media screen and (max-width: 836px) {
+  .qHeading {
+    font-size: 25px;
+  }
+  .addQues, .go, .clear {
+    font-size: small;
+  }
+  .search-box {
+    width: 150px;
+    font-size: small;
+  }
+}
+
+@media screen and (max-width: 668px) {
+  .qHeading {
+    font-size: 15px;
+  }
+  .addQues, .go, .clear {
+    font-size: x-small;
+  }
+  .search-box {
+    width: 105px;
+    font-size: x-small;
+  }
+}
+
+@media screen and (max-width: 575px) {
+  .search-form {
+    margin-top: 16px;
+  }
+}
+
+.edit, .delete {
+  width: 70px;
+  margin: 5px;
+}
+
+@media screen and (max-width: 991px) {
+  .edit {
+    margin-left: 0;
+  }
+  .ques {
+    display: none;
+  }
+  .taskbar {
+    margin-bottom: 2rem;
+  }
+}
+
+@media screen and (min-width: 992px) {
+  .edit {
+    margin-top: 0;
+  }
+  .edit, .delete {
+    font-size: small;
+    width: 60px;
+  }
+}
+
+.ques-span {
+  display: flex;
+  justify-content: center;
+}
+
+.main-spinner {
+  width: 3rem;
+  height: 3rem;
+  margin: 10px;
+}
+
+.taskbar {
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+}
+
+@media screen and (max-width: 476px) {
+  .taskbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .addQuesDiv {
+    margin-top: 10px;
+  }
+  .qHeading {
+    font-size: x-large;
+  }
+  .addQues, .go, .clear {
+    font-size: smaller;
+  }
+  .search-box {
+    width: 145px;
+    font-size: smaller;
+  }
+}
