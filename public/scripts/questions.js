@@ -95,7 +95,7 @@ function successCurrGameFetch(doc) {
     }
 
     let gDate = new Date(getFromStorage('gamedatetime')*1000);
-    $('.gamedate').text( gDate.toLocaleDateString() + ' ' + gDate.toLocaleTimeString() );
+    $('.gamedate').text( gDate.toDateString() + ' ' + gDate.toLocaleTimeString() );
 }
 
 
@@ -126,6 +126,7 @@ function iterateQuestions(qList) {
             index++
         }
     });
+    $('#spinnerModal').modal('hide');
 }
 
 
@@ -134,6 +135,7 @@ function iterateQuestions(qList) {
  */
 $(function onDocReady() {
 	console.log('Inside onDocReady');
+    $('#spinnerModal').modal('show');
     loadHeaderActions();
     loadSharingButtons();
 });
