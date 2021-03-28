@@ -2,22 +2,27 @@
 var user = firebase.auth().currentUser;
 var functions = firebase.functions();
 let uid;
+let nextGameDate;
+let currGameId;
 
 
-function appendLeadingZeroes(n){
-    if(n <= 9){
-        return "0" + n;
-    }
-    return n
+
+function getNextGameId() {
+    console.log($('#inputNextGameYear').val());
+    console.log($('#inputNextGameMonth').val());
+    console.log($('#inputNextGameDate').val());
+    nextGameDate = new Date($('#inputNextGameYear').val(), (parseInt($('#inputNextGameMonth').val()) - 1), $('#inputNextGameDate').val());
+    console.log(nextGameDate);
+    
+    // var d = new Date();
+    // d.setDate(d.getDate() + 10);
+    return getCurrentGameFormattedDate(nextGameDate);
 }
 
-function getCurrentGameId() {
-    var d = new Date();
-    d.setDate(d.getDate() + 10);
-    return '' + d.getFullYear() + '' + (appendLeadingZeroes(d.getMonth()+1)) + '' + appendLeadingZeroes(d.getDate());
+function getCurrentGameFormattedDate(dt) {
+    return '' + dt.getFullYear() + '' + (appendLeadingZeroes(dt.getMonth()+1)) + '' + appendLeadingZeroes(dt.getDate());
 }
 
-let currGameId = getCurrentGameId();
 // alert('Hi');
 
 firebase.auth().onAuthStateChanged((user) => {
@@ -63,7 +68,7 @@ function signout() {
 }
 
 
-function setCurrGameQuestions() {
+function resetCurrGameQuestions() {
 	console.log('Inside setCurrGameQuestions');
     db.collection("gameques").doc("20201228").set({});
     let gameques = db.collection("gameques").doc("20201228");
@@ -116,11 +121,12 @@ function createQuestions() {
             $('#messageText').text('Records inserted: ' + rowscreated + '; Records Error: ' + rowserror + '; Total records: ' + ques.length);
         });
     }
-    
 }
 
 
 function createGameQues() {
+    currGameId = getNextGameId();
+
     db.collection("gameques").doc(currGameId).set({});
     let gameques = db.collection("gameques").doc(currGameId);
     let quesList = {};
@@ -148,6 +154,7 @@ function createGameQues() {
 }
 
 function createCurrGameSetting() {
+    // console.log('getNextGameId :::' + getNextGameId());
     getFSCurrGameQuestions(currGameId, successGameQuesFetch, null);
 }
 
@@ -166,11 +173,14 @@ function successGameQuesFetch(doc) {
     let settigs = db.collection("settings").doc("currgame");
     var settjson = {};
     settjson.answers = answers.substring(0, answers.length-1);
-    var d = new Date();
-    d.setDate(d.getDate() + 10);
+    // var d = new Date();
+    // d.setDate(d.getDate() + 10);
+    var d = nextGameDate;
     settjson.gamedatetime = firebase.firestore.Timestamp.fromDate(new Date(d.getFullYear(), d.getMonth(), d.getDate(), 11, 0, 0, 0));
-    settjson.gameid = currGameId;
-    settjson.prevgameid = null;
+    settjson.gameid = getNextGameId(d); // currGameId;
+    gameid = getFromStorage('gameid');
+    console.log('gameid ::' + gameid);
+    settjson.prevgameid = gameid === undefined ? null : gameid;
     settjson.queschanged = firebase.firestore.Timestamp.now();
     settjson.gameover = false;
     settjson.coveredAnswers = null;
@@ -184,13 +194,53 @@ function successGameQuesFetch(doc) {
     });
 }
 
+function createCurrGamePrizes() {
+    let gameId = getNextGameId(nextGameDate);
+    
+    var settjson = {};
+    settjson["76_EF_hsastadia@gmail.com"] = false;
+    settjson["23_FL_test@test.test"] = false;
+    settjson["17_ML_mrharpreets@gmail.com"] = false;
+    settjson["63_LL_hsuk@hotmail.com"] = false;
+    settjson["90_FH_bs@yahoo.co.uk"] = false;
+
+    console.log('settjson ::' + JSON.stringify(settjson));
+    db.collection("prizes").doc(gameId).set(settjson).then(() => {
+        $('#messageText').text('Prizes created successfully');
+    })
+    .catch(function(error) {
+        console.error("Error adding document: ", error);
+        $('#messageText').text('Failed creating Prizes');
+    });
+}
+
+function setNextCurrGame() {
+    console.log(getFromStorage('gameid'));
+    gameid = getFromStorage('gameid');
+    console.log(gameid);
+    getNextGameId(nextGameDate);
+}
+
 $(function onDocReady() {
 	console.log('Inside onDocReady');
+    loadHeaderActions();
 	$('#btnLogout').click(signout);
-	$('#resetQues').click(setCurrGameQuestions);
+	$('#resetQues').click(resetCurrGameQuestions);
     $('#createQuestions').click(createQuestions);
     $('#createGameQues').click(createGameQues);
     $('#createCurrGameSetting').click(createCurrGameSetting);
+    $('#setNextCurrGame').click(createCurrGameSetting);
+    $('#createCurrGamePrizes').click(createCurrGamePrizes);
 });
 
 // setCurrGameQuestions();
+/**
+ * First method that initiates data fetch from Firestore / Cache
+ */
+function init() {
+    // clearStorage();
+    console.log(gameid);
+    getFSSettingsData();
+
+}
+init();

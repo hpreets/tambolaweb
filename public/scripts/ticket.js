@@ -2,9 +2,11 @@
 // CHECK IF THESE VARIABLES ARE REQUIRED
 
 
-var db = firebase.firestore();
+// var db = firebase.firestore();
 // var user = firebase.auth().currentUser;
 var functions = firebase.app().functions('asia-south1');
+if (location.hostname === "localhost") { functions.useEmulator("localhost", 5001); }
+
 let uid;
 let uEmailAddress;
 let uPhoneNumber;
@@ -52,9 +54,7 @@ successLogin = function(user) {
     listenToQuestions();
 };
 
-noLogin = function(user) {
-    window.location = '/login.html';
-};
+
 
 
 // Read Data
@@ -172,8 +172,8 @@ function processTicket(ticketData, bCount) {
  * This method is called from generateTicket(e)
  * @param {*} tkt - Ticket Json
  */
-function setBogieCount(count) {
-    bogieCount = count;
+function setBogieCount(bcount) {
+    bogieCount = bcount;
     console.log('bogieCount ::' + bogieCount);
     addToStorage('bogieCount', bogieCount);
 }
@@ -397,7 +397,7 @@ function failureListenToQuestions(error) {
 function successListenToQuestions(doc) {
     logMessage("successListenToQuestions :: Current data ::", doc.data());
     prizeDetailsFromNextQues = prizeDetails;
-    updateUIOnQuestions(doc.data());
+    if (doc.data() != undefined) updateUIOnQuestions(doc.data());
     updateUIOnPrizesToRed();
 }
 
@@ -436,13 +436,17 @@ function updateUIOnQuestions(qList) {
         logMessage(covQues);
         logMessage(covQues[0].question);
         $('#question').text(covQues[0].question);
-        if (prizeDetailsFromNextQues != undefined  &&  !prizeDetailsFromNextQues.FH) {
+        console.log(prizeDetailsFromNextQues);
+        if (prizeDetailsFromNextQues == undefined  ||  !prizeDetailsFromNextQues.FH) {
             $('#question').css('background', '#8aff80');
             animateHTML($('#question'), '#8aff80', '#b3d9ff', 1000);
+            count = secondsInterval; // Set the timer
+        }
+        else {
+            count = 0; // Set the timer
         }
         addQuestionsToModalDialog(covQues);
 
-        count = secondsInterval; // Set the timer
         if (counter == null) counter = setInterval(timer, 1000);
     }
     else {
@@ -654,7 +658,7 @@ $(function onDocReady() {
 });
 
 
-// var count = secondsInterval;
+var count = 0;
 var counter = null; // setInterval(timer, 1000);
 
 function timer(){	
