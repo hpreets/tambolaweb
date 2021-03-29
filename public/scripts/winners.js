@@ -1,6 +1,8 @@
 const container = $('.container-fluid');
 
 
+
+
 /**
  * Create a UI row for each winner 
  * @param {*} winners - comma separate winner email addresses
@@ -69,14 +71,16 @@ function iterateWinners(wList) {
     if (wList) {
         Object.keys(wList).forEach((wdockey) => {
             let wdoc = wList[wdockey];
+            console.log(wdoc);
+            if (wdoc != false) wdoc = ' <sup class="badge badge-secondary">Transaction Ref: '+wdoc.split('_')[0]+'</sup>' + ' <sup class="badge badge-secondary"> Payment Date: '+wdoc.split('_')[1]+'</sup>'; else wdoc = '';
             winnerDet = wdockey.split('_');
             let emailAddress = retrieveEmail(winnerDet);
             emailAddress = hideEmailAddress(emailAddress);
             if (winners[winnerDet[1]]) {
-                winners[winnerDet[1]].push(emailAddress);
+                winners[winnerDet[1]].push(emailAddress + wdoc);
             }
             else {
-                winners[winnerDet[1]] = [ emailAddress ];
+                winners[winnerDet[1]] = [ emailAddress + wdoc ];
             }
         });
     }
