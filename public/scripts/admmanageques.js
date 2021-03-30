@@ -275,12 +275,12 @@ $(document).ready(function(){
 
 $(function onDocReady() {
 	console.log('Inside onDocReady');
-    loadHeaderActions();
-    loadSharingButtons();
-    $('#btnLogout').click(signout);
+  loadHeaderActionsAdmin();
+  // loadSharingButtons();
+  $('#btnLogout').click(signout);
 });
 
 
-checkLogin(firebase.auth());
+checkAdminLogin();
 init();
 // setCurrGameQuestions();
