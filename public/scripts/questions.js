@@ -94,6 +94,8 @@ function successCurrGameFetch(doc) {
 
     let gDate = new Date(getFromStorage('gamedatetime')*1000);
     $('.gamedate').text( gDate.toDateString() + ' ' + gDate.toLocaleTimeString() );
+    console.log('HIDING SPINNER');
+    $('#spinnerModal').modal('hide');
 }
 
 
@@ -124,7 +126,6 @@ function iterateQuestions(qList) {
             index++
         }
     });
-    $('#spinnerModal').modal('hide');
 }
 
 
