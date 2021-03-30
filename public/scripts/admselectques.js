@@ -212,7 +212,7 @@ function successGameQuesFetch(doc) {
 
 $(function onDocReady() {
 	console.log('Inside onDocReady');
-    loadHeaderActions();
+    loadHeaderActionsAdmin();
     loadSharingButtons();
     $('#btnLogout').click(signout);
     $('#createGameQues').click(createGameQues);
@@ -222,6 +222,6 @@ $(function onDocReady() {
 });
 
 
-checkLogin(firebase.auth());
+checkAdminLogin();
 init();
 // setCurrGameQuestions();

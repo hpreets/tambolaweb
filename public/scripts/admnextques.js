@@ -19,7 +19,7 @@ let allPrizesWon = false;
 
 // alert('Hi');
 
-firebase.auth().onAuthStateChanged((user) => {
+/* firebase.auth().onAuthStateChanged((user) => {
     if (user) {
         console.log('User is NOT NULL ::' + user.uid + "; displayname ::" + user.displayName);
         $('#loggedInUser').text(user.displayName);
@@ -31,7 +31,7 @@ firebase.auth().onAuthStateChanged((user) => {
         console.log('User is NULL');
         hideButtons(false);
     }
-});
+}); */
 
 
 function createNode(element) {
@@ -41,13 +41,13 @@ function createNode(element) {
 function createAnswerButton(ques, answ, coveredCtr) {
 
 	let btn = createNode('button');
-	$(btn).addClass('btn btn-success col-lg-1');
+	$(btn).addClass('btn btn-success col-sm-1');
 	if (coveredCtr >= 0) $(btn).addClass('active');
 	else $(btn).addClass('uncovered');
 	$(btn).attr('data-question', ques);
 	$(btn).on("click", pickNextQuesFromBtn);
 	$(btn).html(answ);
-		
+	
 	return btn;
 }
 
@@ -312,11 +312,20 @@ function onPageUnload() {
 /* LISTEN TO PRIZE LIST TO SEE IF 'FH' HAS B BEEN WON. IF YES, STOP THE COUNTER */
 $(function onDocReady() {
 	console.log('Inside onDocReady');
-	$('#btnLogout').click(signout);
+    loadHeaderActionsAdmin();
+	// $('#btnLogout').click(signout);
 	$('#btnNextQues').click(pickNextQues);
-
 	$('#startTimer').click(startTimer);
 	$('#stopTimer').click(stopTimer);
 });
 
 window.addEventListener('beforeunload', onPageUnload);
+checkAdminLogin();
+
+
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+		init();
+		listenToClaimedPrizes();
+    }
+});
