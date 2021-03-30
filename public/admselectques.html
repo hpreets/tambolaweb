@@ -16,15 +16,15 @@
 </head>
 <body id="pageIndex">
     
-    <div class="jumbotron">
+    <div class="jumbotron" style="background:orange">
         <div class="buttons" id="headerActions"></div>
         <h1 class="display-3 main-heading">Sikh History Tambola</h1>
         <h3 id="messageText" class="games"></h3>
     </div>
     <div class="row">
-        <button id="selectAll" class="btn btn-primary col-lg-2">Select All</button>
-        <button id="clearAll" class="btn btn-primary col-lg-2">Clear All</button>
-        <div id="selectedCount" class="col-lg-8"></div>
+        <button id="selectAll" class="btn btn-primary col-sm-1 m-1">Select All</button>
+        <button id="clearAll" class="btn btn-primary col-sm-1 m-1">Clear All</button>
+        <div id="selectedCount" class="col-sm-9 m-1"></div>
     </div>
     <table id="questionList" class="display" style="width:100%">
         <thead>
@@ -46,21 +46,21 @@
             </tr>
         </tfoot>
     </table>
-    <div class="row">
-        <div class="col-lg-2">
+    <div class="row p-auto">
+        <div class="col-sm">
             <select class="form-control" id="inputNextGameYear">
                 <option>2021</option><option>2022</option><option>2023</option>
                 <option>2024</option><option>2025</option><option>2026</option>
             </select>
         </div>
-        <div class="col-lg-2">
+        <div class="col-sm">
             <select class="form-control" id="inputNextGameMonth">
                 <option>01</option><option>02</option><option>03</option><option>04</option>
                 <option>05</option><option>06</option><option>07</option><option>08</option>
                 <option>09</option><option>10</option><option>11</option><option>12</option>
             </select>
         </div>
-        <div class="col-lg-2">
+        <div class="col-sm">
             <select class="form-control" id="inputNextGameDate">
                 <option>01</option><option>02</option><option>03</option><option>04</option>
                 <option>05</option><option>06</option><option>07</option><option>08</option>
@@ -72,8 +72,8 @@
                 <option>29</option><option>30</option><option>31</option>
             </select>
         </div>
-        <button id="createGameQues" class="btn btn-primary col-lg-3">Create Game Questions</button>
-        <button id="setNextCurrGame" class="btn btn-primary col-lg-3">Create CurrGame Settings</button>
+        <button id="createGameQues" class="btn btn-primary col-sm-4 p-1 m-1">Create Game Questions</button>
+        <button id="setNextCurrGame" class="btn btn-primary col-sm-4 p-1 m-1">Create CurrGame Settings</button>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>

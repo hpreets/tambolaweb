@@ -19,7 +19,7 @@
   	</head>
   	<body id="pageIndex">
 
-	  	<div class="jumbotron">
+	  	<div class="jumbotron" style="background:orange">
 			<div class="buttons" id="headerActions"></div>
 	 		<h1 class="display-3 main-heading">Sikh History Tambola</h1>
 			<h3 class="games subheading">Admin Console</h3>
@@ -27,14 +27,8 @@
  		</div>
 
   		<div class="container-fluid">
-  			<div class="row">
-				<button id="resetQues" class="btn btn-success col-lg-4">Reset Current Game Questions</button>
-				<a id="nextQues" class="btn btn-success col-lg-4" href="admnextques.html">Set Next Question</a>
-				<a id="manageQues" class="btn btn-success col-lg-4" href="admmanageques.html">Manage Question</a>
-				<a id="quesForNextGame" class="btn btn-success col-lg-4" href="admselectques.html">Select Questions for Next Game</a>
-			</div>
 			<div class="row">
-				<div class="row"><div class="col">
+				<div class="col col-sm p-1 m-2">Year: 
 				<select class="form-control" id="inputNextGameYear">
 					<option>2021</option>
 					<option>2022</option>
@@ -42,8 +36,8 @@
 					<option>2024</option>
 					<option>2025</option>
 				</select>
-				</div></div>
-				<div class="row"><div class="col">
+				</div>
+				<div class="col col-sm p-1 m-2">Month: 
 				<select class="form-control" id="inputNextGameMonth">
 					<option>01</option>
 					<option>02</option>
@@ -58,8 +52,8 @@
 					<option>11</option>
 					<option>12</option>
 				</select>
-				</div></div>
-				<div class="row"><div class="col">
+				</div>
+				<div class="col col-sm p-1 m-2">Date: 
 				<select class="form-control" id="inputNextGameDate">
 					<option>01</option>
 					<option>02</option>
@@ -93,22 +87,29 @@
 					<option>30</option>
 					<option>31</option>
 				</select>
-				</div></div>
+				</div>
+			</div>
+  			<div class="row">
+				<button id="resetQues" class="btn btn-success col-sm p-4 m-2">Reset Current Game Questions</button>
+				<a id="nextQues" class="btn btn-success col-sm p-4 m-2" href="admnextques.html">Play Game</a>
+				<a id="manageQues" class="btn btn-success col-sm p-4 m-2" href="admmanageques.html">Add / Edit / Delete Question</a>
+				<a id="quesForNextGame" class="btn btn-success col-sm p-4 m-2" href="admselectques.html">Select Questions for Next Game</a>
+				
 				<!-- <input type="text" class="form-control" id="inputNextGameYear" aria-describedby="NextYearGame_yyyy" placeholder="Next Game Year yyyy">
 				<input class="form-control" type="text" id="inputNextGameMonth" placeholder="Next Game Month MM">
 				<input class="form-control" type="text" id="inputNextGameDate" placeholder="Next Game Date dd"> -->
-				<button id="setNextCurrGame" class="btn btn-success col-lg-4">Create CurrGame Settings for Next Game</button>
+				<button id="setNextCurrGame" class="btn btn-success col-sm p-4 m-2">Create Settings for Next Game</button>
 			</div>
 			<div class="row">
-				<div id="emulatormsg"></div>>
+				<div id="emulatormsg" class="p-4">&nbsp;</div>
 			</div>
 
   			<div class="row">
 				<h3 class="col-lg-12">Emulator Setup</h3>
-				<button id="createQuestions" class="btn btn-primary col-lg-3">Step 1: Create Questions</button>
-				<button id="createGameQues" class="btn btn-primary col-lg-3">Step 2: Create Game Questions</button>
-				<button id="createCurrGameSetting" class="btn btn-primary col-lg-3">Step 3: Create Game Settings</button>
-				<button id="createCurrGamePrizes" class="btn btn-primary col-lg-3">Step 4: Create Game Prizes</button>
+				<button id="createQuestions" class="btn btn-primary col-sm p-4 m-2">Step 1: Create Questions</button>
+				<button id="createGameQues" class="btn btn-primary col-sm p-4 m-2">Step 2: Create Game Questions</button>
+				<button id="createCurrGameSetting" class="btn btn-primary col-sm p-4 m-2">Step 3: Create Game Settings</button>
+				<button id="createCurrGamePrizes" class="btn btn-primary col-sm p-4 m-2">Step 4: Create Game Prizes</button>
 				<!-- button style="margin:20px" id="nextQues" class="btn btn-success col-lg-4" href="admnextques.html">Set Next Question</button -->
   			</div>
 		</div>
