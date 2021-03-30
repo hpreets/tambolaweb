@@ -1,7 +1,7 @@
 // var db = firebase.firestore();
-var user = firebase.auth().currentUser;
-var functions = firebase.functions();
-let uid;
+// var user = firebase.auth().currentUser;
+// var functions = firebase.functions();
+// let uid;
 let nextGameDate;
 let currGameId;
 
@@ -25,24 +25,14 @@ function getCurrentGameFormattedDate(dt) {
 
 // alert('Hi');
 
-firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-        console.log('User is NOT NULL ::' + user.uid + "; displayname ::" + user.displayName);
-        $('#loggedInUser').text(user.displayName);
-        uid = user.uid;
-		hideButtons(true);
-    } else {
-        console.log('User is NULL');
-        hideButtons(false);
-    }
-  });
+
   
 
 
 // Read Data
 // let gameid;
 
-function hideButtons(loggedIn) {
+/* function hideButtons(loggedIn) {
     if (!loggedIn) {
         $('#btnSignup').hide();
         $('#btnLogin').show();
@@ -55,17 +45,17 @@ function hideButtons(loggedIn) {
         $('#btnSignup').hide();
         $('#btnLogin').hide();
     }
-}
+} */
 
 
-function signout() {
+/* function signout() {
     firebase.auth().signOut().then(function() {
         // Sign-out successful.
         window.location = '/questions.html';
     }).catch(function(error) {
         // An error happened.
     });
-}
+} */
 
 
 function resetCurrGameQuestions() {
@@ -223,7 +213,7 @@ function setNextCurrGame() {
 
 $(function onDocReady() {
 	console.log('Inside onDocReady');
-    loadHeaderActions();
+    loadHeaderActionsAdmin();
 	$('#btnLogout').click(signout);
 	$('#resetQues').click(resetCurrGameQuestions);
     $('#createQuestions').click(createQuestions);
@@ -243,4 +233,19 @@ function init() {
     getFSSettingsData();
 
 }
+
+// firebase.auth().onAuthStateChanged((user) => {
+//     if (user) {
+//         console.log('User is NOT NULL ::' + user.uid + "; displayname ::" + user.displayName);
+//         $('#loggedInUser').text(user.displayName);
+//         uid = user.uid;
+// 		hideButtons(true);
+//     } else {
+//         console.log('User is NULL');
+//         hideButtons(false);
+//     }
+//   });
+
+  
+checkAdminLogin();
 init();
