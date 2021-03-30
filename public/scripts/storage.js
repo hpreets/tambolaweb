@@ -1,6 +1,6 @@
 var db = firebase.firestore();
-if (location.hostname === "localhost") { db.useEmulator("localhost", 8080); }
-firebase.firestore.setLogLevel("debug");
+if (location.hostname === "localhost") { db.useEmulator("localhost", 8081); }
+// firebase.firestore.setLogLevel("debug");
 var secondsInterval = 21;
 let gameid;
 let userEmail;
@@ -89,6 +89,8 @@ function hideHeaderButtons(loggedIn) {
         $('#btnMySettingsLi').show();
         $('#btnSignup').hide();
         $('#btnLogin').hide();
+        console.log(isAdmin());
+        if (isAdmin()) $('#btnAdminHome').show();
     }
     $('#btnHome').show();
     $('#btnWinners').show();
@@ -133,7 +135,7 @@ function generateTicket(e) {
     let gameDateTime = new Date(getFromStorage('gamedatetime')*1000);
     var currDateTime = new Date();
     currDateTime.setMinutes( currDateTime.getMinutes() + 15 );
-    currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
+    // currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
     console.log( currDateTime );
     console.log( gameDateTime );
     if (currDateTime > gameDateTime) {
@@ -347,3 +349,49 @@ function callCloudFunction(functionName, params, success, failure) {
     });
 }
 
+/* ************************************************** */
+/* ****************** ADMIN UI ********************** */
+/* ************************************************** */
+/**
+ * Called when user is logged in
+ */
+
+isAdmin = function() {
+    if (uid == '2CcF64X5WzgS50UB8ZMw5RjHP1o1' ||  uid == 'j2ZOUSePSJOKWdgqxjoOQeBwGNY2') {
+        return true;
+    }
+    return false;
+};
+
+successAdminLogin = function() {
+    console.log('Inside successLogin');
+    if (!isAdmin()) {
+        failureAdminLogin();
+    }
+    /* if (uid == '2CcF64X5WzgS50UB8ZMw5RjHP1o1' ||  uid == 'j2ZOUSePSJOKWdgqxjoOQeBwGNY2') {
+        // Allow
+    }
+    else {
+        failureAdminLogin();
+    } */
+};
+/**
+ * Called when user is NOT logged in
+ */
+failureAdminLogin = function() {
+    console.log('Inside failureLogin');
+    window.location = '/questions.html';
+};
+
+checkAdminLogin = function() {
+    checkLogin(firebase.auth(), successAdminLogin, failureAdminLogin);
+}
+
+function loadHeaderActionsAdmin(success) {
+    $('#headerActions').load('pagelets/headeractionadmin.html', 
+        function() {
+            $('#btnLogout').click(signout);
+            if (success !== undefined) success();
+        }
+    );
+}
