@@ -135,7 +135,7 @@ function generateTicket(e) {
     let gameDateTime = new Date(getFromStorage('gamedatetime')*1000);
     var currDateTime = new Date();
     currDateTime.setMinutes( currDateTime.getMinutes() + 15 );
-    // currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
+    if (isLocalhost()) currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
     console.log( currDateTime );
     console.log( gameDateTime );
     if (currDateTime > gameDateTime) {
@@ -352,18 +352,22 @@ function callCloudFunction(functionName, params, success, failure) {
 /* ************************************************** */
 /* ****************** ADMIN UI ********************** */
 /* ************************************************** */
-/**
- * Called when user is logged in
- */
+
+isLocalhost = function() {
+    return location.hostname === "localhost";
+};
 
 isAdmin = function() {
-    if (uid == '2CcF64X5WzgS50UB8ZMw5RjHP1o1' ||  uid == 'j2ZOUSePSJOKWdgqxjoOQeBwGNY2') {
+    if (isLocalhost() || uid == '2CcF64X5WzgS50UB8ZMw5RjHP1o1' ||  uid == 'j2ZOUSePSJOKWdgqxjoOQeBwGNY2') {
         return true;
     }
     return false;
 };
 
-successAdminLogin = function() {
+/**
+ * Called when user is logged in
+ */
+ successAdminLogin = function() {
     console.log('Inside successLogin');
     if (!isAdmin()) {
         failureAdminLogin();
@@ -395,3 +399,4 @@ function loadHeaderActionsAdmin(success) {
         }
     );
 }
+
