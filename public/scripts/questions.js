@@ -134,7 +134,7 @@ function iterateQuestions(qList) {
  */
 $(function onDocReady() {
 	console.log('Inside onDocReady');
-    $('#spinnerModal').modal('show');
+    // $('#spinnerModal').modal('show');
     loadHeaderActions();
     loadSharingButtons();
 });
