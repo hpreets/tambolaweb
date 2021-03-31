@@ -104,7 +104,8 @@ function generateTicket() {
     let gameDateTime = new Date(getFromStorage('gamedatetime')*1000);
     var currDateTime = new Date();
     currDateTime.setMinutes( currDateTime.getMinutes() + 15 );
-    currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
+    console.log(isLocalhost());
+    if (isLocalhost()) currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
     logMessage( currDateTime );
     logMessage( gameDateTime );
     if (currDateTime > gameDateTime) {
