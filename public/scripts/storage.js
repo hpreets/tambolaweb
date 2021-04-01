@@ -1,9 +1,10 @@
 var db = firebase.firestore();
-if (location.hostname === "localhost") { db.useEmulator("localhost", 8081); }
+if (location.hostname === "localhost") { db.useEmulator("localhost", 8082); }
 // firebase.firestore.setLogLevel("debug");
 var secondsInterval = 21;
 let gameid;
 let userEmail;
+let uid;
 
 /* ************************************************** */
 /* ******************** CACHE *********************** */
@@ -120,6 +121,7 @@ function loadHeaderActions(success) {
         function() {
             $('#btnLogout').click(signout);
             $('#btnTicket').click(generateTicket);
+            $('.lnkTicket').click(generateTicket);
             if (success !== undefined) success();
         }
     );
@@ -139,8 +141,13 @@ function generateTicket(e) {
     console.log( currDateTime );
     console.log( gameDateTime );
     if (currDateTime > gameDateTime) {
-        // alert('Time for play');
-        window.location = '/ticket.html';
+        if (uid != null  &&  uid != undefined) {
+            // alert('Time for play');
+            window.location = '/ticket.html';
+        }
+        else {
+            window.location = '/login.html';
+        }
     }
     else {
         alert('The ticket would be available 15 minutes before the game.');
