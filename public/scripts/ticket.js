@@ -5,9 +5,8 @@
 // var db = firebase.firestore();
 // var user = firebase.auth().currentUser;
 var functions = firebase.app().functions('asia-south1');
-if (location.hostname === "localhost") { functions.useEmulator("localhost", 5001); }
+if (isLocalhost()) { functions.useEmulator("localhost", 5001); }
 
-let uid;
 let uEmailAddress;
 let uPhoneNumber;
 let prizeDetails;
