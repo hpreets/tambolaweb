@@ -51,7 +51,7 @@ function successPrizeDataFetch(doc) {
 function successCurrGameFetch(doc) {
     gameid = doc.data().gameid;
     prevgameid = doc.data().prevgameid;
-    if (prevgameid === null) prevgameid = gameid;
+    if (prevgameid === null  ||  doc.data().gameover == true) prevgameid = gameid;
     getFSPrizeDetail(prevgameid, successPrizeDataFetch, null);
 }
 
