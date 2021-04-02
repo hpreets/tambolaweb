@@ -93,7 +93,8 @@ function successCurrGameFetch(doc) {
     }
 
     let gDate = new Date(getFromStorage('gamedatetime')*1000);
-    $('.gamedate').text( gDate.toDateString() + ' ' + gDate.toLocaleTimeString() );
+    // $('.gamedate').text( gDate.toDateString() + ' ' + gDate.toLocaleTimeString() );
+    $('.gamedate').text( gDate );
     console.log('HIDING SPINNER');
     $('#spinnerModal').modal('hide');
 }
