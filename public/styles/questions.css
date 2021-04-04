@@ -282,6 +282,7 @@ html, body {
   flex-direction: row;
   justify-content: space-around;
   align-items: center;
+  margin-bottom: 20px;
 }
 
 @media screen and (max-width: 476px) {
@@ -302,4 +303,35 @@ html, body {
     width: 145px;
     font-size: smaller;
   }
+
+
+  .numQuesDiv {
+    text-align: start !important;
+  }
+}
+
+.winner-info, .login-info {
+  padding: 25px;
+}
+
+.numQuesDiv {
+  text-align: center;
+}
+
+.numberOfQuestions {
+  margin: 0 auto;
+  max-width: 80px;
+}
+
+.numQuesHeading {
+  font-size: 20px;
+}
+
+.subheadingbar {
+  /* flex-direction: column; */
+  justify-content: space-around;
+  align-items: center;
+  margin-top: -2rem;
+  padding: 10px 0;
+  background:goldenrod;
 }
