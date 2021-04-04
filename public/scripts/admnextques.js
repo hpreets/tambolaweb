@@ -2,7 +2,7 @@
 var db = firebase.firestore();
 var user = firebase.auth().currentUser;
 var functions = firebase.functions();
-let uid;
+// let uid;
 
 // Read Data
 const container = $('.container-fluid');
@@ -13,7 +13,7 @@ let coveredAnswersArr = [];
 let coveredAnswersStr = '';
 
 var count = secondsInterval;
-var counter;
+var counter = null;
 let prizeDetails;
 let allPrizesWon = false;
 
@@ -259,8 +259,16 @@ function startTimer() {
 	 * This will start the timer at client side too indicating that 
 	 * game is starting in next X seconds.
 	 */
-	if (counter == undefined || counter == null) { // Set this value only the first time.
-		db.collection("gameques").doc(gameid).update({ _gameover : false });
+	console.log('About to initiate a game.');
+	if (counter !== undefined && counter !== null) { // Set this value only the first time.
+		db.collection("gameques").doc(gameid).update({ _gameover : false })
+		.then((doc) => {
+			console.log('GAME INITIATED.');
+		})
+		.catch((error) => {
+			console.log(error);
+		});
+		
 	}
 
 }
