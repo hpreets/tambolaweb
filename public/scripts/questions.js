@@ -1,5 +1,6 @@
-const container = $('.container-fluid');
+const container = $('.quesDiv');
 let qList = null;
+let currGameSettings = null;
 
 
 
@@ -8,12 +9,16 @@ let qList = null;
  */
 successLogin = function() {
   console.log('Inside successLogin');
+//   $('.shlnkTicket').css('display', 'flex');
+//   displaySubHeadingBar(true);
 };
 /**
  * Called when user is NOT logged in
  */
 failureLogin = function() {
   console.log('Inside failureLogin');
+//   $('.shLnkLogin').css('display', 'flex');
+//   displaySubHeadingBar(true);
 };
 
 
@@ -71,6 +76,7 @@ function init() {
  */
 function successCurrGameFetch(doc) {
     console.log('INSIDE successCurrGameFetch');
+    currGameSettings = doc.data();
     gameid = doc.data().gameid;
 
     if (/* getFromStorage('gameid') != null  
@@ -93,10 +99,11 @@ function successCurrGameFetch(doc) {
     }
 
     let gDate = new Date(getFromStorage('gamedatetime')*1000);
-    // $('.gamedate').text( gDate.toDateString() + ' ' + gDate.toLocaleTimeString() );
-    $('.gamedate').text( gDate );
+    $('.gamedate').text( gDate.toDateString() + ' ' + gDate.toLocaleTimeString() + ' India Time' );
+    // $('.gamedate').text( gDate );
     console.log('HIDING SPINNER');
     $('#spinnerModal').modal('hide');
+    displaySubHeadingBar(true);
 }
 
 
@@ -129,6 +136,29 @@ function iterateQuestions(qList) {
     });
 }
 
+function displaySubHeadingBar(checkButtonsToo) {
+    let gameDateTime = new Date(getFromStorage('gamedatetime')*1000);
+    var currDateTime = new Date();
+    currDateTime.setMinutes( currDateTime.getMinutes() + 15 );
+    // if (isLocalhost()) currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
+    console.log( 'displaySubHeadingBar :: currDateTime ::' + currDateTime );
+    console.log( 'displaySubHeadingBar :: gameDateTime ::' + gameDateTime );
+    console.log( 'displaySubHeadingBar :: currGameSettings.gameover ::' + currGameSettings.gameover );
+    if (currDateTime > gameDateTime  &&  currGameSettings.gameover == false) {
+        console.log(currDateTime + ' > ' + gameDateTime);
+        $('.subheadingbar').css('display', 'flex');
+        if (checkButtonsToo) {
+            if (uid != null  &&  uid != undefined) {
+                $('.shlnkTicket').css('display', 'flex');
+                $('.shLnkLogin').css('display', 'none');
+            }
+            else {
+                $('.shLnkLogin').css('display', 'flex');
+                $('.shlnkTicket').css('display', 'none');
+            }
+        }
+    }
+}
 
 /**
  * On page load function
@@ -138,7 +168,18 @@ $(function onDocReady() {
     // $('#spinnerModal').modal('show');
     loadHeaderActions();
     loadSharingButtons();
+    // displaySubHeadingBar(false);
 });
+
+function checkDisplaySubHeadingBar() {
+    console.log('Inside checkDisplaySubHeadingBar');
+    displaySubHeadingBar(true);
+    console.log('Going out of checkDisplaySubHeadingBar');
+}
 
 checkLogin(firebase.auth(), successLogin, failureLogin);
 init();
+
+var subheader = null;
+if (subheader == null) subheader = setInterval(checkDisplaySubHeadingBar, 60000);
+
