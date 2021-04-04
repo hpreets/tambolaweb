@@ -408,6 +408,7 @@ function updateUIOnQuestions(qList) {
     }
 
     let covQues = [];
+    let gameInitiated = false;
     // let qList = doc.data();
     Object.keys(qList).forEach((qdoc) => {
         if (qdoc != '_gameover') { // Indicator of whether game is in progress or is over.
@@ -417,7 +418,11 @@ function updateUIOnQuestions(qList) {
                 covQues.push(ques);
             }
         }
+        else {
+            gameInitiated = true;
+        }
     });
+    console.log('Game Initiated ::' + gameInitiated);
     if (covQues.length > 0) {
         
         logMessage(covQues);
@@ -435,7 +440,7 @@ function updateUIOnQuestions(qList) {
         });
         logMessage(covQues);
         logMessage(covQues[0].question);
-        $('#question').text(covQues[0].question);
+        $('#question').removeClass('questionCellInstructions').text(covQues[0].question);
         console.log(prizeDetailsFromNextQues);
         if (prizeDetailsFromNextQues == undefined  ||  !prizeDetailsFromNextQues.FH) {
             $('#question').css('background', '#8aff80');
@@ -449,8 +454,15 @@ function updateUIOnQuestions(qList) {
 
         if (counter == null) counter = setInterval(timer, 1000);
     }
+    else if (gameInitiated) {
+        console.log('Game Initiated.');
+        console.log(counter);
+        count = secondsInterval; // Set the timer
+        if (counter == null) counter = setInterval(timer, 1000);
+    }
     else {
-        $('#question').text('');
+        console.log('Setting question instructions since no questions received');
+        $('#question').addClass('questionCellInstructions').text('Once the game starts, the question will appear here. If your ticket has answer to the question on your ticket, just tap on that answer. You keep on answering correctly, we will handle the rest. If you tap on any answer by mistake, tap again to unselect it.');
     }
 }
 
@@ -661,16 +673,21 @@ $(function onDocReady() {
 var count = 0;
 var counter = null; // setInterval(timer, 1000);
 
-function timer(){	
+function timer() {	
 	if(count <= 0){
 		// Nothing
     }
     else {
         count = count-1;
+        if (count <= 5) $('.timer').addClass('timeranimate');
+        else $('.timer').removeClass('timeranimate');
     }
+    console.log(count);
 	$('.timer').html(count);
 }
 
 
 window.addEventListener('beforeunload', onPageUnload);
 checkLogin(firebase.auth(), successLogin, noLogin);
+// count = secondsInterval; // Set the timer
+// counter = setInterval(timer, 1000);
