@@ -14,7 +14,8 @@ function init() {
 	* Param 4 - success method - the method that is called in this js file when data is fetched
 	* Param 5 - failure method - the method that is called in this js file when data fetch resulted in failure
 	*/
-	getFSQuestionList(null, 'addedOn', 500, successQListFetch, null);
+  let numQues = $('.numberOfQuestions').val();
+	// getFSQuestionList(null, 'addedOn', numQues, successQListFetch, null); // Let it not show all records on page load.
 }
 
 function successQListFetch(querySnapshot) {
@@ -197,11 +198,11 @@ function createQues() {
 	var keywords = $('#keywords').val().split(', ');
 	addToQuestionCollection(ques, ans, pques, pans, info, status, keywords, successCreateQues, failureCreateQues);
 }
-$(document).ready(function(){
+/* $(document).ready(function(){
   $('.addQuesSubmitButton').click(function(){
     createQues();
   });
-});
+}); */
 
 /**
  * code to search through keywords and show relevent questions
@@ -209,13 +210,14 @@ $(document).ready(function(){
 function searchKeywords() {
   $('.spin-me').css('display', 'block');
   let search = $('#search').val().toLowerCase().split(' ');
-  getFSQuestionList(search, 'addedOn', 500, successQListFetch, null);
+  let numQues = $('.numberOfQuestions').val();
+  getFSQuestionList(search, 'addedOn', numQues, successQListFetch, null);
 }
-$(document).ready(function(){
+/* $(document).ready(function(){
   $('.go').click(function(){
     searchKeywords();
   });
-});
+}); */
 
 /**
  * code to clear search bar and show all questions
@@ -223,64 +225,36 @@ $(document).ready(function(){
 function clearSearch() {
   $('.spin-me').css('display', 'block');
   $('#search').val('');
-  getFSQuestionList(null, 'addedOn', 500, successQListFetch, null);
+  let numQues = $('.numberOfQuestions').val();
+  getFSQuestionList(null, 'addedOn', numQues, successQListFetch, null);
 }
-$(document).ready(function(){
+/* $(document).ready(function(){
   $('.clear').click(function(){
     clearSearch();
   });
-});
+}); */
 
-/**
- * method to update a new question in "questions" collection
- */
-// function successUpdateQues(doc) {
-// 	console.log('SuccessUpdateQues :::');
-// 	console.log(doc.id);
-//   history.go(0);
-// }
-// function failureUpdateQues(error) {
-// 	console.log('FailureUpdateQues :::' + error);
-// }
-// function updateQues() {
 
-//   var quesDocId = $(this.parentNode.parentNode)[0].children[9].innerHTML;
-//   console.log('inside update ques', $(this.parentNode.parentNode)[0].children[9].innerHTML);
-// 	// var quesDocId = $('.editQuesId').val();
-// 	var ques = $('#qinengE').val();
-//   var ans = $('#ainengE').val();
-//   var pques = $('#qinpunjE').val();
-//   var pans = $('#ainpunjE').val();
-//   var info = $('#infoE').val();
-//   var status = $('input[name="statusE"]:checked').val();
-//   var keywords = $('#keywordsE').val().split(', ');
-// 	updateQuestionInCollection(quesDocId, ques, ans, pques, pans, info, status, keywords, successUpdateQues, failureUpdateQues);
-// }
-
-// $(document).ready(function(){
-//   $('.editQuesSubmitButton').click(function(){
-//     var quesDocId = $(this.parentNode.parentNode)[0].children[9].innerHTML;
-//     console.log('inside update ques', $(this.parentNode.parentNode)[0].children[9].innerHTML);
-//     // var quesDocId = $('.editQuesId').val();
-//     var ques = $('#qinengE').val();
-//     var ans = $('#ainengE').val();
-//     var pques = $('#qinpunjE').val();
-//     var pans = $('#ainpunjE').val();
-//     var info = $('#infoE').val();
-//     var status = $('input[name="statusE"]:checked').val();
-//     var keywords = $('#keywordsE').val().split(', ');
-//     updateQuestionInCollection(quesDocId, ques, ans, pques, pans, info, status, keywords, successUpdateQues, failureUpdateQues);
-//   });
-// });
 
 $(function onDocReady() {
 	console.log('Inside onDocReady');
   loadHeaderActionsAdmin();
   // loadSharingButtons();
   $('#btnLogout').click(signout);
+
+  $('.clear').click(function(){
+    clearSearch();
+  });
+
+  $('.go').click(function(){
+    searchKeywords();
+  });
+
+  $('.addQuesSubmitButton').click(function(){
+    createQues();
+  });
 });
 
 
 checkAdminLogin();
 init();
-// setCurrGameQuestions();
