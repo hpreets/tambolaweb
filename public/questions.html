@@ -19,7 +19,12 @@
         <div class="buttons" id="headerActions"></div>
         <h1 class="display-3 main-heading">Sikh History Tambola</h1>
         <h3 class="games">Next Game: <span class="gamedate"></span></h3>
-   </div>
+    </div>
+    <div class="container-fluid subheadingbar" style="display:none">
+        <h4>It is time to play!</h4>
+        <a class="btn btn-primary btn-md shLnkLogin" href="login.html" style="display:none">Log In</a>
+        <a href="#" class="btn btn-primary btn-md shlnkTicket lnkTicket" style="display:none">Get Your Ticket</a>
+    </div>
 
     <!-- Social Share Buttons using sharebuttons.io -->
     <div class="text-center sharewrapper" id="sharewrappertop"></div>
@@ -39,25 +44,34 @@
         </div>
     </div>
 
-    <blockquote class="">
-        <h2>Instructions:</h2>
-        <ul>
-        <li>Every month we play Sikh Tambola game where rather than showing 15 numbers on the <a class="lnkTicket" href="#">tambola ticket</a>, we show 15 answers on it. </li>
-        <li>Also, instead of announcing numbers as we would do in a Tambola, we ask a random question from the below list, one by one. </li>
-        <li>If your <a class="lnkTicket" href="#">ticket</a> has the answer to the current question, you tap on your answer to select it. </li>
-        <li>As soon as you get 5 answers correctly tapped and questions to those 5 answers are already covered, you win Early Five prize. </li>
-        <li>Similarly, you win First Line, Middle Line or Last Line when all answers from your respective lines are selected correctly.</li>
-        <li>Finally, when all answers from your ticket are selected correctly, you win Full House. The winners of the game are shown on the <a href="winners.html">winners page</a>.</li>
-        <li><u><b>Important</b></u>: To be able to generate a <a class="lnkTicket" href="#">ticket</a>, you need to be logged in. We highly recommend that you login now itself in order to avoid last minute hassle while generating the <a class="lnkTicket" href="#">ticket</a>.</li>
-        </ul>
-    </blockquote>
-
     <div class="container-fluid">
-        <h2>Questions:</h2>
-        <div class="row">
-            <!-- <div class="col-lg-1 d-sm-none d-none d-lg-block font-weight-bold">S. No.</div> -->
-            <div class="col-lg-8 d-sm-none d-none d-lg-block font-weight-bold">Questions</div>
-            <div class="col-lg-4 d-sm-none d-none d-lg-block font-weight-bold">Answers</div>		
+        <div>
+            <div class="d-flex justify-content-between">
+                <h2>Instructions:</h2>
+                <!-- <button class="btn font-weight-bold btn-danger" type="button" data-toggle="collapse" data-target="#instructions-info" aria-expanded="true" aria-controls="collapseExample">
+                    X
+                </button> -->
+            </div>
+            <ul class="collapse show" id="instructions-info">
+            <li>Every month we play Sikh Tambola game where rather than showing 15 numbers on the <a class="lnkTicket" href="#">tambola ticket</a>, we show 15 answers on it. </li>
+            <li>Also, instead of announcing numbers as we would do in a Tambola, we ask a random question from the below list, one by one. </li>
+            <li>If your <a class="lnkTicket" href="#">ticket</a> has the answer to the current question, you tap on your answer to select it. </li>
+            <li>As soon as you get 5 answers correctly tapped and questions to those 5 answers are already covered, you win Early Five prize. </li>
+            <li>Similarly, you win First Line, Middle Line or Last Line when all answers from your respective lines are selected correctly.</li>
+            <li>Finally, when all answers from your ticket are selected correctly, you win Full House. The winners of the game are shown on the <a href="winners.html">winners page</a>.</li>
+            <li><u><b>Important</b></u>: To be able to generate a <a class="lnkTicket" href="#">ticket</a>, you need to be logged in. We highly recommend that you login now itself in order to avoid last minute hassle while generating the <a class="lnkTicket" href="#">ticket</a>.</li>
+            </ul>
+        </div>
+    <!-- </div>
+
+    <div class="container-fluid"> -->
+        <div class="quesDiv">
+            <h2>Questions:</h2>
+            <div class="row">
+                <!-- <div class="col-lg-1 d-sm-none d-none d-lg-block font-weight-bold">S. No.</div> -->
+                <div class="col-lg-8 d-sm-none d-none d-lg-block font-weight-bold">Questions</div>
+                <div class="col-lg-4 d-sm-none d-none d-lg-block font-weight-bold">Answers</div>		
+            </div>
         </div>
     </div>
 
