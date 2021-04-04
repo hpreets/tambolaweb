@@ -113,11 +113,25 @@ function failureUpdateQues(error) {
 	console.log('FailureUpdateQues :::' + error);
 }
 
-function getNextGameId() {
+function getNextGameDate() {
     console.log($('#inputNextGameYear').val());
     console.log($('#inputNextGameMonth').val());
     console.log($('#inputNextGameDate').val());
-    nextGameDate = new Date($('#inputNextGameYear').val(), (parseInt($('#inputNextGameMonth').val()) - 1), $('#inputNextGameDate').val());
+    nextGameDate 
+		= new Date(
+			$('#inputNextGameYear').val(), 
+			(parseInt($('#inputNextGameMonth').val()) - 1), 
+			$('#inputNextGameDate').val(),
+			$('#inputNextGameHour').val(), 
+            $('#inputNextGameMinute').val(), 
+			0
+		);
+    console.log(nextGameDate);
+	return nextGameDate;
+}
+
+function getNextGameId() {
+    nextGameDate = getNextGameDate();
     console.log(nextGameDate);
     
     // var d = new Date();
@@ -125,11 +139,33 @@ function getNextGameId() {
     return getCurrentGameFormattedDate(nextGameDate);
 }
 
+function isNextGameDateInFuture() {
+    console.log(getNextGameDate());
+    console.log(new Date());
+    if (getNextGameDate() < new Date()) {
+        alert('Please set the Next Game date correctly');
+        return false;
+    }
+    return true;
+}
+
 function getCurrentGameFormattedDate(dt) {
     return '' + dt.getFullYear() + '' + (appendLeadingZeroes(dt.getMonth()+1)) + '' + appendLeadingZeroes(dt.getDate());
 }
 
+function ninetyRowsSelected() {
+	if (table.rows('.selected').data().length == 90) return true;
+	alert('90 questions are not yet selected.');
+	return false;
+}
+
+function validateBeforeCreatingGame() {
+	return (isNextGameDateInFuture()  &&  ninetyRowsSelected());
+}
+
 function createGameQues() {
+	if (!validateBeforeCreatingGame()) return;
+
 	console.log(table.rows('.selected').data());
 	console.log(table.rows('.selected').data().length);
     nextGameId = getNextGameId();
@@ -166,7 +202,8 @@ function clearAllRows() {
 
 
 function createCurrGameSetting() {
-	getFSSettingsData(successFetchSettingsData);
+	if (!validateBeforeCreatingGame()) return;
+	getFSSettingsData(successFetchSettingsData, successFetchSettingsData); // For failure too call same function.
 }
 
 function successFetchSettingsData() {
@@ -190,7 +227,7 @@ function successGameQuesFetch(doc) {
     settjson.answers = answers.substring(0, answers.length-1);
 
     var d = nextGameDate;
-	settjson.gamedatetime = firebase.firestore.Timestamp.fromDate(new Date(d.getFullYear(), d.getMonth(), d.getDate(), 11, 0, 0, 0));
+	settjson.gamedatetime = firebase.firestore.Timestamp.fromDate(new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), 0, 0));
 	console.log(getNextGameId());
     settjson.gameid = getNextGameId();
     gameid = getFromStorage('gameid');
@@ -207,6 +244,16 @@ function successGameQuesFetch(doc) {
         console.error("Error adding document: ", error);
         $('#messageText').text('Failed creating Settings');
     });
+
+	console.log('Starting to reset Prizes');
+	db.collection("prizes").doc("latest").set({})
+	.then(() => {
+        $('#messageText').text('Prizes reset completed successfully');
+    })
+    .catch(function(error) {
+        console.error("Error adding document: ", error);
+        $('#messageText').text('Failed resetting prizes');
+    });
 }
 
 
@@ -216,6 +263,7 @@ $(function onDocReady() {
     loadSharingButtons();
     $('#btnLogout').click(signout);
     $('#createGameQues').click(createGameQues);
+    $('#setNextCurrGame').click(createCurrGameSetting);
     $('#setNextCurrGame').click(createCurrGameSetting);
     $('#selectAll').click(selectAllRows);
     $('#clearAll').click(clearAllRows);
