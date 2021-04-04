@@ -29,7 +29,7 @@
 
     <!-- Add a Question Modal -->
     <div class="modal fade" id="addAQuestionModal">
-      <div class="modal-dialog modal-lg">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
           <div class="modal-header">
             <h4 class="modal-title">Add a Question</h4>
@@ -100,7 +100,7 @@
 
     <!-- Edit a Question Modal -->
     <div class="modal fade" id="editAQuestionModal">
-      <div class="modal-dialog modal-lg">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
           <div class="modal-header">
             <h4 class="modal-title">Edit the Question <span class="editQuesId"></span></h4>
@@ -193,6 +193,24 @@
       </div>
     </div>
     
+    <div class="container-fluid numQuesDiv">
+      <div class="col col-sm p-1">
+        <span class="font-weight-bold numQuesHeading">Number of Questions:&ensp;</span>
+        <select class="form-control d-inline numberOfQuestions">
+          <option>2</option>
+          <option>3</option>
+          <option>5</option>
+          <option>10</option>
+          <option>20</option>
+          <option>30</option>
+          <option>50</option>
+          <option>100</option>
+          <option>200</option>
+          <option>500</option>
+        </select>
+      </div>
+    </div>
+
     <div class="container-fluid ques">
       <div class="row">
         <div class="col-lg-1 d-none d-lg-block font-weight-bold">S. No.</div>
