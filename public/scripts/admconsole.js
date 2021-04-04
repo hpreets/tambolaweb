@@ -7,12 +7,36 @@ let currGameId;
 
 
 
-function getNextGameId() {
+function getNextGameDate() {
     console.log($('#inputNextGameYear').val());
     console.log($('#inputNextGameMonth').val());
     console.log($('#inputNextGameDate').val());
-    nextGameDate = new Date($('#inputNextGameYear').val(), (parseInt($('#inputNextGameMonth').val()) - 1), $('#inputNextGameDate').val());
+    nextGameDate 
+        = new Date(
+            $('#inputNextGameYear').val(), 
+            (parseInt($('#inputNextGameMonth').val()) - 1), 
+            $('#inputNextGameDate').val(), 
+            $('#inputNextGameHour').val(), 
+            $('#inputNextGameMinute').val(), 
+            0
+        );
     console.log(nextGameDate);
+    return nextGameDate;
+}
+
+function isNextGameDateInFuture() {
+    console.log(getNextGameDate());
+    console.log(new Date());
+    if (getNextGameDate() < new Date()) {
+        alert('Please set the Next Game date correctly');
+        return false;
+    }
+    return true;
+}
+
+
+function getNextGameId() {
+    nextGameDate = getNextGameDate();
     
     // var d = new Date();
     // d.setDate(d.getDate() + 10);
@@ -29,36 +53,9 @@ function getCurrentGameFormattedDate(dt) {
   
 
 
-// Read Data
-// let gameid;
-
-/* function hideButtons(loggedIn) {
-    if (!loggedIn) {
-        $('#btnSignup').hide();
-        $('#btnLogin').show();
-        $('#btnTicket').hide();
-        $('#btnLogout').hide();
-    }
-    else {
-        $('#btnTicket').show();
-        $('#btnLogout').show();
-        $('#btnSignup').hide();
-        $('#btnLogin').hide();
-    }
-} */
-
-
-/* function signout() {
-    firebase.auth().signOut().then(function() {
-        // Sign-out successful.
-        window.location = '/questions.html';
-    }).catch(function(error) {
-        // An error happened.
-    });
-} */
-
-
 function resetCurrGameQuestions() {
+    if (!isNextGameDateInFuture()) return;
+
 	console.log('Inside setCurrGameQuestions');
     db.collection("gameques").doc("20201228").set({});
     let gameques = db.collection("gameques").doc("20201228");
@@ -81,6 +78,8 @@ function resetCurrGameQuestions() {
 
 
 function createQuestions() {
+    if (!isNextGameDateInFuture()) return;
+
     console.log('ques ::' + ques.length);
     var qjson = {};
     for (var i = 0; i < ques.length; i++) {
@@ -115,6 +114,8 @@ function createQuestions() {
 
 
 function createGameQues() {
+    if (!isNextGameDateInFuture()) return;
+
     currGameId = getNextGameId();
 
     db.collection("gameques").doc(currGameId).set({});
@@ -144,6 +145,8 @@ function createGameQues() {
 }
 
 function createCurrGameSetting() {
+    if (!isNextGameDateInFuture()) return;
+
     // console.log('getNextGameId :::' + getNextGameId());
     getFSCurrGameQuestions(currGameId, successGameQuesFetch, null);
 }
@@ -166,7 +169,7 @@ function successGameQuesFetch(doc) {
     // var d = new Date();
     // d.setDate(d.getDate() + 10);
     var d = nextGameDate;
-    settjson.gamedatetime = firebase.firestore.Timestamp.fromDate(new Date(d.getFullYear(), d.getMonth(), d.getDate(), 11, 0, 0, 0));
+    settjson.gamedatetime = firebase.firestore.Timestamp.fromDate(new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), 0, 0));
     settjson.gameid = getNextGameId(d); // currGameId;
     gameid = getFromStorage('gameid');
     console.log('gameid ::' + gameid);
@@ -185,6 +188,8 @@ function successGameQuesFetch(doc) {
 }
 
 function createCurrGamePrizes() {
+    if (!isNextGameDateInFuture()) return;
+
     let gameId = getNextGameId(nextGameDate);
     
     var settjson = {};
@@ -231,21 +236,7 @@ function init() {
     // clearStorage();
     console.log(gameid);
     getFSSettingsData();
-
 }
-
-// firebase.auth().onAuthStateChanged((user) => {
-//     if (user) {
-//         console.log('User is NOT NULL ::' + user.uid + "; displayname ::" + user.displayName);
-//         $('#loggedInUser').text(user.displayName);
-//         uid = user.uid;
-// 		hideButtons(true);
-//     } else {
-//         console.log('User is NULL');
-//         hideButtons(false);
-//     }
-//   });
-
   
 checkAdminLogin();
 init();
