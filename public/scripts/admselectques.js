@@ -180,7 +180,7 @@ function createGameQues() {
 		quesList[qdoc.answer] = qdoc;
 	}
 
-	console.log(quesList);
+	console.log(JSON.stringify(quesList));
 	gameques.update(quesList, { merge: true })
 	.then(() => {
 		$('#messageText').text('Game questions created successfully');
