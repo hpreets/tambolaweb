@@ -40,11 +40,39 @@
 		</div>
 
 		<div class="turn">
-			
 			<div class="question questionAnimation">
 				<h2>Please turn your screen to see the ticket.</h2>
 			</div>
 		</div>
+
+		<!-- Boogey Modal -->
+		<div class="modal fade" id="boogeyModal" tabindex="-1" role="dialog" aria-labelledby="boogeyModalTitle" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+					<h5 class="modal-title" id="boogeyModalTitle">Bogey</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					</div>
+					<div class="modal-body row">
+						<div class="col-sm-3">
+							<img src="img/no.gif" class="list-group" id="boogeyImage">
+							</img>
+						</div>
+						<div class="col-sm-9">
+							<span class="list-group" id="boogeyText"><br/>
+								It was a bogey. Please play with caution, you may not be allowed to continue playing if you bogey 3 times.
+							</span>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		
 
 		<div class="outercontainer">
 			<div class="container">
