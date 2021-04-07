@@ -9,16 +9,12 @@ let currGameSettings = null;
  */
 successLogin = function() {
   console.log('Inside successLogin');
-//   $('.shlnkTicket').css('display', 'flex');
-//   displaySubHeadingBar(true);
 };
 /**
  * Called when user is NOT logged in
  */
 failureLogin = function() {
   console.log('Inside failureLogin');
-//   $('.shLnkLogin').css('display', 'flex');
-//   displaySubHeadingBar(true);
 };
 
 
@@ -29,11 +25,12 @@ failureLogin = function() {
  * @param {*} index - The counter
  * @param {*} container - Parent element to which this row is added
  */
-function createQuestionRow(ques, answ, index, container) {
+function createQuestionRow(ques, answ, index, container, isNew) {
     let rowsno = index + 1 + '.';
     let rowquestion = ques;
     let rowanswer = answ;
     let counter = index + 1;
+    if (isNew) rowanswer = rowanswer + ' <sup class="badge badge-secondary">New</sup>';
 
     let row = createNode('div');
     // let snodiv = createNode('div');
@@ -130,7 +127,7 @@ function iterateQuestions(qList) {
         let qdoc = qList[qdockey];
         if (qdockey !== '_gameover') {
             // console.log('qdockey ::' + qdockey + '; qdoc ::' + qdoc);
-            createQuestionRow(qdoc.question, qdoc.answer, index, container);
+            createQuestionRow(qdoc.question, qdoc.answer, index, container, qdoc.new);
             index++
         }
     });
@@ -169,6 +166,7 @@ $(function onDocReady() {
     loadHeaderActions();
     loadSharingButtons();
     // displaySubHeadingBar(false);
+    // checkLogin(firebase.auth(), successLogin, failureLogin);
 });
 
 function checkDisplaySubHeadingBar() {
