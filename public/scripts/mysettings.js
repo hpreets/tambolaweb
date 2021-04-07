@@ -37,6 +37,7 @@ function savePaymentInfo() {
         upi: $('#inputUPI').val(),
         ifsc: $('#inputIFSC').val(),
         accNumber: $('#inputBankAccount').val(),
+        uid: uid,
         lang: lng
     };
     console.log(inputJson);
