@@ -1,5 +1,5 @@
 var db = firebase.firestore();
-if (location.hostname === "localhost") { db.useEmulator("localhost", 8082); }
+if (location.hostname === "localhost") { db.useEmulator("localhost", 8086); }
 // firebase.firestore.setLogLevel("debug");
 var secondsInterval = 21;
 let gameid;
@@ -83,6 +83,7 @@ function hideHeaderButtons(loggedIn) {
         $('#btnTicketLi').hide();
         $('#btnLogoutLi').hide();
         $('#btnMySettingsLi').hide();
+        $('.loginInstruction').show();
     }
     else {
         $('#btnTicketLi').show();
@@ -91,6 +92,7 @@ function hideHeaderButtons(loggedIn) {
         $('#btnSignup').hide();
         $('#btnLogin').hide();
         console.log(isAdmin());
+        $('.loginInstruction').hide();
         if (isAdmin()) $('#btnAdminHome').show();
     }
     $('#btnHome').show();
@@ -109,10 +111,10 @@ function loadSharingButtons() {
         let currURL = $(location).attr('href');
         console.log(currURL);
         $('.facebookshare').attr('href', 'https://facebook.com/sharer/sharer.php?u=' + currURL);
-        $('.twittershare').attr('href', 'https://twitter.com/intent/tweet/?text=Learn about Sikh History in a fun way: Sikh History Tambola.&url=' + currURL);
-        $('.linkedinshare').attr('href', 'https://www.linkedin.com/shareArticle?mini=true&title=Learn about Sikh History in a fun way: Sikh History Tambola.&summary=Learn about Sikh History in a fun way: Sikh History Tambola.&url=' + currURL);
-        $('.emailshare').attr('href', 'mailto:?subject=Learn about Sikh History in a fun way: Sikh History Tambola.&body=' + currURL);
-        $('.whatsappshare').attr('href', 'whatsapp://send?text=Learn about Sikh History in a fun way: Sikh History Tambola. ' + currURL);
+        $('.twittershare').attr('href', 'https://twitter.com/intent/tweet/?text=Learn about Sikh History in a fun way: Sikhi Tambola.&url=' + currURL);
+        $('.linkedinshare').attr('href', 'https://www.linkedin.com/shareArticle?mini=true&title=Learn about Sikh History in a fun way: Sikhi Tambola.&summary=Learn about Sikh History in a fun way: Sikhi Tambola.&url=' + currURL);
+        $('.emailshare').attr('href', 'mailto:?subject=Learn about Sikh History in a fun way: Sikhi Tambola.&body=' + currURL);
+        $('.whatsappshare').attr('href', 'whatsapp://send?text=Learn about Sikh History in a fun way: Sikhi Tambola. ' + currURL);
     });
 }
 
