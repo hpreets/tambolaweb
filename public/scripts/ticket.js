@@ -636,7 +636,8 @@ function registerPrize(prizeIds, efCells) {
         // Read result of the Cloud Function.
         console.log('AFTER REGISTERPRIZE Cloud Function Call :: result.data :: ' + JSON.stringify(result.data));
         if (result.data != undefined &&  result.data.bogie == true) {
-            alert('It was a bogie. Please play with caution, you may not be allowed to continue playing if you bogie 3 times.');
+            // alert('It was a bogie. Please play with caution, you may not be allowed to continue playing if you bogie 3 times.');
+            $('#boogeyModal').modal('show');
             bogieCount++;
             addToStorage('bogieCount', bogieCount);
         }
