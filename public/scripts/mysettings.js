@@ -31,7 +31,7 @@ function saveDisplayName() {
 }
 
 function savePaymentInfo() {
-    console.log(userEmail);
+    logMessage(userEmail);
     var lng = $('#langPunj').prop('checked') == true ? 'punj' : 'en';
     let inputJson = {
         upi: $('#inputUPI').val(),
@@ -40,7 +40,7 @@ function savePaymentInfo() {
         uid: uid,
         lang: lng
     };
-    console.log(inputJson);
+    logMessage(inputJson);
     saveMerge(
         'users', 
         userEmail, 
@@ -82,7 +82,7 @@ function init() {
 
 
 $(function onDocReady() {
-	console.log('Inside onDocReady');
+	logMessage('Inside onDocReady');
     loadHeaderActions();
     loadSharingButtons();
     $('#btnLogout').click(signout);

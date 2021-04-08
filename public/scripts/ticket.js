@@ -101,11 +101,11 @@ function generateTicket() {
     resetTicketStorage();
 
     init();
-    console.log( 'FROM STORAGE :: gamedatetime ::' + getFromStorage('gamedatetime') );
+    logMessage( 'FROM STORAGE :: gamedatetime ::' + getFromStorage('gamedatetime') );
     let gameDateTime = new Date(getFromStorage('gamedatetime')*1000);
     var currDateTime = new Date();
     currDateTime.setMinutes( currDateTime.getMinutes() + 15 );
-    console.log(isLocalhost());
+    logMessage(isLocalhost());
     if (isLocalhost()) currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
     logMessage( currDateTime );
     logMessage( gameDateTime );
@@ -113,16 +113,16 @@ function generateTicket() {
 
         gameId = getFromStorage('gameid');
         let tkt;
-        console.log(gameId + "_" + uid);
-        console.log(getFromStorage('ticket'));
+        logMessage(gameId + "_" + uid);
+        logMessage(getFromStorage('ticket'));
 
         if (!getFromStorage('ticket')) {
-            console.log('Picking ticket from firestore');
+            logMessage('Picking ticket from firestore');
             getFSUserTicket(gameId, uid, successFetchTicketFirstTime, null);
         }
         else {
             // tkt = JSON.parse(getFromStorage('ticket'))
-            console.log('Picked from Cache');
+            logMessage('Picked from Cache');
             tkt = getTicketFromStorage();
             // loadTicket(tkt);
             processTicket(tkt, getFromStorage('bogieCount'));
@@ -135,32 +135,32 @@ function generateTicket() {
 }
 
 function successFetchTicketFirstTime(doc) {
-    console.log('successFetchTicketFirstTime ::' + doc);
+    logMessage('successFetchTicketFirstTime ::' + doc);
     if (doc.data()) {
         processTicket(doc.data(), getFromStorage('bogieCount'));
         return doc;
     }
 
-    console.log('Calling createTkt');
+    logMessage('Calling createTkt');
     callCloudFunction('createTicketV2', null, successFunctionCreateTicket, null);
 }
 
 function successFunctionCreateTicket(retData) {
-    console.log('successFunctionCreateTicket :: retData :: ' + JSON.stringify(retData.data));
+    logMessage('successFunctionCreateTicket :: retData :: ' + JSON.stringify(retData.data));
     if (retData && retData.data) {
         processTicket(retData.data, retData.data.bogiecount);
         return retData;
     }
-    console.log('Returning data from firestore');
+    logMessage('Returning data from firestore');
 }
 
 
 function processTicket(ticketData, bCount) {
-    console.log('doc.data() is not null ::' + ticketData);
+    logMessage('doc.data() is not null ::' + ticketData);
     if (ticketData.ticket !== undefined) {
-        console.log(JSON.stringify(ticketData));
+        logMessage(JSON.stringify(ticketData));
         tkt = ticketData;
-        console.log(tkt);
+        logMessage(tkt);
         initTicketDataInStorage(tkt); // Not required since bogiecount can differ in each load.
         // addToStorage('ticket', JSON.stringify(tkt));
         loadTicket(tkt);
@@ -176,7 +176,7 @@ function processTicket(ticketData, bCount) {
  */
 function setBogieCount(bcount) {
     bogieCount = bcount;
-    console.log('bogieCount ::' + bogieCount);
+    logMessage('bogieCount ::' + bogieCount);
     addToStorage('bogieCount', bogieCount);
 }
 
@@ -204,7 +204,7 @@ function loadTicket(tdata) {
     $('.tktcell35').text(tdata.ticket['c35']);
 
     let tdataSel = getSelectionDataFromStorage();
-    console.log(tdataSel);
+    logMessage(tdataSel);
     if (tdataSel['tktcell11']) $('.tktcell11').addClass('green');
     if (tdataSel['tktcell12']) $('.tktcell12').addClass('green');
     if (tdataSel['tktcell13']) $('.tktcell13').addClass('green');
@@ -225,7 +225,7 @@ function loadTicket(tdata) {
 
 function checkforPrizeAndClaim() {
     let tdataSel = getSelectionDataFromStorage();
-    console.log(tdataSel);
+    logMessage(tdataSel);
     let prizeIds = '';
     let retStr = '';
     let selectedCount = 0;
@@ -246,25 +246,25 @@ function checkforPrizeAndClaim() {
             if (selectedCell.search('c3') == 0) selectedCountLL++;
         }
     });
-    console.log('retStr :: ' + retStr);
-    console.log('selectedCount ::' + selectedCount);
-    console.log('selectedCountFL ::' + selectedCountFL);
-    console.log('selectedCountML ::' + selectedCountML);
-    console.log('selectedCountLL ::' + selectedCountLL);
-    console.log(prizeDetailsFromNextQues == undefined);
-    console.log((prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.EF != true)));
+    logMessage('retStr :: ' + retStr);
+    logMessage('selectedCount ::' + selectedCount);
+    logMessage('selectedCountFL ::' + selectedCountFL);
+    logMessage('selectedCountML ::' + selectedCountML);
+    logMessage('selectedCountLL ::' + selectedCountLL);
+    logMessage(prizeDetailsFromNextQues == undefined);
+    logMessage((prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.EF != true)));
 
     if (selectedCount == 5  &&  (prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.EF != true  /* && EF not already claimed */))) {
-        console.log('Claim for EF');
+        logMessage('Claim for EF');
         prizeIds = 'EF';
     }
     else if (selectedCountFL == 5  &&  (prizeDetailsFromNextQues == undefined  ||  (selectedCountML == 5  &&  selectedCountLL == 5  &&  prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.FH != true))) {
-        console.log('Claim for FULL HOUSE');
+        logMessage('Claim for FULL HOUSE');
         if (prizeIds.length > 0) prizeIds += '#FH'; else prizeIds += 'FH';
         retStr = '';
     }
     if (selectedCountFL == 5  &&  (prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.FL != true  /* && FL not already claimed */))) {
-        console.log('Claim for FL');
+        logMessage('Claim for FL');
         if (prizeIds.length > 0) prizeIds += '#FL'; 
         else {
             prizeIds += 'FL';
@@ -272,7 +272,7 @@ function checkforPrizeAndClaim() {
         }
     }
     else if (selectedCountML == 5  &&  (prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.ML != true  /* && ML not already claimed */))) {
-        console.log('Claim for ML');
+        logMessage('Claim for ML');
         if (prizeIds.length > 0) prizeIds += '#ML'; 
         else {
             prizeIds += 'ML';
@@ -280,7 +280,7 @@ function checkforPrizeAndClaim() {
         }
     }
     else if (selectedCountLL == 5  &&  (prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.LL != true /* && LL not already claimed */))) {
-        console.log('Claim for LL');
+        logMessage('Claim for LL');
         if (prizeIds.length > 0) prizeIds += '#LL'; 
         else {
             prizeIds += 'LL';
@@ -290,8 +290,8 @@ function checkforPrizeAndClaim() {
 
     if (prizeIds !== '') {
         let prizeRet = registerPrize(prizeIds, retStr);
-        console.log('prizeRet ::' + prizeRet);
-        // console.log('prizeRet.bogie ::' + prizeRet.bogie);
+        logMessage('prizeRet ::' + prizeRet);
+        // logMessage('prizeRet.bogie ::' + prizeRet.bogie);
         /* if (prizeRet != undefined  &&  prizeRet.bogie == true) {
             alert('It was a bogie. Please play with caution, you may not be allowed to continue playing if you bogie 3 times.');
             bogieCount++;
@@ -346,7 +346,7 @@ function addTicketToStorage(data) {
 }
 
 function getTicketFromStorage() {
-    console.log(getFromStorage('ticket'));
+    logMessage(getFromStorage('ticket'));
     return JSON.parse(getFromStorage('ticket'));
 }
 
@@ -356,7 +356,7 @@ function addSelectionDataToStorage(ticketSel) {
 
 function getSelectionDataFromStorage() {
     logMessage(getFromStorage("ticketSel"));
-    console.log(getFromStorage("ticketSel"));
+    logMessage(getFromStorage("ticketSel"));
     let sel = getFromStorage("ticketSel");
     if (!sel) sel = "{}";
 	return JSON.parse(sel);
@@ -393,7 +393,7 @@ function listenToQuestions() {
 }
 
 function failureListenToQuestions(error) {
-    console.log("failureListenToQuestions :: Error ::", error);
+    logMessage("failureListenToQuestions :: Error ::", error);
 }
 
 function successListenToQuestions(doc) {
@@ -424,7 +424,7 @@ function updateUIOnQuestions(qList) {
             gameInitiated = true;
         }
     });
-    console.log('Game Initiated ::' + gameInitiated);
+    logMessage('Game Initiated ::' + gameInitiated);
     if (covQues.length > 0) {
         
         logMessage(covQues);
@@ -443,7 +443,7 @@ function updateUIOnQuestions(qList) {
         logMessage(covQues);
         logMessage(covQues[0].question);
         $('#question').removeClass('questionCellInstructions').text(covQues[0].question);
-        console.log(prizeDetailsFromNextQues);
+        logMessage(prizeDetailsFromNextQues);
         if (prizeDetailsFromNextQues == undefined  ||  !prizeDetailsFromNextQues.FH) {
             $('#question').css('background', '#8aff80');
             animateHTML($('#question'), '#8aff80', '#b3d9ff', 1000);
@@ -457,13 +457,13 @@ function updateUIOnQuestions(qList) {
         if (counter == null) counter = setInterval(timer, 1000);
     }
     else if (gameInitiated) {
-        console.log('Game Initiated.');
-        console.log(counter);
+        logMessage('Game Initiated.');
+        logMessage(counter);
         count = secondsInterval; // Set the timer
         if (counter == null) counter = setInterval(timer, 1000);
     }
     else {
-        console.log('Setting question instructions since no questions received');
+        logMessage('Setting question instructions since no questions received');
         $('#question').addClass('questionCellInstructions').text('Once the game starts, the question will appear here. If your ticket has answer to the question on your ticket, just tap on that answer. You keep on answering correctly, we will handle the rest. If you tap on any answer by mistake, tap again to unselect it.');
     }
 }
@@ -550,13 +550,13 @@ function successListenToClaimedPrizes(doc) {
 }
 
 function updateUIOnPrizes(pList) {
-    console.log("updateUIOnPrizes ::: pList :::" + pList);
+    logMessage("updateUIOnPrizes ::: pList :::" + pList);
     prizeDetails = pList;
     if (pList) {
         Object.keys(pList).forEach((pdoc) => {
             let prize = pList[pdoc];
-            console.log("updateUIOnPrizes ::: pdoc :::" + pdoc);
-            console.log("updateUIOnPrizes ::: prize :::" + prize);
+            logMessage("updateUIOnPrizes ::: pdoc :::" + pdoc);
+            logMessage("updateUIOnPrizes ::: prize :::" + prize);
             if (prize === true) {
                 // $('.prize' + pdoc).css('background', 'red');
                 $('.prize' + pdoc).removeClass('backgroundgreen');
@@ -612,7 +612,7 @@ function onPageUnload() {
 
 function getMarkedAnswersInString() {
     let tdataSel = getSelectionDataFromStorage();
-    console.log(tdataSel);
+    logMessage(tdataSel);
     let retStr = '';
     Object.keys(tdataSel).forEach((qdoc) => {
         if (tdataSel[qdoc]) {
@@ -620,7 +620,7 @@ function getMarkedAnswersInString() {
             else retStr = qdoc.replace('tktcell', 'c');
         }
     });
-    console.log(retStr);
+    logMessage(retStr);
     return retStr;
 }
 
@@ -636,7 +636,7 @@ function registerPrize(prizeIds, efCells) {
     })
     .then((result) => {
         // Read result of the Cloud Function.
-        console.log('AFTER REGISTERPRIZE Cloud Function Call :: result.data :: ' + JSON.stringify(result.data));
+        logMessage('AFTER REGISTERPRIZE Cloud Function Call :: result.data :: ' + JSON.stringify(result.data));
         if (result.data != undefined &&  result.data.bogie == true) {
             // alert('It was a bogie. Please play with caution, you may not be allowed to continue playing if you bogie 3 times.');
             $('#boogeyModal').modal('show');
@@ -699,7 +699,7 @@ function timer() {
         if (count <= 5) $('.timer').addClass('timeranimate');
         else $('.timer').removeClass('timeranimate');
     }
-    console.log(count);
+    logMessage(count);
 	$('.timer').html(count);
 }
 

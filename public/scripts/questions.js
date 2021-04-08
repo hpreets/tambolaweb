@@ -8,13 +8,13 @@ let currGameSettings = null;
  * Called when user is logged in
  */
 successLogin = function() {
-  console.log('Inside successLogin');
+  logMessage('Inside successLogin');
 };
 /**
  * Called when user is NOT logged in
  */
 failureLogin = function() {
-  console.log('Inside failureLogin');
+  logMessage('Inside failureLogin');
 };
 
 
@@ -63,7 +63,7 @@ function createQuestionRow(ques, answ, index, container, isNew) {
  */
 function init() {
   // clearStorage();
-  console.log(gameid);
+  logMessage(gameid);
   getFSSettingsData(successCurrGameFetch, null);
 }
 
@@ -72,7 +72,7 @@ function init() {
  * @param {*} doc - JSON Data - current game settings
  */
 function successCurrGameFetch(doc) {
-    console.log('INSIDE successCurrGameFetch');
+    logMessage('INSIDE successCurrGameFetch');
     currGameSettings = doc.data();
     gameid = doc.data().gameid;
 
@@ -82,7 +82,7 @@ function successCurrGameFetch(doc) {
             && */  getFromStorage('qlist') != null
             ) {
         // Questions not changed, use the data from cache
-        console.log("Picking data from Cache");
+        logMessage("Picking data from Cache");
         qList = JSON.parse(getFromStorage("qlist"));
         iterateQuestions(qList);
     }
@@ -98,7 +98,7 @@ function successCurrGameFetch(doc) {
     let gDate = new Date(getFromStorage('gamedatetime')*1000);
     $('.gamedate').text( gDate.toDateString() + ' ' + gDate.toLocaleTimeString() + ' India Time' );
     // $('.gamedate').text( gDate );
-    console.log('HIDING SPINNER');
+    logMessage('HIDING SPINNER');
     $('#spinnerModal').modal('hide');
     displaySubHeadingBar(true);
 }
@@ -109,7 +109,7 @@ function successCurrGameFetch(doc) {
  * @param {*} doc - JSON Data - question list
  */
 function successQuestionListFetch(doc) {
-  console.log("Picked data from firestore ::");
+  logMessage("Picked data from firestore ::");
   qList = doc.data();
   addToStorage("qlist", JSON.stringify(qList));
   qList = JSON.parse(getFromStorage("qlist"));
@@ -126,7 +126,7 @@ function iterateQuestions(qList) {
     Object.keys(qList).forEach((qdockey) => {
         let qdoc = qList[qdockey];
         if (qdockey !== '_gameover') {
-            // console.log('qdockey ::' + qdockey + '; qdoc ::' + qdoc);
+            // logMessage('qdockey ::' + qdockey + '; qdoc ::' + qdoc);
             createQuestionRow(qdoc.question, qdoc.answer, index, container, qdoc.new);
             index++
         }
@@ -138,11 +138,11 @@ function displaySubHeadingBar(checkButtonsToo) {
     var currDateTime = new Date();
     currDateTime.setMinutes( currDateTime.getMinutes() + 15 );
     // if (isLocalhost()) currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
-    console.log( 'displaySubHeadingBar :: currDateTime ::' + currDateTime );
-    console.log( 'displaySubHeadingBar :: gameDateTime ::' + gameDateTime );
-    console.log( 'displaySubHeadingBar :: currGameSettings.gameover ::' + currGameSettings.gameover );
+    logMessage( 'displaySubHeadingBar :: currDateTime ::' + currDateTime );
+    logMessage( 'displaySubHeadingBar :: gameDateTime ::' + gameDateTime );
+    logMessage( 'displaySubHeadingBar :: currGameSettings.gameover ::' + currGameSettings.gameover );
     if (currDateTime > gameDateTime  &&  currGameSettings.gameover == false) {
-        console.log(currDateTime + ' > ' + gameDateTime);
+        logMessage(currDateTime + ' > ' + gameDateTime);
         $('.subheadingbar').css('display', 'flex');
         if (checkButtonsToo) {
             if (uid != null  &&  uid != undefined) {
@@ -161,7 +161,7 @@ function displaySubHeadingBar(checkButtonsToo) {
  * On page load function
  */
 $(function onDocReady() {
-	console.log('Inside onDocReady');
+	logMessage('Inside onDocReady');
     // $('#spinnerModal').modal('show');
     loadHeaderActions();
     loadSharingButtons();
@@ -170,9 +170,9 @@ $(function onDocReady() {
 });
 
 function checkDisplaySubHeadingBar() {
-    console.log('Inside checkDisplaySubHeadingBar');
+    logMessage('Inside checkDisplaySubHeadingBar');
     displaySubHeadingBar(true);
-    console.log('Going out of checkDisplaySubHeadingBar');
+    logMessage('Going out of checkDisplaySubHeadingBar');
 }
 
 checkLogin(firebase.auth(), successLogin, failureLogin);

@@ -11,7 +11,7 @@ const container = $('.winnerTable');
  * @param {*} container - parent element to which row to be added
  */
 function createWinnerRow(winners, prizeId, prizeName, container) {
-    console.log('winners ::' + winners);
+    logMessage('winners ::' + winners);
     let row = createNode('div');
     let prizeNameDiv = createNode('div');
     let winnerDiv = createNode('div');
@@ -33,10 +33,10 @@ function createWinnerRow(winners, prizeId, prizeName, container) {
  * @param {*} doc - JSON data - prize data
  */
 function successPrizeDataFetch(doc) {
-    console.log("Picking data from firestore");
+    logMessage("Picking data from firestore");
     wList = doc.data();
     let winners = iterateWinners(wList);
-    console.log(winners);
+    logMessage(winners);
     createWinnerRow(winners, 'EF', 'Early Five', container);
     createWinnerRow(winners, 'FL', 'First Line', container);
     createWinnerRow(winners, 'ML', 'Middle Line', container);
@@ -71,7 +71,7 @@ function iterateWinners(wList) {
     if (wList) {
         Object.keys(wList).forEach((wdockey) => {
             let wdoc = wList[wdockey];
-            console.log(wdoc);
+            logMessage(wdoc);
             if (wdoc != false) wdoc = ' <sup class="badge badge-secondary">Transaction Ref: '+wdoc.split('_')[0]+'</sup>' + ' <sup class="badge badge-secondary"> Payment Date: '+wdoc.split('_')[1]+'</sup>'; else wdoc = '';
             winnerDet = wdockey.split('_');
             let emailAddress = retrieveEmail(winnerDet);
@@ -92,7 +92,7 @@ function hideEmailAddress(email) {
     if (userEmail == email) return 'You (' + email + ')';
     
     let emailChars = email.split('@')[0].split('');
-    console.log(emailChars);
+    logMessage(emailChars);
     var emailRet = '';
     for (var i = 0; i < emailChars.length; i++) {
         if (i % 2 != 0) emailRet += '*';
@@ -114,7 +114,7 @@ function retrieveEmail(winnerDet) {
 }
 
 $(function onDocReady() {
-	console.log('Inside onDocReady');
+	logMessage('Inside onDocReady');
     loadHeaderActions();
     loadSharingButtons();
     $('#btnLogout').click(signout);
