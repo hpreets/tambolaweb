@@ -35,8 +35,8 @@ function savePaymentInfo() {
     var lng = $('#langPunj').prop('checked') == true ? 'punj' : 'en';
     let inputJson = {
         upi: $('#inputUPI').val(),
-        ifsc: $('#inputIFSC').val(),
-        accNumber: $('#inputBankAccount').val(),
+        // ifsc: $('#inputIFSC').val(),
+        // accNumber: $('#inputBankAccount').val(),
         uid: uid,
         lang: lng
     };
