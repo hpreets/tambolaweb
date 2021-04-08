@@ -1,5 +1,5 @@
 var db = firebase.firestore();
-if (location.hostname === "localhost") { db.useEmulator("localhost", 8086); }
+if (location.hostname === "localhost") { db.useEmulator("localhost", 8088); }
 // firebase.firestore.setLogLevel("debug");
 var secondsInterval = 21;
 let gameid;
@@ -42,17 +42,17 @@ function logMessage(msg) {
 /* ******************** LOGIN *********************** */
 /* ************************************************** */
 function checkLogin(auth, successFunction, failureFunction) {
-    console.log('Inside checkLogin');
+    logMessage('Inside checkLogin');
     auth.onAuthStateChanged((user) => {
         if (user) {
-            console.log('User is NOT NULL ::' + user.uid + "; displayname ::" + user.displayName + '; email ::' + user.email);
+            logMessage('User is NOT NULL ::' + user.uid + "; displayname ::" + user.displayName + '; email ::' + user.email);
             $('#loggedInUser').text(user.displayName);
             uid = user.uid;
             userEmail = user.email;
             hideHeaderButtons(true);
             if (successFunction !== null  &&  successFunction !== undefined) successFunction(user);
         } else {
-            console.log('User is NULL');
+            logMessage('User is NULL');
             hideHeaderButtons(false);
             if (failureFunction !== null  &&  failureFunction !== undefined) failureFunction(user);
         }
@@ -91,7 +91,7 @@ function hideHeaderButtons(loggedIn) {
         $('#btnMySettingsLi').show();
         $('#btnSignup').hide();
         $('#btnLogin').hide();
-        console.log(isAdmin());
+        logMessage(isAdmin());
         $('.loginInstruction').hide();
         if (isAdmin()) $('#btnAdminHome').show();
     }
@@ -103,13 +103,22 @@ function createNode(element) {
 	return document.createElement(element);
 }
 
+function redirectTo(toUrl) {
+    if ((toUrl == '/mysettings.html') && (uid != null)) {
+        window.location = toUrl;
+    }
+    else {
+        window.location = '/login.html';
+    }
+}
+
 /**
  * Displays Sharing button on UI. Picks data from share.html; also sets the href for buttons
  */
 function loadSharingButtons() {
     $('.sharewrapper').load('pagelets/share.html', function() {
         let currURL = $(location).attr('href');
-        console.log(currURL);
+        logMessage(currURL);
         $('.facebookshare').attr('href', 'https://facebook.com/sharer/sharer.php?u=' + currURL);
         $('.twittershare').attr('href', 'https://twitter.com/intent/tweet/?text=Learn about Sikh History in a fun way: Sikhi Tambola.&url=' + currURL);
         $('.linkedinshare').attr('href', 'https://www.linkedin.com/shareArticle?mini=true&title=Learn about Sikh History in a fun way: Sikhi Tambola.&summary=Learn about Sikh History in a fun way: Sikhi Tambola.&url=' + currURL);
@@ -135,13 +144,13 @@ function loadHeaderActions(success) {
  */
 function generateTicket(e) {
     e.preventDefault();
-    console.log( getFromStorage('gamedatetime') );
+    logMessage( getFromStorage('gamedatetime') );
     let gameDateTime = new Date(getFromStorage('gamedatetime')*1000);
     var currDateTime = new Date();
     currDateTime.setMinutes( currDateTime.getMinutes() + 15 );
     if (isLocalhost()) currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
-    console.log( currDateTime );
-    console.log( gameDateTime );
+    logMessage( currDateTime );
+    logMessage( gameDateTime );
     if (currDateTime > gameDateTime) {
         if (uid != null  &&  uid != undefined) {
             // alert('Time for play');
@@ -171,14 +180,14 @@ function getFirestoreDataColl(collName, where, order, limit, success, failure) {
     if (where !== null) collData = collData.where('keywords', 'array-contains-any', where);
     else if (order !== null) collData = collData.orderBy(order);
     if (limit !== null) collData = collData.limit(limit);
-    console.log(collData);
+    logMessage(collData);
     collData.get()
     .then((querySnapshot) => {
-        console.log('Calling collection success');
+        logMessage('Calling collection success');
         if (success !== null  &&  success !== undefined) success(querySnapshot);
     })
     .catch((error) => {
-        console.log(error);
+        logMessage(error);
         if (failure !== null  &&  failure !== undefined) failure(error);
     });
 }
@@ -191,7 +200,7 @@ function getFSQuestionList(where, order, limit, success, failure) {
 function getFirestoreData(collName, docName, success, failure) {
     db.collection(collName).doc(docName).get()
     .then((doc) => {
-        console.log('Calling success');
+        logMessage('Calling success');
         if (success !== null  &&  success !== undefined) success(doc);
     })
     .catch((error) => {
@@ -201,15 +210,15 @@ function getFirestoreData(collName, docName, success, failure) {
 
 function addSettingsToCache(doc) {
     if (doc !== undefined && doc.data() !== undefined  &&  doc.data() !== null) {
-        console.log('INSIDE addSettingsToCache');
+        logMessage('INSIDE addSettingsToCache');
         addToStorage('gameid', doc.data().gameid);
         if (doc.data().queschanged !== undefined) addToStorage('queschanged', doc.data().queschanged.seconds);
         if (doc.data().gamedatetime !== undefined) addToStorage('gamedatetime', doc.data().gamedatetime.seconds);
-        console.log('INSIDE addSettingsToCache ::' + doc.data().gameid);
-        console.log('INSIDE addSettingsToCache ::' + getFromStorage('gameid'));
+        logMessage('INSIDE addSettingsToCache ::' + doc.data().gameid);
+        logMessage('INSIDE addSettingsToCache ::' + getFromStorage('gameid'));
     }
     else {
-        console.log('INSIDE addSettingsToCache :: doc.data() IS UNDEFINED');
+        logMessage('INSIDE addSettingsToCache :: doc.data() IS UNDEFINED');
     }
 }
 
@@ -228,7 +237,7 @@ function getFSSettingsData(success, failure) {
             if (success !== undefined) success(doc);
         }, 
         function (err) {
-            console.log(err);
+            logMessage(err);
             if (jQuery.isFunction(failure)  &&  failure !== undefined) failure(err);
         }
     );
@@ -257,10 +266,10 @@ function getFSUserDetail(success, failure) {
 function listenToFirestoreData(collName, docName, success, failure) {
     return db.collection(collName).doc(docName)
     .onSnapshot((doc) => {
-        console.log('Calling success');
+        logMessage('Calling success');
         success(doc);
     }, (error) => {
-        console.log('Calling failure');
+        logMessage('Calling failure');
         failure(error);
     });
 }
@@ -288,7 +297,7 @@ function createQuestionJSON(ques, ans, pques, pans, info, status, keywords) {
 function addToQuestionColl(data, success, failure) {
     db.collection("questions").add(data)
     .then(function(doc) {
-        console.log("Document written with ID: ", doc.id);
+        logMessage("Document written with ID: ", doc.id);
         if (success !== null  &&  success !== undefined) success(doc);
     })
     .catch(function(error) {
@@ -307,7 +316,7 @@ function updateQuestionInCollection(qdocId, ques, ans, pques, pans, info, status
 function updateQuestionInColl(qDocId, data, success, failure) {
     db.collection("questions").doc(qDocId).update(data)
     .then(function(doc) {
-        console.log("Document written with ID: ", qDocId);
+        logMessage("Document written with ID: ", qDocId);
         if (success !== null  &&  success !== undefined) success(doc);
     })
     .catch(function(error) {
@@ -319,7 +328,7 @@ function updateQuestionInColl(qDocId, data, success, failure) {
 function saveMerge(collName, docName, docJSON, success, failure) {
     db.collection(collName).doc(docName).set(docJSON)
     .then(function(doc) {
-        console.log("saveMerge :: Document written with ID: ", doc);
+        logMessage("saveMerge :: Document written with ID: ", doc);
         if (success !== null  &&  success !== undefined) success(doc);
     })
     .catch(function(error) {
@@ -331,7 +340,7 @@ function saveMerge(collName, docName, docJSON, success, failure) {
 function deleteRec(collName, docName, success, failure) {
     db.collection(collName).doc(docName).delete()
     .then(() => {
-        console.log("Document successfully deleted!");
+        logMessage("Document successfully deleted!");
         if (success !== null  &&  success !== undefined) success(doc);
     }).catch((error) => {
         console.error("Error removing document: ", error);
@@ -377,7 +386,7 @@ isAdmin = function() {
  * Called when user is logged in
  */
  successAdminLogin = function() {
-    console.log('Inside successLogin');
+    logMessage('Inside successLogin');
     if (!isAdmin()) {
         failureAdminLogin();
     }
@@ -392,7 +401,7 @@ isAdmin = function() {
  * Called when user is NOT logged in
  */
 failureAdminLogin = function() {
-    console.log('Inside failureLogin');
+    logMessage('Inside failureLogin');
     window.location = '/questions.html';
 };
 
