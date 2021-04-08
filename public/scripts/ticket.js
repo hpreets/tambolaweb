@@ -19,6 +19,8 @@ let realTimeUpdateUnsubscribe;
 let realTimePrizeUpdateUnsubscribe;
 // let quesListCache; // Temp. Remove after testing
 let bogieCount = 0;
+var noSleep = new NoSleep();
+var wakeLockEnabled = false;
 
 
 /**
@@ -668,6 +670,20 @@ $(function onDocReady() {
         logMessage('Inside language click');
         updateUIOnQuestions(quesListCache);
     }); */
+    $('.language').on('click', function() {
+        logMessage('Inside language click');
+        if (!wakeLockEnabled) {
+            noSleep.enable(); // keep the screen on!
+            wakeLockEnabled = true;
+            // toggleEl.value = "Wake Lock is enabled";
+            $('.language').css("background-color", "lightgreen").text('Screen ON');
+        } else {
+            noSleep.disable(); // let the screen turn off.
+            wakeLockEnabled = false;
+            // toggleEl.value = "Wake Lock is disabled";
+            $('.language').css("background-color", "").text('Keep screen ON');
+        }
+    });
 });
 
 
