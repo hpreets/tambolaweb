@@ -155,4 +155,9 @@ body {
 	0%   {background-color:yellow; left:0px; top:0px;}
 	50%  {background-color:red; left:0px; top:0px;}
 	100% {background-color:yellow; left:0px; top:0px;}
-  }
+}
+
+.language {
+	font-size: 70%;
+	font-weight: 400;
+}
