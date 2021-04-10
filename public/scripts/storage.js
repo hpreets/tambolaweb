@@ -1,5 +1,5 @@
 var db = firebase.firestore();
-if (location.hostname === "localhost") { db.useEmulator("localhost", 8088); }
+if (location.hostname === "localhost") { db.useEmulator("localhost", 8090); }
 // firebase.firestore.setLogLevel("debug");
 var secondsInterval = 21;
 let gameid;
@@ -339,7 +339,7 @@ function saveMerge(collName, docName, docJSON, success, failure) {
 
 function deleteRec(collName, docName, success, failure) {
     db.collection(collName).doc(docName).delete()
-    .then(() => {
+    .then((doc) => {
         logMessage("Document successfully deleted!");
         if (success !== null  &&  success !== undefined) success(doc);
     }).catch((error) => {
