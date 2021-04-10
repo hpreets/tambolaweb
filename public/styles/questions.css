@@ -31,7 +31,7 @@
 	background-color: rgba(128, 128, 128, 0.1);
 }
 
-@media only screen and (min-width: 700px) {
+@media only screen and (min-width: 800px) {
   .whatsapp {
     display: none
   }
