@@ -405,7 +405,7 @@ function successListenToQuestions(doc) {
 
 function updateUIOnQuestions(qList) {
     if (qList._gameover == true) {
-        alert('Game is over; \'Full House\' won. Please join us again for the next game.');
+        alert('Game is over; \'Full House\' won. Please join us again for the next game. \n\nDon\'t forget to check winners by clicking on "Winners" button.');
         clearInterval(counter);
     }
 
