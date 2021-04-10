@@ -7,6 +7,7 @@
 	background: rgb(66, 103, 178);
 	color: white;
 	position: relative;
+  border-radius: 0;
 }
 
 .buttons {
