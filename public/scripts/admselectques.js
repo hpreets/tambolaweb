@@ -36,7 +36,7 @@ function successQListFetch(querySnapshot) {
 		innerjson['0']=doc.id;
 		innerjson['1']=doc.data().question;
 		innerjson['2']=doc.data().answer;
-		innerjson['3']=doc.data().status;
+		innerjson['3']=doc.data().status == undefined ? '' : doc.data().status;
 		innerjson['4']=doc.data().addedOn.seconds;
 		datajson.push(innerjson);
 	});
