@@ -1,6 +1,10 @@
 var db = firebase.firestore();
+if (location.hostname === "localhost") { db.useEmulator("localhost", 8090); }
+// firebase.firestore.setLogLevel("debug");
 var secondsInterval = 21;
 let gameid;
+let userEmail;
+let uid;
 
 /* ************************************************** */
 /* ******************** CACHE *********************** */
@@ -38,16 +42,17 @@ function logMessage(msg) {
 /* ******************** LOGIN *********************** */
 /* ************************************************** */
 function checkLogin(auth, successFunction, failureFunction) {
-    console.log('Inside checkLogin');
+    logMessage('Inside checkLogin');
     auth.onAuthStateChanged((user) => {
         if (user) {
-            console.log('User is NOT NULL ::' + user.uid + "; displayname ::" + user.displayName);
+            logMessage('User is NOT NULL ::' + user.uid + "; displayname ::" + user.displayName + '; email ::' + user.email);
             $('#loggedInUser').text(user.displayName);
             uid = user.uid;
+            userEmail = user.email;
             hideHeaderButtons(true);
             if (successFunction !== null  &&  successFunction !== undefined) successFunction(user);
         } else {
-            console.log('User is NULL');
+            logMessage('User is NULL');
             hideHeaderButtons(false);
             if (failureFunction !== null  &&  failureFunction !== undefined) failureFunction(user);
         }
@@ -64,6 +69,10 @@ function signout(e) {
     });
 }
 
+noLogin = function(user) {
+    window.location = '/login.html';
+}
+
 /* ************************************************** */
 /* ****************** COMMON UI ********************* */
 /* ************************************************** */
@@ -71,14 +80,20 @@ function hideHeaderButtons(loggedIn) {
     if (!loggedIn) {
         $('#btnSignup').hide();
         $('#btnLogin').show();
-        $('#btnTicket').hide();
-        $('#btnLogout').hide();
+        $('#btnTicketLi').hide();
+        $('#btnLogoutLi').hide();
+        $('#btnMySettingsLi').hide();
+        $('.loginInstruction').show();
     }
     else {
-        $('#btnTicket').show();
-        $('#btnLogout').show();
+        $('#btnTicketLi').show();
+        $('#btnLogoutLi').show();
+        $('#btnMySettingsLi').show();
         $('#btnSignup').hide();
         $('#btnLogin').hide();
+        logMessage(isAdmin());
+        $('.loginInstruction').hide();
+        if (isAdmin()) $('#btnAdminHome').show();
     }
     $('#btnHome').show();
     $('#btnWinners').show();
@@ -88,18 +103,27 @@ function createNode(element) {
 	return document.createElement(element);
 }
 
+function redirectTo(toUrl) {
+    if ((toUrl == '/mysettings.html') && (uid != null)) {
+        window.location = toUrl;
+    }
+    else {
+        window.location = '/login.html';
+    }
+}
+
 /**
  * Displays Sharing button on UI. Picks data from share.html; also sets the href for buttons
  */
 function loadSharingButtons() {
     $('.sharewrapper').load('pagelets/share.html', function() {
         let currURL = $(location).attr('href');
-        console.log(currURL);
+        logMessage(currURL);
         $('.facebookshare').attr('href', 'https://facebook.com/sharer/sharer.php?u=' + currURL);
-        $('.twittershare').attr('href', 'https://twitter.com/intent/tweet/?text=Learn about Sikh History in a fun way: Sikh History Tambola.&url=' + currURL);
-        $('.linkedinshare').attr('href', 'https://www.linkedin.com/shareArticle?mini=true&title=Learn about Sikh History in a fun way: Sikh History Tambola.&summary=Learn about Sikh History in a fun way: Sikh History Tambola.&url=' + currURL);
-        $('.emailshare').attr('href', 'mailto:?subject=Learn about Sikh History in a fun way: Sikh History Tambola.&body=' + currURL);
-        $('.whatsappshare').attr('href', 'whatsapp://send?text=Learn about Sikh History in a fun way: Sikh History Tambola. ' + currURL);
+        $('.twittershare').attr('href', 'https://twitter.com/intent/tweet/?text=Learn about Sikh History in a fun way: Sikhi Tambola.&url=' + currURL);
+        $('.linkedinshare').attr('href', 'https://www.linkedin.com/shareArticle?mini=true&title=Learn about Sikh History in a fun way: Sikhi Tambola.&summary=Learn about Sikh History in a fun way: Sikhi Tambola.&url=' + currURL);
+        $('.emailshare').attr('href', 'mailto:?subject=Learn about Sikh History in a fun way: Sikhi Tambola.&body=' + currURL);
+        $('.whatsappshare').attr('href', 'whatsapp://send?text=Learn about Sikh History in a fun way: Sikhi Tambola. ' + currURL);
     });
 }
 
@@ -108,6 +132,7 @@ function loadHeaderActions(success) {
         function() {
             $('#btnLogout').click(signout);
             $('#btnTicket').click(generateTicket);
+            $('.lnkTicket').click(generateTicket);
             if (success !== undefined) success();
         }
     );
@@ -119,22 +144,33 @@ function loadHeaderActions(success) {
  */
 function generateTicket(e) {
     e.preventDefault();
-    console.log( getFromStorage('gamedatetime') );
+    logMessage( getFromStorage('gamedatetime') );
     let gameDateTime = new Date(getFromStorage('gamedatetime')*1000);
     var currDateTime = new Date();
     currDateTime.setMinutes( currDateTime.getMinutes() + 15 );
-    currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
-    console.log( currDateTime );
-    console.log( gameDateTime );
+    if (isLocalhost()) currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
+    logMessage( currDateTime );
+    logMessage( gameDateTime );
     if (currDateTime > gameDateTime) {
-        // alert('Time for play');
-        window.location = '/ticket.html';
+        if (uid != null  &&  uid != undefined) {
+            // alert('Time for play');
+            window.location = '/ticket.html';
+        }
+        else {
+            window.location = '/login.html';
+        }
     }
     else {
         alert('The ticket would be available 15 minutes before the game.');
     }
 }
 
+function appendLeadingZeroes(n){
+    if(n <= 9){
+        return "0" + n;
+    }
+    return n
+}
 
 /* ************************************************** */
 /* ****************** FIRESTORE ********************* */
@@ -144,14 +180,14 @@ function getFirestoreDataColl(collName, where, order, limit, success, failure) {
     if (where !== null) collData = collData.where('keywords', 'array-contains-any', where);
     else if (order !== null) collData = collData.orderBy(order);
     if (limit !== null) collData = collData.limit(limit);
-    console.log(collData);
+    logMessage(collData);
     collData.get()
     .then((querySnapshot) => {
-        console.log('Calling collection success');
+        logMessage('Calling collection success');
         if (success !== null  &&  success !== undefined) success(querySnapshot);
     })
     .catch((error) => {
-        console.log(error);
+        logMessage(error);
         if (failure !== null  &&  failure !== undefined) failure(error);
     });
 }
@@ -164,28 +200,46 @@ function getFSQuestionList(where, order, limit, success, failure) {
 function getFirestoreData(collName, docName, success, failure) {
     db.collection(collName).doc(docName).get()
     .then((doc) => {
-        console.log('Calling success');
+        logMessage('Calling success');
         if (success !== null  &&  success !== undefined) success(doc);
     })
     .catch((error) => {
-        if (failure !== null  &&  failure !== undefined) failure(error);
+        if (jQuery.isFunction(failure)  &&  failure !== null  &&  failure !== undefined) failure(error);
     });
 }
 
 function addSettingsToCache(doc) {
-    console.log('INSIDE addSettingsToCache');
-    addToStorage('gameid', doc.data().gameid);
-    addToStorage('queschanged', doc.data().queschanged.seconds);
-    addToStorage('gamedatetime', doc.data().gamedatetime.seconds);
+    if (doc !== undefined && doc.data() !== undefined  &&  doc.data() !== null) {
+        logMessage('INSIDE addSettingsToCache');
+        addToStorage('gameid', doc.data().gameid);
+        if (doc.data().queschanged !== undefined) addToStorage('queschanged', doc.data().queschanged.seconds);
+        if (doc.data().gamedatetime !== undefined) addToStorage('gamedatetime', doc.data().gamedatetime.seconds);
+        logMessage('INSIDE addSettingsToCache ::' + doc.data().gameid);
+        logMessage('INSIDE addSettingsToCache ::' + getFromStorage('gameid'));
+    }
+    else {
+        logMessage('INSIDE addSettingsToCache :: doc.data() IS UNDEFINED');
+    }
 }
 
 function getFSSettingsData(success, failure) {
     getFirestoreData("settings", "currgame", 
         function(doc) {
+            if (getFromStorage('gameid') != null  
+            &&  doc.data().gameid == getFromStorage('gameid')  
+            &&  doc.data().queschanged.seconds == getFromStorage('queschanged')
+            ) {
+                //
+            }
+            else clearStorage();
+            
             addSettingsToCache(doc);
             if (success !== undefined) success(doc);
         }, 
-        failure
+        function (err) {
+            logMessage(err);
+            if (jQuery.isFunction(failure)  &&  failure !== undefined) failure(err);
+        }
     );
 }
 
@@ -205,11 +259,18 @@ function getFSUserTicket(gameId, uid, success, failure) {
     getFirestoreData("tickets", gameId + "_" + uid, success, failure);
 }
 
+function getFSUserDetail(success, failure) {
+    getFirestoreData("users", userEmail, success, failure);
+}
+
 function listenToFirestoreData(collName, docName, success, failure) {
     return db.collection(collName).doc(docName)
     .onSnapshot((doc) => {
-        console.log('Calling success');
+        logMessage('Calling success');
         success(doc);
+    }, (error) => {
+        logMessage('Calling failure');
+        failure(error);
     });
 }
 
@@ -221,8 +282,78 @@ function listenToLatestPrize(success, failure) {
     return listenToFirestoreData("prizes", "latest", success, failure);
 }
 
+function createQuestionJSON(ques, ans, pques, pans, info, status, keywords) {
+    let qjson = {};
+    qjson.question = ques;
+    qjson.answer = ans;
+    qjson.info = info;
+    qjson.pquestion = pques;
+    qjson.panswer = pans;
+    qjson.status = status;
+    qjson.keywords = keywords;
+    qjson.addedOn = firebase.firestore.Timestamp.now();
+    return qjson;
+}
+function addToQuestionColl(data, success, failure) {
+    db.collection("questions").add(data)
+    .then(function(doc) {
+        logMessage("Document written with ID: ", doc.id);
+        if (success !== null  &&  success !== undefined) success(doc);
+    })
+    .catch(function(error) {
+        console.error("Error adding document: ", error);
+        if (failure !== null  &&  failure !== undefined) failure(error);
+    });
+}
+function addToQuestionCollection(ques, ans, pques, pans, info, status, keywords, success, failure) {
+    let qjson = createQuestionJSON(ques, ans, pques, pans, info, status, keywords);
+    addToQuestionColl(qjson, success, failure);
+}
+function updateQuestionInCollection(qdocId, ques, ans, pques, pans, info, status, keywords, success, failure) {
+    let qjson = createQuestionJSON(ques, ans, pques, pans, info, status, keywords);
+    updateQuestionInColl(qdocId, qjson, success, failure);
+}
+function updateQuestionInColl(qDocId, data, success, failure) {
+    db.collection("questions").doc(qDocId).update(data)
+    .then(function(doc) {
+        logMessage("Document written with ID: ", qDocId);
+        if (success !== null  &&  success !== undefined) success(doc);
+    })
+    .catch(function(error) {
+        console.error("Error adding document: ", error);
+        if (failure !== null  &&  failure !== undefined) failure(error);
+    });
+}
+
+function saveMerge(collName, docName, docJSON, success, failure) {
+    db.collection(collName).doc(docName).set(docJSON)
+    .then(function(doc) {
+        logMessage("saveMerge :: Document written with ID: ", doc);
+        if (success !== null  &&  success !== undefined) success(doc);
+    })
+    .catch(function(error) {
+        console.error("saveMerge :: Error adding document: ", error);
+        if (failure !== null  &&  failure !== undefined) failure(error);
+    });
+}
+
+function deleteRec(collName, docName, success, failure) {
+    db.collection(collName).doc(docName).delete()
+    .then((doc) => {
+        logMessage("Document successfully deleted!");
+        if (success !== null  &&  success !== undefined) success(doc);
+    }).catch((error) => {
+        console.error("Error removing document: ", error);
+        if (failure !== null  &&  failure !== undefined) failure(error);
+    });
+}
+
+function deleteQuestion(docName, success, failure) {
+    deleteRec("questions", docName, success, failure);
+}
+
 /* ************************************************** */
-/* ****************** FIRESTORE ********************* */
+/* ****************** FUNCTION ********************** */
 /* ************************************************** */
 function callCloudFunction(functionName, params, success, failure) {
     var addMessage = functions.httpsCallable(functionName);
@@ -235,3 +366,55 @@ function callCloudFunction(functionName, params, success, failure) {
         if (failure !== undefined) failure(e);
     });
 }
+
+/* ************************************************** */
+/* ****************** ADMIN UI ********************** */
+/* ************************************************** */
+
+isLocalhost = function() {
+    return location.hostname === "localhost";
+};
+
+isAdmin = function() {
+    if (isLocalhost() || uid == '2CcF64X5WzgS50UB8ZMw5RjHP1o1' ||  uid == 'j2ZOUSePSJOKWdgqxjoOQeBwGNY2') {
+        return true;
+    }
+    return false;
+};
+
+/**
+ * Called when user is logged in
+ */
+ successAdminLogin = function() {
+    logMessage('Inside successLogin');
+    if (!isAdmin()) {
+        failureAdminLogin();
+    }
+    /* if (uid == '2CcF64X5WzgS50UB8ZMw5RjHP1o1' ||  uid == 'j2ZOUSePSJOKWdgqxjoOQeBwGNY2') {
+        // Allow
+    }
+    else {
+        failureAdminLogin();
+    } */
+};
+/**
+ * Called when user is NOT logged in
+ */
+failureAdminLogin = function() {
+    logMessage('Inside failureLogin');
+    window.location = '/questions.html';
+};
+
+checkAdminLogin = function() {
+    checkLogin(firebase.auth(), successAdminLogin, failureAdminLogin);
+}
+
+function loadHeaderActionsAdmin(success) {
+    $('#headerActions').load('pagelets/headeractionadmin.html', 
+        function() {
+            $('#btnLogout').click(signout);
+            if (success !== undefined) success();
+        }
+    );
+}
+

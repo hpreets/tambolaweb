@@ -1,29 +1,7 @@
-// var db = firebase.firestore();
-// var user = firebase.auth().currentUser;
-// var functions = firebase.functions();
-// let uid;
-// alert('Hi');
+const container = $('.winnerTable');
 
-const container = $('.container-fluid');
-// let qList = null;
-// let gameid;
 
-/* firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-        console.log('User is NOT NULL ::' + user.uid + "; displayname ::" + user.displayName);
-        $('#loggedInUser').text(user.displayName);
-        uid = user.uid;
-        hideButtons(true);
-    } else {
-        console.log('User is NULL');
-        hideButtons(false);
-    }
-}); */
-  
 
-/* function createNode(element) {
-	return document.createElement(element);
-} */
 
 /**
  * Create a UI row for each winner 
@@ -33,7 +11,7 @@ const container = $('.container-fluid');
  * @param {*} container - parent element to which row to be added
  */
 function createWinnerRow(winners, prizeId, prizeName, container) {
-    console.log('winners ::' + winners);
+    logMessage('winners ::' + winners);
     let row = createNode('div');
     let prizeNameDiv = createNode('div');
     let winnerDiv = createNode('div');
@@ -55,10 +33,10 @@ function createWinnerRow(winners, prizeId, prizeName, container) {
  * @param {*} doc - JSON data - prize data
  */
 function successPrizeDataFetch(doc) {
-    console.log("Picking data from firestore");
+    logMessage("Picking data from firestore");
     wList = doc.data();
     let winners = iterateWinners(wList);
-    console.log(winners);
+    logMessage(winners);
     createWinnerRow(winners, 'EF', 'Early Five', container);
     createWinnerRow(winners, 'FL', 'First Line', container);
     createWinnerRow(winners, 'ML', 'Middle Line', container);
@@ -73,45 +51,15 @@ function successPrizeDataFetch(doc) {
 function successCurrGameFetch(doc) {
     gameid = doc.data().gameid;
     prevgameid = doc.data().prevgameid;
+    if (prevgameid === null  ||  doc.data().gameover == true) prevgameid = gameid;
     getFSPrizeDetail(prevgameid, successPrizeDataFetch, null);
-    /* db.collection("prizes").doc(prevgameid).get()
-    .then((doc) => {
-        console.log("Picking data from firestore");
-        wList = doc.data();
-        let winners = iterateWinners(wList);
-        console.log(winners);
-        createWinnerRow(winners, 'EF', 'Early Five', container);
-        createWinnerRow(winners, 'FL', 'First Line', container);
-        createWinnerRow(winners, 'ML', 'Middle Line', container);
-        createWinnerRow(winners, 'LL', 'Last Line', container);
-        createWinnerRow(winners, 'FH', 'Full House', container);
-    }); */
 }
 
 /**
  * First method that initiates data fetch and UI creation
  */
 function init() {
-    // sessionStorage.clear();
-    // clearStorage();
     getFSSettingsData(successCurrGameFetch, null);
-    /* db.collection("settings").doc("currgame").get()
-    .then((doc) => {
-        gameid = doc.data().gameid;
-        prevgameid = doc.data().prevgameid;
-        db.collection("prizes").doc(prevgameid).get()
-        .then((doc) => {
-            console.log("Picking data from firestore");
-            wList = doc.data();
-            let winners = iterateWinners(wList);
-            console.log(winners);
-            createWinnerRow(winners, 'EF', 'Early Five', container);
-            createWinnerRow(winners, 'FL', 'First Line', container);
-            createWinnerRow(winners, 'ML', 'Middle Line', container);
-            createWinnerRow(winners, 'LL', 'Last Line', container);
-            createWinnerRow(winners, 'FH', 'Full House', container);
-        });
-    }); */
 }
 
 /**
@@ -123,18 +71,34 @@ function iterateWinners(wList) {
     if (wList) {
         Object.keys(wList).forEach((wdockey) => {
             let wdoc = wList[wdockey];
+            logMessage(wdoc);
+            if (wdoc != false) wdoc = ' <sup class="badge badge-secondary">Transaction Ref: '+wdoc.split('_')[0]+'</sup>' + ' <sup class="badge badge-secondary"> Payment Date: '+wdoc.split('_')[1]+'</sup>'; else wdoc = '';
             winnerDet = wdockey.split('_');
             let emailAddress = retrieveEmail(winnerDet);
+            emailAddress = hideEmailAddress(emailAddress);
             if (winners[winnerDet[1]]) {
-                winners[winnerDet[1]].push(emailAddress);
+                winners[winnerDet[1]].push(emailAddress + wdoc);
             }
             else {
-                winners[winnerDet[1]] = [ emailAddress ];
+                winners[winnerDet[1]] = [ emailAddress + wdoc ];
             }
         });
     }
 
     return winners;
+}
+
+function hideEmailAddress(email) {
+    if (userEmail == email) return 'You (' + email + ')';
+    
+    let emailChars = email.split('@')[0].split('');
+    logMessage(emailChars);
+    var emailRet = '';
+    for (var i = 0; i < emailChars.length; i++) {
+        if (i % 2 != 0) emailRet += '*';
+        else emailRet += emailChars[i];
+    }
+    return emailRet + '@' + email.split('@')[1];
 }
 
 /**
@@ -149,61 +113,14 @@ function retrieveEmail(winnerDet) {
     return retVal;
 }
 
-/* function hideButtons(loggedIn) {
-    if (!loggedIn) {
-        $('#btnSignup').hide();
-        $('#btnLogin').show();
-        $('#btnTicket').hide();
-        $('#btnLogout').hide();
-    }
-    else {
-        $('#btnTicket').show();
-        $('#btnLogout').show();
-        $('#btnSignup').hide();
-        $('#btnLogin').hide();
-    }
-} */
-
-
-/* function signout() {
-    redirectTo('/questions.html');
-} */
-
-
 $(function onDocReady() {
-	console.log('Inside onDocReady');
+	logMessage('Inside onDocReady');
     loadHeaderActions();
     loadSharingButtons();
     $('#btnLogout').click(signout);
 });
 
-// document.onload = function() {
-//     console.log('ON LOAD');
-//     // $('.btnTicket').click();
-//     $('.btnLogout').click(signout);
-// }
-
-
-/* function setCurrGameQuestions() {
-    db.collection("gameques").doc("20201228").set({});
-    let gameques = db.collection("gameques").doc("20201228");
-    let quesList = {};
-    db.collection("questions").get().then((querySnapshot) => {
-        let ctr = 0;
-        querySnapshot.forEach((doc) => {
-            let qdoc = doc.data();
-            // console.log(`${doc.id} => ${qdoc} => ${qdoc.question} => ${qdoc.answer}`);
-
-            let answer = qdoc.answer;
-            quesList[answer] = qdoc;
-            
-
-        });
-        console.log(quesList);
-        gameques.update(quesList, { merge: true });
-    });
-} */
 
 checkLogin(firebase.auth());
 init();
-// setCurrGameQuestions();
+

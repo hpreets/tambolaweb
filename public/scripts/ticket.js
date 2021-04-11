@@ -2,10 +2,11 @@
 // CHECK IF THESE VARIABLES ARE REQUIRED
 
 
-var db = firebase.firestore();
+// var db = firebase.firestore();
 // var user = firebase.auth().currentUser;
 var functions = firebase.app().functions('asia-south1');
-let uid;
+if (isLocalhost()) { functions.useEmulator("localhost", 5001); }
+
 let uEmailAddress;
 let uPhoneNumber;
 let prizeDetails;
@@ -18,6 +19,8 @@ let realTimeUpdateUnsubscribe;
 let realTimePrizeUpdateUnsubscribe;
 // let quesListCache; // Temp. Remove after testing
 let bogieCount = 0;
+var noSleep = new NoSleep();
+var wakeLockEnabled = false;
 
 
 /**
@@ -52,9 +55,7 @@ successLogin = function(user) {
     listenToQuestions();
 };
 
-noLogin = function(user) {
-    window.location = '/login.html';
-};
+
 
 
 // Read Data
@@ -100,27 +101,28 @@ function generateTicket() {
     resetTicketStorage();
 
     init();
-    console.log( 'FROM STORAGE :: gamedatetime ::' + getFromStorage('gamedatetime') );
+    logMessage( 'FROM STORAGE :: gamedatetime ::' + getFromStorage('gamedatetime') );
     let gameDateTime = new Date(getFromStorage('gamedatetime')*1000);
     var currDateTime = new Date();
     currDateTime.setMinutes( currDateTime.getMinutes() + 15 );
-    currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
+    logMessage(isLocalhost());
+    if (isLocalhost()) currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
     logMessage( currDateTime );
     logMessage( gameDateTime );
     if (currDateTime > gameDateTime) {
 
         gameId = getFromStorage('gameid');
         let tkt;
-        console.log(gameId + "_" + uid);
-        console.log(getFromStorage('ticket'));
+        logMessage(gameId + "_" + uid);
+        logMessage(getFromStorage('ticket'));
 
         if (!getFromStorage('ticket')) {
-            console.log('Picking ticket from firestore');
+            logMessage('Picking ticket from firestore');
             getFSUserTicket(gameId, uid, successFetchTicketFirstTime, null);
         }
         else {
             // tkt = JSON.parse(getFromStorage('ticket'))
-            console.log('Picked from Cache');
+            logMessage('Picked from Cache');
             tkt = getTicketFromStorage();
             // loadTicket(tkt);
             processTicket(tkt, getFromStorage('bogieCount'));
@@ -133,32 +135,32 @@ function generateTicket() {
 }
 
 function successFetchTicketFirstTime(doc) {
-    console.log('successFetchTicketFirstTime ::' + doc);
+    logMessage('successFetchTicketFirstTime ::' + doc);
     if (doc.data()) {
         processTicket(doc.data(), getFromStorage('bogieCount'));
         return doc;
     }
 
-    console.log('Calling createTkt');
+    logMessage('Calling createTkt');
     callCloudFunction('createTicketV2', null, successFunctionCreateTicket, null);
 }
 
 function successFunctionCreateTicket(retData) {
-    console.log('successFunctionCreateTicket :: retData :: ' + JSON.stringify(retData.data));
+    logMessage('successFunctionCreateTicket :: retData :: ' + JSON.stringify(retData.data));
     if (retData && retData.data) {
         processTicket(retData.data, retData.data.bogiecount);
         return retData;
     }
-    console.log('Returning data from firestore');
+    logMessage('Returning data from firestore');
 }
 
 
 function processTicket(ticketData, bCount) {
-    console.log('doc.data() is not null ::' + ticketData);
+    logMessage('doc.data() is not null ::' + ticketData);
     if (ticketData.ticket !== undefined) {
-        console.log(JSON.stringify(ticketData));
+        logMessage(JSON.stringify(ticketData));
         tkt = ticketData;
-        console.log(tkt);
+        logMessage(tkt);
         initTicketDataInStorage(tkt); // Not required since bogiecount can differ in each load.
         // addToStorage('ticket', JSON.stringify(tkt));
         loadTicket(tkt);
@@ -172,9 +174,9 @@ function processTicket(ticketData, bCount) {
  * This method is called from generateTicket(e)
  * @param {*} tkt - Ticket Json
  */
-function setBogieCount(count) {
-    bogieCount = count;
-    console.log('bogieCount ::' + bogieCount);
+function setBogieCount(bcount) {
+    bogieCount = bcount;
+    logMessage('bogieCount ::' + bogieCount);
     addToStorage('bogieCount', bogieCount);
 }
 
@@ -202,7 +204,7 @@ function loadTicket(tdata) {
     $('.tktcell35').text(tdata.ticket['c35']);
 
     let tdataSel = getSelectionDataFromStorage();
-    console.log(tdataSel);
+    logMessage(tdataSel);
     if (tdataSel['tktcell11']) $('.tktcell11').addClass('green');
     if (tdataSel['tktcell12']) $('.tktcell12').addClass('green');
     if (tdataSel['tktcell13']) $('.tktcell13').addClass('green');
@@ -223,7 +225,7 @@ function loadTicket(tdata) {
 
 function checkforPrizeAndClaim() {
     let tdataSel = getSelectionDataFromStorage();
-    console.log(tdataSel);
+    logMessage(tdataSel);
     let prizeIds = '';
     let retStr = '';
     let selectedCount = 0;
@@ -244,25 +246,25 @@ function checkforPrizeAndClaim() {
             if (selectedCell.search('c3') == 0) selectedCountLL++;
         }
     });
-    console.log('retStr :: ' + retStr);
-    console.log('selectedCount ::' + selectedCount);
-    console.log('selectedCountFL ::' + selectedCountFL);
-    console.log('selectedCountML ::' + selectedCountML);
-    console.log('selectedCountLL ::' + selectedCountLL);
-    console.log(prizeDetailsFromNextQues == undefined);
-    console.log((prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.EF != true)));
+    logMessage('retStr :: ' + retStr);
+    logMessage('selectedCount ::' + selectedCount);
+    logMessage('selectedCountFL ::' + selectedCountFL);
+    logMessage('selectedCountML ::' + selectedCountML);
+    logMessage('selectedCountLL ::' + selectedCountLL);
+    logMessage(prizeDetailsFromNextQues == undefined);
+    logMessage((prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.EF != true)));
 
     if (selectedCount == 5  &&  (prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.EF != true  /* && EF not already claimed */))) {
-        console.log('Claim for EF');
+        logMessage('Claim for EF');
         prizeIds = 'EF';
     }
     else if (selectedCountFL == 5  &&  (prizeDetailsFromNextQues == undefined  ||  (selectedCountML == 5  &&  selectedCountLL == 5  &&  prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.FH != true))) {
-        console.log('Claim for FULL HOUSE');
+        logMessage('Claim for FULL HOUSE');
         if (prizeIds.length > 0) prizeIds += '#FH'; else prizeIds += 'FH';
         retStr = '';
     }
     if (selectedCountFL == 5  &&  (prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.FL != true  /* && FL not already claimed */))) {
-        console.log('Claim for FL');
+        logMessage('Claim for FL');
         if (prizeIds.length > 0) prizeIds += '#FL'; 
         else {
             prizeIds += 'FL';
@@ -270,7 +272,7 @@ function checkforPrizeAndClaim() {
         }
     }
     else if (selectedCountML == 5  &&  (prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.ML != true  /* && ML not already claimed */))) {
-        console.log('Claim for ML');
+        logMessage('Claim for ML');
         if (prizeIds.length > 0) prizeIds += '#ML'; 
         else {
             prizeIds += 'ML';
@@ -278,7 +280,7 @@ function checkforPrizeAndClaim() {
         }
     }
     else if (selectedCountLL == 5  &&  (prizeDetailsFromNextQues == undefined  ||  (prizeDetailsFromNextQues != undefined  &&  prizeDetailsFromNextQues.LL != true /* && LL not already claimed */))) {
-        console.log('Claim for LL');
+        logMessage('Claim for LL');
         if (prizeIds.length > 0) prizeIds += '#LL'; 
         else {
             prizeIds += 'LL';
@@ -288,8 +290,8 @@ function checkforPrizeAndClaim() {
 
     if (prizeIds !== '') {
         let prizeRet = registerPrize(prizeIds, retStr);
-        console.log('prizeRet ::' + prizeRet);
-        // console.log('prizeRet.bogie ::' + prizeRet.bogie);
+        logMessage('prizeRet ::' + prizeRet);
+        // logMessage('prizeRet.bogie ::' + prizeRet.bogie);
         /* if (prizeRet != undefined  &&  prizeRet.bogie == true) {
             alert('It was a bogie. Please play with caution, you may not be allowed to continue playing if you bogie 3 times.');
             bogieCount++;
@@ -344,7 +346,7 @@ function addTicketToStorage(data) {
 }
 
 function getTicketFromStorage() {
-    console.log(getFromStorage('ticket'));
+    logMessage(getFromStorage('ticket'));
     return JSON.parse(getFromStorage('ticket'));
 }
 
@@ -354,7 +356,7 @@ function addSelectionDataToStorage(ticketSel) {
 
 function getSelectionDataFromStorage() {
     logMessage(getFromStorage("ticketSel"));
-    console.log(getFromStorage("ticketSel"));
+    logMessage(getFromStorage("ticketSel"));
     let sel = getFromStorage("ticketSel");
     if (!sel) sel = "{}";
 	return JSON.parse(sel);
@@ -387,30 +389,28 @@ function successGetCoveredQuestions(doc) {
 
 
 function listenToQuestions() {
-    realTimeUpdateUnsubscribe = listenToFSQuestions(gameId, successListenToQuestions, null);
-    /* realTimeUpdateUnsubscribe = db.collection("gameques").doc(gameId)
-    .onSnapshot(function(doc) {
-        logMessage("Current data: ", doc.data());
-        prizeDetailsFromNextQues = prizeDetails;
-        updateUIOnQuestions(doc.data());
-        updateUIOnPrizesToRed();
-    }); */
+    realTimeUpdateUnsubscribe = listenToFSQuestions(gameId, successListenToQuestions, failureListenToQuestions);
+}
+
+function failureListenToQuestions(error) {
+    logMessage("failureListenToQuestions :: Error ::", error);
 }
 
 function successListenToQuestions(doc) {
     logMessage("successListenToQuestions :: Current data ::", doc.data());
     prizeDetailsFromNextQues = prizeDetails;
-    updateUIOnQuestions(doc.data());
+    if (doc.data() != undefined) updateUIOnQuestions(doc.data());
     updateUIOnPrizesToRed();
 }
 
 function updateUIOnQuestions(qList) {
     if (qList._gameover == true) {
-        alert('Game is over; \'Full House\' won. Please join us again for the next game.');
+        alert('Game is over; \'Full House\' won. Please join us again for the next game. \n\nDon\'t forget to check winners by clicking on "Winners" button.');
         clearInterval(counter);
     }
 
     let covQues = [];
+    let gameInitiated = false;
     // let qList = doc.data();
     Object.keys(qList).forEach((qdoc) => {
         if (qdoc != '_gameover') { // Indicator of whether game is in progress or is over.
@@ -420,7 +420,11 @@ function updateUIOnQuestions(qList) {
                 covQues.push(ques);
             }
         }
+        else {
+            gameInitiated = true;
+        }
     });
+    logMessage('Game Initiated ::' + gameInitiated);
     if (covQues.length > 0) {
         
         logMessage(covQues);
@@ -438,18 +442,29 @@ function updateUIOnQuestions(qList) {
         });
         logMessage(covQues);
         logMessage(covQues[0].question);
-        $('#question').text(covQues[0].question);
-        if (prizeDetailsFromNextQues != undefined  &&  !prizeDetailsFromNextQues.FH) {
+        $('#question').removeClass('questionCellInstructions').text(covQues[0].question);
+        logMessage(prizeDetailsFromNextQues);
+        if (prizeDetailsFromNextQues == undefined  ||  !prizeDetailsFromNextQues.FH) {
             $('#question').css('background', '#8aff80');
             animateHTML($('#question'), '#8aff80', '#b3d9ff', 1000);
+            count = secondsInterval; // Set the timer
+        }
+        else {
+            count = 0; // Set the timer
         }
         addQuestionsToModalDialog(covQues);
 
+        if (counter == null) counter = setInterval(timer, 1000);
+    }
+    else if (gameInitiated) {
+        logMessage('Game Initiated.');
+        logMessage(counter);
         count = secondsInterval; // Set the timer
         if (counter == null) counter = setInterval(timer, 1000);
     }
     else {
-        $('#question').text('');
+        logMessage('Setting question instructions since no questions received');
+        $('#question').addClass('questionCellInstructions').text('Once the game starts, the question will appear here. If your ticket has answer to the question on your ticket, just tap on that answer. You keep on answering correctly, we will handle the rest. If you tap on any answer by mistake, tap again to unselect it.');
     }
 }
 
@@ -535,13 +550,13 @@ function successListenToClaimedPrizes(doc) {
 }
 
 function updateUIOnPrizes(pList) {
-    console.log("updateUIOnPrizes ::: pList :::" + pList);
+    logMessage("updateUIOnPrizes ::: pList :::" + pList);
     prizeDetails = pList;
     if (pList) {
         Object.keys(pList).forEach((pdoc) => {
             let prize = pList[pdoc];
-            console.log("updateUIOnPrizes ::: pdoc :::" + pdoc);
-            console.log("updateUIOnPrizes ::: prize :::" + prize);
+            logMessage("updateUIOnPrizes ::: pdoc :::" + pdoc);
+            logMessage("updateUIOnPrizes ::: prize :::" + prize);
             if (prize === true) {
                 // $('.prize' + pdoc).css('background', 'red');
                 $('.prize' + pdoc).removeClass('backgroundgreen');
@@ -597,7 +612,7 @@ function onPageUnload() {
 
 function getMarkedAnswersInString() {
     let tdataSel = getSelectionDataFromStorage();
-    console.log(tdataSel);
+    logMessage(tdataSel);
     let retStr = '';
     Object.keys(tdataSel).forEach((qdoc) => {
         if (tdataSel[qdoc]) {
@@ -605,7 +620,7 @@ function getMarkedAnswersInString() {
             else retStr = qdoc.replace('tktcell', 'c');
         }
     });
-    console.log(retStr);
+    logMessage(retStr);
     return retStr;
 }
 
@@ -621,9 +636,10 @@ function registerPrize(prizeIds, efCells) {
     })
     .then((result) => {
         // Read result of the Cloud Function.
-        console.log('AFTER REGISTERPRIZE Cloud Function Call :: result.data :: ' + JSON.stringify(result.data));
+        logMessage('AFTER REGISTERPRIZE Cloud Function Call :: result.data :: ' + JSON.stringify(result.data));
         if (result.data != undefined &&  result.data.bogie == true) {
-            alert('It was a bogie. Please play with caution, you may not be allowed to continue playing if you bogie 3 times.');
+            // alert('It was a bogie. Please play with caution, you may not be allowed to continue playing if you bogie 3 times.');
+            $('#boogeyModal').modal('show');
             bogieCount++;
             addToStorage('bogieCount', bogieCount);
         }
@@ -654,22 +670,41 @@ $(function onDocReady() {
         logMessage('Inside language click');
         updateUIOnQuestions(quesListCache);
     }); */
+    $('.language').on('click', function() {
+        logMessage('Inside language click');
+        if (!wakeLockEnabled) {
+            noSleep.enable(); // keep the screen on!
+            wakeLockEnabled = true;
+            // toggleEl.value = "Wake Lock is enabled";
+            $('.language').css("background-color", "lightgreen").text('Screen ON');
+        } else {
+            noSleep.disable(); // let the screen turn off.
+            wakeLockEnabled = false;
+            // toggleEl.value = "Wake Lock is disabled";
+            $('.language').css("background-color", "").text('Keep screen ON');
+        }
+    });
 });
 
 
-// var count = secondsInterval;
+var count = 0;
 var counter = null; // setInterval(timer, 1000);
 
-function timer(){	
+function timer() {	
 	if(count <= 0){
 		// Nothing
     }
     else {
         count = count-1;
+        if (count <= 5) $('.timer').addClass('timeranimate');
+        else $('.timer').removeClass('timeranimate');
     }
+    logMessage(count);
 	$('.timer').html(count);
 }
 
 
 window.addEventListener('beforeunload', onPageUnload);
 checkLogin(firebase.auth(), successLogin, noLogin);
+// count = secondsInterval; // Set the timer
+// counter = setInterval(timer, 1000);

@@ -2,7 +2,7 @@
 var db = firebase.firestore();
 var user = firebase.auth().currentUser;
 var functions = firebase.functions();
-let uid;
+// let uid;
 
 // Read Data
 const container = $('.container-fluid');
@@ -13,13 +13,13 @@ let coveredAnswersArr = [];
 let coveredAnswersStr = '';
 
 var count = secondsInterval;
-var counter;
+var counter = null;
 let prizeDetails;
 let allPrizesWon = false;
 
 // alert('Hi');
 
-firebase.auth().onAuthStateChanged((user) => {
+/* firebase.auth().onAuthStateChanged((user) => {
     if (user) {
         console.log('User is NOT NULL ::' + user.uid + "; displayname ::" + user.displayName);
         $('#loggedInUser').text(user.displayName);
@@ -31,7 +31,7 @@ firebase.auth().onAuthStateChanged((user) => {
         console.log('User is NULL');
         hideButtons(false);
     }
-});
+}); */
 
 
 function createNode(element) {
@@ -41,13 +41,13 @@ function createNode(element) {
 function createAnswerButton(ques, answ, coveredCtr) {
 
 	let btn = createNode('button');
-	$(btn).addClass('btn btn-success col-lg-1');
+	$(btn).addClass('btn btn-success col-sm-1');
 	if (coveredCtr >= 0) $(btn).addClass('active');
 	else $(btn).addClass('uncovered');
 	$(btn).attr('data-question', ques);
 	$(btn).on("click", pickNextQuesFromBtn);
 	$(btn).html(answ);
-		
+	
 	return btn;
 }
 
@@ -181,7 +181,7 @@ function pickNextQuesFromBtn() {
 
 
 function pickNextQues() {
-	if (!allPrizesWon) {
+	if (!allPrizesWon  &&  $('.uncovered').length > 0) {
 		let uncoveredButtons = $('.uncovered');
 		console.log(uncoveredButtons.length);
 		let nextQuesBtn = uncoveredButtons[Math.floor(Math.random() * uncoveredButtons.length)];
@@ -190,8 +190,14 @@ function pickNextQues() {
 	else {
 		// Update the Latest Prize data and set GameOver = true;
 		// This will be used by the Ticket screen to stop taking any further inputs.
-		// db.collection("prizes").doc("latest").update({ gameover : true });
 		db.collection("gameques").doc(gameid).update({ _gameover : true });
+
+		/*
+		 * Since gameover cannot be set from the function registerPrize since 
+		 * there can be multiple users with common last answer. So we are 
+		 * setting gameover property here.
+		 */
+		db.collection("settings").doc("currgame").update({ gameover : true });
 		stopTimer();
 	}
 }
@@ -235,14 +241,36 @@ function updateCoveredIndex(answer) {
 
 function timer(){
 	count = count-1;
-	if(count < 0){
+	console.log(count);
+	if(count == 0) {
 		pickNextQues();
 	}
+	/* if(count == -20) {
+		db.collection("gameques").doc(gameid).update({ _gameover : true });
+		stopTimer();
+	} */
 	$('.timer').html(count);
 }
 
 function startTimer() {
 	counter = setInterval(timer, 1000);
+
+	/**
+	 * This will start the timer at client side too indicating that 
+	 * game is starting in next X seconds.
+	 */
+	console.log('About to initiate a game.');
+	if (counter !== undefined && counter !== null) { // Set this value only the first time.
+		db.collection("gameques").doc(gameid).update({ _gameover : false })
+		.then((doc) => {
+			console.log('GAME INITIATED.');
+		})
+		.catch((error) => {
+			console.log(error);
+		});
+		
+	}
+
 }
 
 
@@ -258,7 +286,8 @@ function listenToClaimedPrizes() {
 function successListenToClaimedPrizes(doc) {
     logMessage("Current data: ", doc.data());
 	prizeDetails = doc.data();
-	if (prizeDetails.FH == true  
+	if (prizeDetails !== undefined
+		&&  prizeDetails.FH == true  
 		&&  prizeDetails.EF == true  
 		&&  prizeDetails.FL == true  
 		&&  prizeDetails.ML == true  
@@ -291,11 +320,20 @@ function onPageUnload() {
 /* LISTEN TO PRIZE LIST TO SEE IF 'FH' HAS B BEEN WON. IF YES, STOP THE COUNTER */
 $(function onDocReady() {
 	console.log('Inside onDocReady');
-	$('#btnLogout').click(signout);
+    loadHeaderActionsAdmin();
+	// $('#btnLogout').click(signout);
 	$('#btnNextQues').click(pickNextQues);
-
 	$('#startTimer').click(startTimer);
 	$('#stopTimer').click(stopTimer);
 });
 
 window.addEventListener('beforeunload', onPageUnload);
+checkAdminLogin();
+
+
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+		init();
+		listenToClaimedPrizes();
+    }
+});

@@ -15,34 +15,145 @@
     	<!-- Custom CSS -->
     	<link rel="stylesheet" type="text/css" href="styles/questions.css">
 
-    	<title>Sikh History Tambola</title>
+    	<title>Sikhi Tambola</title>
   	</head>
   	<body id="pageIndex">
 
-	  	<div class="jumbotron">
-	  		<div class="buttons">
-				<span id="loggedInUser"></span>
-				<a class="btn btn-primary" id="btnLogout" href="#">Log Out</a>
-				<a class="btn btn-light" id="btnSignup" href="signup.html">Sign Up</a>
-	  			<a class="btn btn-light" id="btnLogin" href="login.html">Login</a>
-	  			<a class="btn btn-light" id="btnHelp" href="help.html">Help</a>
-	  		</div>
-	 		<h1 class="display-3 main-heading">Sikh History Tambola</h1>
+	  	<div class="jumbotron" style="background:orange">
+			<div class="buttons" id="headerActions"></div>
+	 		<h1 class="display-3 main-heading">Sikhi Tambola</h1>
 			<h3 class="games subheading">Admin Console</h3>
 			<h3 id="messageText" class="games"></h3>
  		</div>
 
   		<div class="container-fluid">
+			<div class="row">
+				<div class="col col-sm p-1 m-2">Year: 
+				<select class="form-control" id="inputNextGameYear">
+					<option>2021</option>
+					<option>2022</option>
+					<option>2023</option>
+					<option>2024</option>
+					<option>2025</option>
+				</select>
+				</div>
+				<div class="col col-sm p-1 m-2">Month: 
+				<select class="form-control" id="inputNextGameMonth">
+					<option>01</option>
+					<option>02</option>
+					<option>03</option>
+					<option>04</option>
+					<option>05</option>
+					<option>06</option>
+					<option>07</option>
+					<option>08</option>
+					<option>09</option>
+					<option>10</option>
+					<option>11</option>
+					<option>12</option>
+				</select>
+				</div>
+				<div class="col col-sm p-1 m-2">Date: 
+				<select class="form-control" id="inputNextGameDate">
+					<option>01</option>
+					<option>02</option>
+					<option>03</option>
+					<option>04</option>
+					<option>05</option>
+					<option>06</option>
+					<option>07</option>
+					<option>08</option>
+					<option>09</option>
+					<option>10</option>
+					<option>11</option>
+					<option>12</option>
+					<option>13</option>
+					<option>14</option>
+					<option>15</option>
+					<option>16</option>
+					<option>17</option>
+					<option>18</option>
+					<option>19</option>
+					<option>20</option>
+					<option>21</option>
+					<option>22</option>
+					<option>23</option>
+					<option>24</option>
+					<option>25</option>
+					<option>26</option>
+					<option>27</option>
+					<option>28</option>
+					<option>29</option>
+					<option>30</option>
+					<option>31</option>
+				</select>
+				</div>
+				<div class="col col-sm p-1 m-2">Hour: 
+					<select class="form-control" id="inputNextGameHour">
+						<option>0</option>
+						<option>1</option>
+						<option>2</option>
+						<option>3</option>
+						<option>4</option>
+						<option>5</option>
+						<option>6</option>
+						<option>7</option>
+						<option>8</option>
+						<option>9</option>
+						<option>10</option>
+						<option>11</option>
+						<option>12</option>
+						<option>13</option>
+						<option>14</option>
+						<option>15</option>
+						<option>16</option>
+						<option>17</option>
+						<option>18</option>
+						<option>19</option>
+						<option>20</option>
+						<option>21</option>
+						<option>22</option>
+						<option>23</option>
+					</select>
+				</div>
+				<div class="col col-sm p-1 m-2">Minute: 
+					<select class="form-control" id="inputNextGameMinute">
+						<option>0</option>
+						<option>15</option>
+						<option>30</option>
+						<option>45</option>
+					</select>
+				</div>
+			</div>
+			<div class="row">
+				<button id="resetQues" class="btn btn-success col-sm p-4 m-2">Reset Current Game Questions</button>
+				<a id="nextQues" class="btn btn-success col-sm p-4 m-2" href="admnextques.html">Play Game</a>
+				<a id="manageQues" class="btn btn-success col-sm p-4 m-2" href="admmanageques.html">Add / Edit / Delete Question</a>
+				<a id="quesForNextGame" class="btn btn-success col-sm p-4 m-2" href="admselectques.html">Select Questions for Next Game</a>
+				
+				<!-- <input type="text" class="form-control" id="inputNextGameYear" aria-describedby="NextYearGame_yyyy" placeholder="Next Game Year yyyy">
+				<input class="form-control" type="text" id="inputNextGameMonth" placeholder="Next Game Month MM">
+				<input class="form-control" type="text" id="inputNextGameDate" placeholder="Next Game Date dd"> -->
+				<button id="setNextCurrGame" class="btn btn-success col-sm p-4 m-2">Create Settings for Next Game</button>
+			</div>
+			<div class="row">
+				<div id="emulatormsg" class="p-4">&nbsp;</div>
+			</div>
+
   			<div class="row">
-				<button id="resetQues" class="btn btn-success col-lg-4">Reset Current Game Questions</button>
-				<a id="nextQues" class="btn btn-success col-lg-4" href="admnextques.html">Set Next Question</a>
+				<h3 class="col-lg-12">Emulator Setup</h3>
+				<button id="createQuestions" class="btn btn-primary col-sm p-4 m-2">Step 1: Create Questions</button>
+				<button id="createGameQues" class="btn btn-primary col-sm p-4 m-2">Step 2: Create Game Questions</button>
+				<button id="createCurrGameSetting" class="btn btn-primary col-sm p-4 m-2">Step 3: Create Game Settings</button>
+				<button id="createCurrGamePrizes" class="btn btn-primary col-sm p-4 m-2">Step 4: Create Game Prizes</button>
+				<!-- button style="margin:20px" id="nextQues" class="btn btn-success col-lg-4" href="admnextques.html">Set Next Question</button -->
   			</div>
-  		</div>
+		</div>
 
   		<script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
 
 	    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-	    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+	    <!-- <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script> -->
 	    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
 	    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
 
@@ -54,6 +165,7 @@
 		<script defer src="/__/firebase/8.1.1/firebase-functions.js"></script> 
 
 		<script defer src="./scripts/init-firebase.js"></script>
+		<script defer src="./scripts/add-questions.js"></script>
 		<script defer src="./scripts/storage.js"></script>
 		<script defer src="./scripts/admconsole.js"></script>
 
