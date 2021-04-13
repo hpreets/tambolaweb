@@ -96,7 +96,7 @@ function successCurrGameFetch(doc) {
     }
 
     let gDate = new Date(getFromStorage('gamedatetime')*1000);
-    $('.gamedate').text( gDate.toDateString() + ' ' + gDate.toLocaleTimeString() + ' India Time' );
+    $('.gamedate').text( gDate.toDateString() + ' ' + gDate.toLocaleTimeString() + '' );
     // $('.gamedate').text( gDate );
     logMessage('HIDING SPINNER');
     $('#spinnerModal').modal('hide');
