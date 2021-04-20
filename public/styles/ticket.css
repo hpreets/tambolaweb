@@ -164,3 +164,7 @@ body {
 	font-size: 70%;
 	font-weight: 400;
 }
+
+#question {
+  padding: 5px 10px;
+}
