@@ -1,5 +1,5 @@
 var db = firebase.firestore();
-if (location.hostname === "localhost") { db.useEmulator("localhost", 8090); }
+if (location.hostname === "localhost") { db.useEmulator("localhost", 8082); }
 // firebase.firestore.setLogLevel("debug");
 var secondsInterval = 21;
 let gameid;
@@ -172,6 +172,41 @@ function appendLeadingZeroes(n){
     return n
 }
 
+
+function displayBanner(doc) {
+    // console.log('Inside displayBanner');
+    // code for banner
+    let startDate = doc.data().bannerStartDateTime;
+    let currentDate = new Date().getTime();
+    let endDate = doc.data().bannerEndDateTime;
+    // console.log(startDate);
+    // console.log(endDate);
+
+    if (startDate == undefined) startDate = 1; else startDate = startDate.seconds * 1000;
+    if (endDate == undefined) endDate = currentDate + 1000; else endDate = endDate.seconds * 1000;
+    // console.log(doc.data().bannerText);
+    // console.log(startDate);
+    // console.log(currentDate);
+    // console.log(endDate);
+
+    if (doc.data().bannerText != undefined && currentDate > startDate && currentDate < endDate) {
+        $('.banner').show();
+        // $('.banner').html('Latest Updates!&ensp; <a href="login.html" class="btn btn-light">Go to Updates</a>');
+        $('.banner').html(doc.data().bannerText);
+
+        // bootstrap themes for banner - primary, secondary, success, danger, warning, info, light, dark and white
+        let bannerTheme = doc.data().bannerTheme; // 'success';
+        // console.log(doc.data().bannerTheme);
+        if (bannerTheme === undefined) bannerTheme = 'success';
+        $('.banner').addClass('bg-' + bannerTheme);
+        $('.banner').css('color', 'white');
+
+    } else {
+        $('.banner').hide();
+    }
+
+}
+
 /* ************************************************** */
 /* ****************** FIRESTORE ********************* */
 /* ************************************************** */
@@ -235,6 +270,7 @@ function getFSSettingsData(success, failure) {
             
             addSettingsToCache(doc);
             if (success !== undefined) success(doc);
+            displayBanner(doc);
         }, 
         function (err) {
             logMessage(err);
