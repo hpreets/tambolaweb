@@ -336,3 +336,10 @@ html, body {
   padding: 10px 0;
   background:goldenrod;
 }
+
+.banner {
+  font-size: 16px;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
