@@ -1,5 +1,5 @@
 var db = firebase.firestore();
-if (location.hostname === "localhost") { db.useEmulator("localhost", 8082); }
+if (location.hostname === "localhost") { db.useEmulator("localhost", 8083); }
 // firebase.firestore.setLogLevel("debug");
 var secondsInterval = 21;
 let gameid;
@@ -235,7 +235,6 @@ function getFSQuestionList(where, order, limit, success, failure) {
 function getFirestoreData(collName, docName, success, failure) {
     db.collection(collName).doc(docName).get()
     .then((doc) => {
-        logMessage('Calling success');
         if (success !== null  &&  success !== undefined) success(doc);
     })
     .catch((error) => {
@@ -362,7 +361,7 @@ function updateQuestionInColl(qDocId, data, success, failure) {
 }
 
 function saveMerge(collName, docName, docJSON, success, failure) {
-    db.collection(collName).doc(docName).set(docJSON)
+    db.collection(collName).doc(docName).set(docJSON, { merge: true })
     .then(function(doc) {
         logMessage("saveMerge :: Document written with ID: ", doc);
         if (success !== null  &&  success !== undefined) success(doc);
