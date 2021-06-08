@@ -8,6 +8,7 @@
     <meta name="description" content="SikhiTambola - Play without paying; Get paid on winning. Let's play.">
     <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
     <meta name="og:image" content="https://sikhitambola.web.app/img/android-chrome-512x512.png">
+    <link rel="manifest" href="/manifest.webmanifest">
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
@@ -17,13 +18,15 @@
 
 </head>
 <body id="pageIndex">
+    
+
     <!-- For showing top-banner -->
     <div class="banner text-center px-3 py-2" id="topbanner" style="display:none;"></div>
 
+    <div class="buttons" id="headerActions"></div>
     <div class="jumbotron">
-        <div class="buttons" id="headerActions"></div>
         <h1 class="display-3 main-heading">Sikhi Tambola</h1>
-        <h3 class="games">Next Game: <span class="gamedate"></span></h3>
+        <h3 class="games">Next Game: <br /><span class="gamedate"></span></h3>
     </div>
     <div class="container-fluid subheadingbar" style="display:none">
         <h4>It is time to play!</h4>
@@ -49,32 +52,9 @@
         </div>
     </div>
 
-    <div class="container-fluid">
-        <div>
-            <div class="d-flex justify-content-between">
-                <h2>Instructions:</h2>
-                <!-- <button class="btn font-weight-bold btn-danger" type="button" data-toggle="collapse" data-target="#instructions-info" aria-expanded="true" aria-controls="collapseExample">
-                    X
-                </button> -->
-            </div>
-            <ul class="collapse show" id="instructions-info">
-            <li>Every month we play Sikh Tambola game where rather than showing 15 numbers on the <a class="lnkTicket" href="#">tambola ticket</a>, we show 15 answers on it. </li>
-            <li>Every user gets a <b>FREE ticket</b> for each game; no payment required.</li>
-            <li>Instead of announcing numbers as happens in normal Tambola, here, we display a question randomly from the below list, one by one. </li>
-            <li>If your <a class="lnkTicket" href="#">ticket</a> has the answer to the current question, you tap on answer to select it. </li>
-            <li>As soon as you get 5 answers correctly tapped, you win Early Five prize.</li>
-            <li>Similarly, you win First Line, Middle Line or Last Line when all answers from your respective lines are selected correctly.</li>
-            <li>Finally, when all answers from your ticket are selected correctly, you win Full House. The winners of the game are shown on the <a href="winners.html">winners page</a>. Details of various cash prizes are also mentioned on the <a href="winners.html">winners page</a>.</li>
-            <li><b><u>So, all in all - Play without paying; Get paid on winning.</u></b></li>
-            <!-- <li class="loginInstruction" style="display:none"><u><b>Important</b></u>: To be able to generate a <a class="lnkTicket" href="#">ticket</a>, you need to be logged in. We highly recommend that you <a href="login.html">login now</a> itself in order to avoid last minute hassle while generating the <a class="lnkTicket" href="#">ticket</a>.</li> -->
-            </ul>
-            <div class="loginInstruction">
-                <u><b>Important</b></u>: To be able to generate a <a class="lnkTicket" href="#">ticket</a>, you need to be logged in. We highly recommend that you <a href="login.html">login now</a> itself in order to avoid last minute hassle while generating the <a class="lnkTicket" href="#">ticket</a>.
-            </div>
-        </div>
-    <!-- </div>
+    <div class="container-fluid" id="howToPlayHelpArea"></div>
 
-    <div class="container-fluid"> -->
+    <div class="container-fluid">
         <div class="quesDiv">
             <h2>Questions:</h2>
             <div class="row">
@@ -101,9 +81,12 @@
     <script defer src="/__/firebase/8.1.1/firebase-firestore.js"></script>
     <script defer src="/__/firebase/8.1.1/firebase-auth.js"></script>
     <script defer src="/__/firebase/8.1.1/firebase-functions.js"></script> 
+    <!-- <script defer src="/__/firebase/8.1.1/firebase-messaging.js"></script> -->
+    <!-- <script defer src="/__/firebase/8.1.1/firebase-analytics.js"></script> -->
 
     <script defer src="./scripts/init-firebase.js"></script>
     <script defer src="./scripts/storage.js"></script>
+    <!-- <script defer src="./scripts/messaging.js"></script> -->
     <script defer src="./scripts/questions.js"></script>
 </body>
 </html>
