@@ -104,11 +104,12 @@ function generateTicket() {
     logMessage( 'FROM STORAGE :: gamedatetime ::' + getFromStorage('gamedatetime') );
     let gameDateTime = new Date(getFromStorage('gamedatetime')*1000);
     var currDateTime = new Date();
-    currDateTime.setMinutes( currDateTime.getMinutes() + 15 );
+    currDateTime.setMinutes( currDateTime.getMinutes() + minBeforeTktAvailable );
     logMessage(isLocalhost());
-    if (isLocalhost()) currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
-    logMessage( currDateTime );
-    logMessage( gameDateTime );
+    if (isLocalhost()) currDateTime.setDate( gameDateTime.getDate() + minBeforeTktAvailable ); // TODO: Uncomment after testing
+    // if (isLocalhost()) currDateTime = gameDateTime + 10000000; // TODO: Uncomment after testing
+    // console.log( currDateTime );
+    // console.log( gameDateTime );
     if (currDateTime > gameDateTime) {
 
         gameId = getFromStorage('gameid');
@@ -130,7 +131,7 @@ function generateTicket() {
         logMessage(tkt);
     }
     else {
-        alert('The ticket would be available 15 minutes before the game.');
+        alert('The ticket would be available ' + minBeforeTktAvailable + ' minutes before the game.');
     }
 }
 
@@ -646,6 +647,16 @@ function registerPrize(prizeIds, efCells) {
     });
 }
 
+function checkOrientationAndDisplayMsg() {
+    console.log('Inside checkOrientationAndDisplayMsg');
+    if (checkOrientation() == 'portrait') {
+        $('#rotateScreenModal').modal('show');
+    }
+    else {
+        $('#rotateScreenModal').modal('hide');
+    }
+}
+
 /**
  * On Load functionality. Handles
  *  (1) OnClick for ticket cells
@@ -684,6 +695,13 @@ $(function onDocReady() {
             $('.language').css("background-color", "").text('Keep screen ON');
         }
     });
+
+    /* alert(checkOrientation()); */
+
+    $( window ).on( "orientationchange", function( event ) {
+        checkOrientationAndDisplayMsg();
+    });
+    sleep(1000).then(() => { checkOrientationAndDisplayMsg(); });
 });
 
 
