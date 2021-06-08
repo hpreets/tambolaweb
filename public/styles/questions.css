@@ -343,3 +343,11 @@ html, body {
   display: flex;
   justify-content: center;
 }
+
+.loginInstruction {
+  padding: 5px 5px 15px 5px;
+}
+
+#howToPlayDiv.hide {
+  transition: transform 400ms ease 0ms;
+}
