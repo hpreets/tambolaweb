@@ -8,6 +8,7 @@
     <meta name="description" content="SikhiTambola - Play without paying; Get paid on winning. Let's play.">
     <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
     <meta name="og:image" content="https://sikhitambola.web.app/img/android-chrome-512x512.png">
+    <link rel="manifest" href="/manifest.webmanifest">
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
@@ -19,8 +20,8 @@
     <!-- For showing top-banner -->
     <div class="banner text-center px-3 py-2" id="topbanner" style="display:none;"></div>
     
+    <div class="buttons" id="headerActions"></div>
     <div class="jumbotron">
-        <div class="buttons" id="headerActions"></div>
        <h1 class="display-3 main-heading">Sikhi Tambola</h1>
        <h3 class="games">Winners of previous game</h3>
    </div>
@@ -67,7 +68,7 @@
         </div>
     </div>
     <div class="winner-info">
-        In case same prize is won by more than 1 player, the prize money will be distributed equally.
+        In case same prize is won by more than 1 player, the prize money will be divided equally.
     </div>
 
     <!-- Social Share Buttons using sharebuttons.io -->
