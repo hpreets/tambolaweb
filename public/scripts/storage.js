@@ -1,7 +1,25 @@
 var db = firebase.firestore();
-if (location.hostname === "localhost") { db.useEmulator("localhost", 8083); }
+// const messaging = typeof(firebase.messaging) === 'function' ? firebase.messaging() : null;
+if (location.hostname === "localhost") { db.useEmulator("localhost", 8087); }
+
+/* console.log('Persistence enabled');
+db.enablePersistence()
+.catch((err) => {
+    console.log(err);
+    if (err.code == 'failed-precondition') {
+        // Multiple tabs open, persistence can only be enabled
+        // in one tab at a a time.
+        // ...
+    } else if (err.code == 'unimplemented') {
+        // The current browser does not support all of the
+        // features required to enable persistence
+        // ...
+    }
+}); */
+
 // firebase.firestore.setLogLevel("debug");
 var secondsInterval = 21;
+let minBeforeTktAvailable = 15; // 60*24*365*2;
 let gameid;
 let userEmail;
 let uid;
@@ -29,7 +47,17 @@ function removeFromStorage(key) {
     sessionStorage.removeItem(key);
 }
 
+function addToLocalStorage(key, value) {
+    let sikhitambola = {};
+    sikhitambola[key] = value;
+    localStorage.setItem('sikhitambola', JSON.stringify(sikhitambola));
+}
 
+function getFromLocalStorage(key) {
+    let stJson = JSON.parse(localStorage.getItem('sikhitambola'));
+    if (stJson == null) return null;
+    return stJson[key];
+}
 
 /* ************************************************** */
 /* ******************* LOGGING ********************** */
@@ -133,6 +161,7 @@ function loadHeaderActions(success) {
             $('#btnLogout').click(signout);
             $('#btnTicket').click(generateTicket);
             $('.lnkTicket').click(generateTicket);
+            addHowToPlayDialog();
             if (success !== undefined) success();
         }
     );
@@ -147,8 +176,8 @@ function generateTicket(e) {
     logMessage( getFromStorage('gamedatetime') );
     let gameDateTime = new Date(getFromStorage('gamedatetime')*1000);
     var currDateTime = new Date();
-    currDateTime.setMinutes( currDateTime.getMinutes() + 15 );
-    if (isLocalhost()) currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
+    currDateTime.setMinutes( currDateTime.getMinutes() + minBeforeTktAvailable );
+    if (isLocalhost()) currDateTime.setDate( currDateTime.getDate() + minBeforeTktAvailable ); // TODO: Uncomment after testing
     logMessage( currDateTime );
     logMessage( gameDateTime );
     if (currDateTime > gameDateTime) {
@@ -161,7 +190,7 @@ function generateTicket(e) {
         }
     }
     else {
-        alert('The ticket would be available 15 minutes before the game.');
+        alert('The ticket would be available ' + minBeforeTktAvailable + ' minutes before the game.');
     }
 }
 
@@ -205,6 +234,120 @@ function displayBanner(doc) {
         $('.banner').hide();
     }
 
+}
+
+function checkOrientation() {
+    var currMode = "";
+    let orientation = window.orientation;
+    if (orientation === undefined) orientation = (screen.orientation || {}).type || screen.mozOrientation || screen.msOrientation;
+    switch(orientation) {
+
+        case 0:
+        case 'portrait-secondary':
+        case 'portrait-primary':
+        currMode = "portrait";
+        break;
+
+        case -90:
+        case 90:
+        case 180:
+        case 'landscape-primary':
+        case 'landscape-secondary':
+        case '':
+        currMode = "landscape";
+        break;
+
+        case undefined:
+            if (window.innerWidth < window.innerHeight) {
+                currMode = 'portrait';
+            }
+            else {
+                currMode = 'landscape';
+            }
+            break;
+   }
+//    console.log('checkOrientation ::' + currMode);
+   return currMode;
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function addHowToPlayDialog() {
+    // console.log(document.getElementById("dialogs"));
+    document.getElementById("dialogs").innerHTML += addHowToPlay(false, true);
+    $('#btnHowToPlay').click(() => { $('#howToPlayDialogModal').modal('show'); });
+}
+function addHowToPlay(showHeaderText, forDialog) {
+    let htmlId = 'howToPlay';
+    let dialogTitleText = 'How to Play';
+    let dialogIdSuffix = 'Dialog';
+    let headerText = ``;
+    let gotItButton = `
+        <button class="btn btn-primary btn-sm" type="button" id="btnHowToPlay" data-toggle="howtoplay" data-target="#howtoplay" aria-expanded="true" aria-controls="howtoplayExample">
+            Got it, don't show again.
+        </button>`;
+    
+    if (showHeaderText) headerText = `
+        <div class="d-flex justify-content-between">
+            <h2>How to play:</h2>
+        </div>`;
+    
+    if (!forDialog) dialogIdSuffix = '';
+    if (forDialog) gotItButton = '';
+    let htmlDialogId = htmlId + dialogIdSuffix;
+
+    let varHowToPlayTextHTML = `
+    <div class="howtoplay" id="`+ htmlDialogId + `Div" style="padding-bottom: 25px;">
+        ` + headerText + `
+        <ul class="collapse show" id="instructions-info`+ htmlDialogId + `">
+            <li>Every month we play Sikh Tambola game where rather than showing 15 numbers on the <a class="lnkTicket" href="#">tambola ticket</a>, we show 15 answers on it. </li>
+            <li>Every user gets a <b>FREE ticket</b> for each game; no payment required.</li>
+            <li>Instead of announcing numbers as happens in normal Tambola, here, we display a question randomly from the below list, one by one. </li>
+            <li>If your <a class="lnkTicket" href="#">ticket</a> has the answer to the current question, you tap on answer to select it. </li>
+            <li>As soon as you get 5 answers correctly tapped, you win Early Five prize.</li>
+            <li>Similarly, you win First Line, Middle Line or Last Line when all answers from your respective lines are selected correctly.</li>
+            <li>Finally, when all answers from your ticket are selected correctly, you win Full House. The winners of the game are shown on the <a href="winners.html">winners page</a>. Details of various cash prizes are also mentioned on the <a href="winners.html">winners page</a>.</li>
+            <li><b><u>So, all in all - Play without paying; Get paid on winning.</u></b></li>
+        </ul>
+        <div class="loginInstruction">
+            <u><b>Important</b></u>: To be able to generate a <a class="lnkTicket" href="#">ticket</a>, you need to be logged in. We highly recommend that you <a href="login.html">login now</a> itself in order to avoid last minute hassle while generating the <a class="lnkTicket" href="#">ticket</a>.
+        </div>
+        ` + gotItButton + `
+    </div>
+    `;
+
+    let varHowToPlayDialogHTML = ``;
+    if (!forDialog) varHowToPlayDialogHTML = varHowToPlayTextHTML;
+    else {
+        varHowToPlayDialogHTML = `  <!-- Rotate Screen Modal -->
+        <div class="modal fade" id="` + htmlDialogId + `Modal" tabindex="-1" role="dialog" aria-labelledby="` + htmlDialogId + `ModalTitle" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="` + htmlDialogId + `ModalTitle">` + dialogTitleText + `</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body row">
+                <div class="col-12">
+                <span class="list-group" id="` + htmlDialogId + `Text">
+                    ` + varHowToPlayTextHTML + `
+                </span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+            </div>
+        </div>
+        </div>
+        `;
+    }
+
+    return varHowToPlayDialogHTML;
 }
 
 /* ************************************************** */
@@ -387,6 +530,20 @@ function deleteQuestion(docName, success, failure) {
     deleteRec("questions", docName, success, failure);
 }
 
+
+/* function addUserNotifToken(tokenMonth, data, success, failure) {
+    db.collection("tokens").doc(tokenMonth).set(data, {merge: true })
+    .then(function(doc) {
+        // logMessage("Document written with ID: ", doc.id);
+        if (success !== null  &&  success !== undefined) success(doc);
+    })
+    .catch(function(error) {
+        console.error("Error adding document: ", error);
+        if (failure !== null  &&  failure !== undefined) failure(error);
+    });
+} */
+
+
 /* ************************************************** */
 /* ****************** FUNCTION ********************** */
 /* ************************************************** */
@@ -401,6 +558,71 @@ function callCloudFunction(functionName, params, success, failure) {
         if (failure !== undefined) failure(e);
     });
 }
+
+  
+/* ************************************************** */
+/* ****************** MESSAGING ********************* */
+/* ************************************************** */
+function isNotificationAccessGranted() {
+    if (Notification.permission === 'denied' || Notification.permission === 'default') {
+        console.log('Notification access NOT granted');
+        return false;
+    }
+    console.log('Notification access IS granted');
+    return true;
+}
+
+function getNotificationPermission() {
+    messaging.getToken({ vapidKey: 'BLmeZfIWsloraH9TUrVQ8H0m5sWtWhugxcSuj0SwRWYsuk74ZDjp91KR0erW_Aw5V5QR4k-e5MMgkY7P1bg1bX4' })
+    .then((currentToken) => {
+        if (currentToken) {
+            console.log(currentToken);
+            let data = {
+                [currentToken] : true
+            };
+            console.log(data);
+            addUserNotifToken('202105', data);
+            // Send the token to your server and update the UI if necessary
+            // ...
+        } else {
+            // Show permission request UI
+            console.log('No registration token available. Request permission to generate one.');
+            // ...
+        }
+    })
+    .catch((err) => {
+        console.log('An error occurred while retrieving token. ', err);
+        // ...
+    });
+}
+
+function createAndShowNotification(titleText, bodyText, imgUrl, clickUrl, isVibrate, autoCloseAfterSec) {
+    // var notification = new Notification("Hi there!");
+    let notification = new Notification(titleText, {
+        body: bodyText,
+        icon: imgUrl,
+        vibrate: isVibrate
+    });
+
+    // close the notification after 10 seconds
+    setTimeout(() => {
+        notification.close();
+    }, autoCloseAfterSec * 1000);
+
+    // navigate to a URL
+    notification.onclick = function() {
+        window.location = clickUrl;
+    };
+}
+
+function trackOnMessageReceived() {
+    messaging.onMessage((payload) => {
+        console.log('Message received. ', payload);
+        createAndShowNotification('titleText', 'bodyText', 'imgUrl', 'https://sikhitambola.web.app/', true);
+        // ...
+    });
+}
+
 
 /* ************************************************** */
 /* ****************** ADMIN UI ********************** */
