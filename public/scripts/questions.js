@@ -96,7 +96,7 @@ function successCurrGameFetch(doc) {
     }
 
     let gDate = new Date(getFromStorage('gamedatetime')*1000);
-    $('.gamedate').text( gDate.toDateString() + ' ' + gDate.toLocaleTimeString() + '' );
+    $('.gamedate').text( gDate.toDateString() + ' ' + gDate.toLocaleTimeString().replace(':00 ', ' ') + '' );
     // $('.gamedate').text( gDate );
     logMessage('HIDING SPINNER');
     $('#spinnerModal').modal('hide');
@@ -157,6 +157,27 @@ function displaySubHeadingBar(checkButtonsToo) {
     }
 }
 
+function toggleHowToPlay() {
+    // console.log(getFromLocalStorage('howToPlay') == '0');
+    // console.log(getFromLocalStorage('howToPlay') == 0);
+    if (getFromLocalStorage('howToPlay') === '0') {
+        $('#howToPlayDiv').hide(1000);
+    }
+    else {
+        $('#howToPlayDiv').show();
+        document.getElementById("howToPlayHelpArea").innerHTML += addHowToPlay(true, false);
+        $('#btnHowToPlay').click(handleBtnHowToPlay);
+    }
+}
+
+function handleBtnHowToPlay(e) {
+    // console.log('Inside handleBtnHowToPlay');
+    e.preventDefault();
+    addToLocalStorage('howToPlay', '0');
+    // console.log(getFromLocalStorage('howToPlay'));
+    toggleHowToPlay();
+}
+
 /**
  * On page load function
  */
@@ -165,8 +186,22 @@ $(function onDocReady() {
     // $('#spinnerModal').modal('show');
     loadHeaderActions();
     loadSharingButtons();
-    // displaySubHeadingBar(false);
-    // checkLogin(firebase.auth(), successLogin, failureLogin);
+    
+    
+    toggleHowToPlay();
+    // $('#btnHowToPlay').click(createAndShowNotification);
+
+    
+    /* sleep(2000).then(() => {
+        if (!isNotificationAccessGranted()) {
+            // getNotificationPermission();
+            $('#btnHowToPlay').click(getNotificationPermission);
+        }
+        if (isNotificationAccessGranted()) {
+            createAndShowNotification('titleText', 'bodyText', 'http://localhost:5000/img/apple-touch-icon.png', 'http://localhost:5000/', false, 3);
+        }
+    }); */
+
 });
 
 function checkDisplaySubHeadingBar() {
