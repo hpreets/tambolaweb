@@ -1,6 +1,6 @@
 .main-heading {
 	text-align: center;
-	font-weight: 500;
+  margin-top: 24px;
 }
 
 .jumbotron {
@@ -189,7 +189,10 @@
 
 @media screen and (max-width: 575px) {
   .main-heading {
-    margin-top: 10px;
+    font-size: 2rem;
+  }
+  .games {
+    font-size: 1.5rem;
   }
 }
 
@@ -342,4 +345,48 @@ html, body {
   align-items: center;
   display: flex;
   justify-content: center;
+}
+
+.login-header {
+  background: rgb(66, 103, 178);
+	color: white;
+  padding: 15px 0;
+}
+
+.notif-box {
+  display: table;
+}
+
+.notif-img  {
+  float: left;
+  margin: 0 10px 0 0;
+}
+
+.notif_header {
+  display: table-cell;
+  vertical-align: top;
+}
+
+.notif-header h2 {
+  font-size: 16px;
+  margin: 0;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.notif-info {
+  font-size: 12px;
+  font-weight: 400;
+  padding: 5px 0;
+  line-height: 18px;
+  color: #666;
+  margin-left: 58px;
+}
+
+.notif-buttons {
+  font-size: 10px;
+}
+
+.arrow-info {
+  display: inline;
 }

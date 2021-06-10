@@ -12,6 +12,9 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
 
+    <!-- Font Awesome link -->
+    <script src="https://kit.fontawesome.com/7ab8e18817.js" crossorigin="anonymous"></script>
+
     <!-- Custom CSS -->
     <link rel="stylesheet" type="text/css" href="./styles/questions.css">
 
@@ -22,8 +25,8 @@
 
     <div class="jumbotron">
         <div class="buttons" id="headerActions"></div>
-        <h1 class="display-3 main-heading">Sikhi Tambola</h1>
-        <h3 class="games">Next Game: <span class="gamedate"></span></h3>
+        <h2 class="main-heading">Sikhi Tambola</h2>
+        <h4 class="games">Next Game: <span class="gamedate"></span></h4>
     </div>
     <div class="container-fluid subheadingbar" style="display:none">
         <h4>It is time to play!</h4>
@@ -49,6 +52,46 @@
         </div>
     </div>
 
+    <!-- Allow Notificaion Modal -->
+    <div class="modal fade" id="allowNotificationModal">
+      <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+          <div class="modal-body">
+            <div class="notif-box">
+              <div class="notif-img">
+                <img src="img/favicon.ico" alt="app-logo" />
+              </div>
+              <div class="notif-header">
+                <h2>Get <span class="text-success">Awesome</span> Alerts From Sikhi Tambola.</h2>
+                <div class="notif-info">
+                  We'll send you latest updates through the day. You can manage them any time from your browser settings.
+                </div>
+              </div>
+              <div class="text-center">
+                <button class="btn notif-buttons btn-sm btn-danger dont-allow">No, Thanks</button>
+                <button class="btn notif-buttons btn-sm btn-success allow">Allow</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Down Arrow -->
+    <div class="modal fade" id="down-arrow">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          <div class="modal-body">
+            <div>
+              <div class="arrow-info">Tap on the allow button to recieve notifications.</div>
+              <img src="img/down-arrow.png" height="60px" alt="down-arrow">
+            </div>  
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
     <div class="container-fluid">
         <div>
             <div class="d-flex justify-content-between">
@@ -65,6 +108,7 @@
             <li>As soon as you get 5 answers correctly tapped, you win Early Five prize.</li>
             <li>Similarly, you win First Line, Middle Line or Last Line when all answers from your respective lines are selected correctly.</li>
             <li>Finally, when all answers from your ticket are selected correctly, you win Full House. The winners of the game are shown on the <a href="winners.html">winners page</a>. Details of various cash prizes are also mentioned on the <a href="winners.html">winners page</a>.</li>
+            <li>Please click on the <i class="fas fa-bars"></i> icon on the top right corner of the site to get to other pages of the site. Thank You.</li>
             <li><b><u>So, all in all - Play without paying; Get paid on winning.</u></b></li>
             <!-- <li class="loginInstruction" style="display:none"><u><b>Important</b></u>: To be able to generate a <a class="lnkTicket" href="#">ticket</a>, you need to be logged in. We highly recommend that you <a href="login.html">login now</a> itself in order to avoid last minute hassle while generating the <a class="lnkTicket" href="#">ticket</a>.</li> -->
             </ul>

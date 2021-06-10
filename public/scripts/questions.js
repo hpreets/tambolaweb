@@ -2,7 +2,21 @@ const container = $('.quesDiv');
 let qList = null;
 let currGameSettings = null;
 
+// on page load show allow notifications modal
+$(window).on('load', function() {
+  setTimeout(function() {
+    $('#allowNotificationModal').modal('show');
+  }, 5000);
+});
 
+$('.dont-allow').click(function() {
+  $('#allowNotificationModal').modal('hide');
+});
+
+$('.allow').click(function() {
+  $('#allowNotificationModal').modal('hide');
+  $('#down-arrow').modal('show');
+});
 
 /**
  * Called when user is logged in
