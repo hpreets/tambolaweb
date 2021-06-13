@@ -1,21 +1,12 @@
-var db = firebase.firestore();
-// const messaging = typeof(firebase.messaging) === 'function' ? firebase.messaging() : null;
-if (location.hostname === "localhost") { db.useEmulator("localhost", 8087); }
+// const { triggerAsyncId } = require("async_hooks");
 
-/* console.log('Persistence enabled');
-db.enablePersistence()
-.catch((err) => {
-    console.log(err);
-    if (err.code == 'failed-precondition') {
-        // Multiple tabs open, persistence can only be enabled
-        // in one tab at a a time.
-        // ...
-    } else if (err.code == 'unimplemented') {
-        // The current browser does not support all of the
-        // features required to enable persistence
-        // ...
-    }
-}); */
+var db = firebase.firestore();
+const messaging = typeof(firebase.messaging) === 'function' ? firebase.messaging() : null;
+if (location.hostname === "localhost") { db.useEmulator("localhost", 8189); }
+
+var functions = firebase.app().functions('asia-south1');
+if (location.hostname === "localhost") { functions.useEmulator("localhost", 5001); }
+
 
 // firebase.firestore.setLogLevel("debug");
 var secondsInterval = 21;
@@ -23,6 +14,7 @@ let minBeforeTktAvailable = 15; // 60*24*365*2;
 let gameid;
 let userEmail;
 let uid;
+const constVapidKey = 'BLmeZfIWsloraH9TUrVQ8H0m5sWtWhugxcSuj0SwRWYsuk74ZDjp91KR0erW_Aw5V5QR4k-e5MMgkY7P1bg1bX4';
 
 /* ************************************************** */
 /* ******************** CACHE *********************** */
@@ -49,6 +41,7 @@ function removeFromStorage(key) {
 
 function addToLocalStorage(key, value) {
     let sikhitambola = {};
+    if (localStorage.getItem('sikhitambola') != null) sikhitambola = JSON.parse(localStorage.getItem('sikhitambola'));
     sikhitambola[key] = value;
     localStorage.setItem('sikhitambola', JSON.stringify(sikhitambola));
 }
@@ -77,11 +70,11 @@ function checkLogin(auth, successFunction, failureFunction) {
             $('#loggedInUser').text(user.displayName);
             uid = user.uid;
             userEmail = user.email;
-            hideHeaderButtons(true);
+            hideHeaderButtons(true, location.pathname.replace('.html', '').replace('/', ''));
             if (successFunction !== null  &&  successFunction !== undefined) successFunction(user);
         } else {
             logMessage('User is NULL');
-            hideHeaderButtons(false);
+            hideHeaderButtons(false, location.pathname.replace('.html', '').replace('/', ''));
             if (failureFunction !== null  &&  failureFunction !== undefined) failureFunction(user);
         }
     });
@@ -104,27 +97,30 @@ noLogin = function(user) {
 /* ************************************************** */
 /* ****************** COMMON UI ********************* */
 /* ************************************************** */
-function hideHeaderButtons(loggedIn) {
+function hideHeaderButtons(loggedIn, pageId) {
     if (!loggedIn) {
         $('#btnSignup').hide();
-        $('#btnLogin').show();
-        $('#btnTicketLi').hide();
+        $('#btnLogin').show(); $('#action_login').show();
+        $('#btnTicketLi').hide(); $('#action_ticket').hide();
         $('#btnLogoutLi').hide();
-        $('#btnMySettingsLi').hide();
+        $('#btnMySettingsLi').hide(); $('#action_settings').hide();
         $('.loginInstruction').show();
     }
     else {
-        $('#btnTicketLi').show();
+        $('#btnTicketLi').show(); $('#action_ticket').show();
         $('#btnLogoutLi').show();
-        $('#btnMySettingsLi').show();
+        $('#btnMySettingsLi').show(); $('#action_settings').show();
         $('#btnSignup').hide();
-        $('#btnLogin').hide();
+        $('#btnLogin').hide(); $('#action_login').hide();
         logMessage(isAdmin());
         $('.loginInstruction').hide();
         if (isAdmin()) $('#btnAdminHome').show();
     }
+
     $('#btnHome').show();
     $('#btnWinners').show();
+    if (pageId !== undefined) $('#action_'+pageId).hide();
+    $('#importantActions').show();
 }
 
 function createNode(element) {
@@ -158,10 +154,11 @@ function loadSharingButtons() {
 function loadHeaderActions(success) {
     $('#headerActions').load('pagelets/headeraction.html', 
         function() {
+            addHowToPlayDialog();
             $('#btnLogout').click(signout);
             $('#btnTicket').click(generateTicket);
             $('.lnkTicket').click(generateTicket);
-            addHowToPlayDialog();
+            // $('#action_ticket').click(generateTicket);
             if (success !== undefined) success();
         }
     );
@@ -349,6 +346,38 @@ function addHowToPlay(showHeaderText, forDialog) {
 
     return varHowToPlayDialogHTML;
 }
+
+function generateImportantActions() {
+    let actionHtml = `
+        <div class="row">
+            <div class="col hide" id="action_login">
+                <a class="btn btn-primary btn-circular" href="login.html" role="button">L</a>
+                Register Login
+            </div>
+            <div class="col hide" id="action_questions">
+                <a class="btn btn-primary btn-circular" href="questions.html" role="button">Q</a>
+                Questions
+            </div>
+            <div class="col lnkTicket" id="action_ticket">
+                <a class="btn btn-primary btn-circular" href="#" role="button">T</a>
+                Ticket
+            </div>
+            <div class="col" id="action_winners">
+                <a class="btn btn-primary btn-circular" href="winners.html" role="button">W</a>
+                Winners
+            </div>
+            <div class="col" id="action_mysettings">
+                <a class="btn btn-primary btn-circular" href="mysettings.html" role="button">S</a>
+                Settings
+            </div>
+        </div>`;
+    document.getElementById("importantActions").innerHTML += actionHtml;
+}
+
+function addHTMLToPage() {
+    generateImportantActions();
+}
+
 
 /* ************************************************** */
 /* ****************** FIRESTORE ********************* */
@@ -548,18 +577,21 @@ function deleteQuestion(docName, success, failure) {
 /* ****************** FUNCTION ********************** */
 /* ************************************************** */
 function callCloudFunction(functionName, params, success, failure) {
+    logMessage('Inside callCloudFunction ' + functionName);
     var addMessage = functions.httpsCallable(functionName);
     addMessage(params)
     .then((result) => {
+        logMessage('Inside callCloudFunction success');
         if (success !== undefined) success(result);
     })
     .catch((e) => {
+        logMessage('Inside callCloudFunction failure');
         console.error(e);
         if (failure !== undefined) failure(e);
     });
 }
 
-  
+
 /* ************************************************** */
 /* ****************** MESSAGING ********************* */
 /* ************************************************** */
@@ -572,26 +604,30 @@ function isNotificationAccessGranted() {
     return true;
 }
 
-function getNotificationPermission() {
-    messaging.getToken({ vapidKey: 'BLmeZfIWsloraH9TUrVQ8H0m5sWtWhugxcSuj0SwRWYsuk74ZDjp91KR0erW_Aw5V5QR4k-e5MMgkY7P1bg1bX4' })
+function setClientTokenSubscription(token, isEnabled, success, failure) {
+    console.log('Inside setClientTokenSubscription');
+    callCloudFunction('subscribeToNotification', { 
+        clienttoken : token,
+        tokenSubscribed: isEnabled
+    }, success, failure);
+}
+
+function getNotificationPermission(success, failure) {
+    messaging.getToken({ vapidKey: constVapidKey })
     .then((currentToken) => {
         if (currentToken) {
             console.log(currentToken);
-            let data = {
-                [currentToken] : true
-            };
-            console.log(data);
-            addUserNotifToken('202105', data);
-            // Send the token to your server and update the UI if necessary
-            // ...
+            setClientTokenSubscription(currentToken, true, success, failure);
         } else {
             // Show permission request UI
             console.log('No registration token available. Request permission to generate one.');
+            if (failure !== undefined) failure();
             // ...
         }
     })
     .catch((err) => {
         console.log('An error occurred while retrieving token. ', err);
+        if (failure !== undefined) failure();
         // ...
     });
 }
