@@ -115,6 +115,7 @@ function retrieveEmail(winnerDet) {
 
 $(function onDocReady() {
 	logMessage('Inside onDocReady');
+    addHTMLToPage();
     loadHeaderActions();
     loadSharingButtons();
     $('#btnLogout').click(signout);

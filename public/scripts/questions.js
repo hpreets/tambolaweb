@@ -158,8 +158,6 @@ function displaySubHeadingBar(checkButtonsToo) {
 }
 
 function toggleHowToPlay() {
-    // console.log(getFromLocalStorage('howToPlay') == '0');
-    // console.log(getFromLocalStorage('howToPlay') == 0);
     if (getFromLocalStorage('howToPlay') === '0') {
         $('#howToPlayDiv').hide(1000);
     }
@@ -179,16 +177,45 @@ function handleBtnHowToPlay(e) {
 }
 
 /**
+ * Notification: Conditional showing of Notification permission button.
+ */
+function displayNotifyLink() {
+    // if (isNotificationAccessGranted()) {
+    if ((getFromLocalStorage('allowNotif') === '1')) {
+        $('#allowNotifyLink').hide();
+        if (!isNotificationAccessGranted()) {
+            getNotificationPermission(function() {
+                addToLocalStorage('allowNotif', '1');
+                displayNotifyLink();
+            });
+        }
+    }
+    else {
+        $('#allowNotifyLink').show(300);
+        $('#allowNotifyLink').on('click', function() {
+            getNotificationPermission(function() {
+                addToLocalStorage('allowNotif', '1');
+                displayNotifyLink();
+            });
+        });
+    }
+}
+
+/**
  * On page load function
  */
 $(function onDocReady() {
 	logMessage('Inside onDocReady');
     // $('#spinnerModal').modal('show');
+    addHTMLToPage();
     loadHeaderActions();
     loadSharingButtons();
     
-    
+    // sleep(2000).then(displayNotifyLink); // Notifications: Taking permission to send notifications.
     toggleHowToPlay();
+    // trackOnMessageReceived(); // Notifications: Show message on receiving
+
+
     // $('#btnHowToPlay').click(createAndShowNotification);
 
     

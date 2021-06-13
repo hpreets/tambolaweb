@@ -1,6 +1,8 @@
 .main-heading {
 	text-align: center;
 	font-weight: 500;
+
+  margin-top: 25px;
 }
 
 .jumbotron {
@@ -8,6 +10,8 @@
 	color: white;
 	position: relative;
   border-radius: 0;
+
+  padding: 2rem 1rem 1rem 1rem;
 }
 
 .buttons {
@@ -187,11 +191,16 @@
   margin: 25px auto;
 }
 
-@media screen and (max-width: 575px) {
+/* @media screen and (max-width: 575px) {
   .main-heading {
-    margin-top: 10px;
+    margin-top: 25px;
   }
-}
+} */
+/* @media screen and (min-width: 575px) {
+  .jumbotron {
+    padding: 2rem 1rem 1rem 1rem;
+  }
+} */
 
 html, body {
   overflow-x: hidden;
@@ -350,4 +359,22 @@ html, body {
 
 #howToPlayDiv.hide {
   transition: transform 400ms ease 0ms;
+}
+
+.btn-circular {
+  display:block;
+  height: 60px;
+  width: 60px;
+  border-radius: 50%;
+  border: 1px solid red;
+
+}
+
+.center-button {
+  /* position: absolute; */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: auto;
+  max-width: 45em;
 }
