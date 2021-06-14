@@ -351,24 +351,24 @@ function generateImportantActions() {
     let actionHtml = `
         <div class="row">
             <div class="col hide" id="action_login">
-                <a class="btn btn-primary btn-circular" href="login.html" role="button">L</a>
-                Register Login
+                <a class="btn btn-circular" href="login.html" role="button"><i class="fas fa-user-plus"></i></a>
+                <div class="button-info">Login</div>
             </div>
             <div class="col hide" id="action_questions">
-                <a class="btn btn-primary btn-circular" href="questions.html" role="button">Q</a>
-                Questions
+                <a class="btn btn-circular" href="questions.html" role="button"><i class="fas fa-book-open"></i></a>
+                <div class="button-info">Questions</div>
             </div>
             <div class="col lnkTicket" id="action_ticket">
-                <a class="btn btn-primary btn-circular" href="#" role="button">T</a>
-                Ticket
+                <a class="btn btn-circular" href="#" role="button"><i class="fas fa-ticket-alt"></i></a>
+                <div class="button-info">Ticket</div>
             </div>
             <div class="col" id="action_winners">
-                <a class="btn btn-primary btn-circular" href="winners.html" role="button">W</a>
-                Winners
+                <a class="btn btn-circular" href="winners.html" role="button"><i class="fas fa-trophy"></i></a>
+                <div class="button-info">Winners</div>
             </div>
             <div class="col" id="action_mysettings">
-                <a class="btn btn-primary btn-circular" href="mysettings.html" role="button">S</a>
-                Settings
+                <a class="btn btn-circular" href="mysettings.html" role="button"><i class="fas fa-user-cog"></i></a>
+                <div class="button-info">Settings</div>
             </div>
         </div>`;
     document.getElementById("importantActions").innerHTML += actionHtml;

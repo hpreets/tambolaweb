@@ -13,6 +13,9 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
 
+    <!-- Font Awesome Script -->
+    <script src="https://kit.fontawesome.com/7ab8e18817.js" crossorigin="anonymous"></script>
+
     <!-- Custom CSS -->
     <link rel="stylesheet" type="text/css" href="./styles/questions.css">
 
@@ -25,7 +28,12 @@
     <div class="buttons" id="headerActions"></div>
     <div class="jumbotron">
         <h1 class="display-5 main-heading">Sikhi Tambola</h1>
-        <h4 class="games">Next Game: <br /><span class="gamedate"></span></h4>
+        <div class="text-center">
+          <h4 id="next-game" class="games">
+            Next Game:
+            <br>
+            <span class="gamedate"></span></h4>
+        </div>
         <a href="#" id="allowNotifyLink" class="btn btn-light btn-sm btn-block" style="display:none">Click here to allow game reminder notifications</a>
     </div>
     <div class="container-fluid subheadingbar" style="display:none">
