@@ -12,6 +12,7 @@
   border-radius: 0;
 
   padding: 2rem 1rem 1rem 1rem;
+  margin-bottom: 10px;
 }
 
 .buttons {
@@ -25,6 +26,29 @@
 .games {
 	text-align: center;
 	margin-top: 2%;
+
+  color: white;
+  -webkit-animation: colorchange 4s infinite; 
+  animation: colorchange 4s infinite;
+}
+
+.gamedate {
+  text-decoration: underline;
+}
+
+@keyframes colorchange {
+  0% {
+    color: white;
+  }
+  33% {
+    color: lightcyan;
+  }
+  67% {
+    color: cyan;
+  }
+  100% {
+    color: lightcyan;
+  }
 }
 
 .line {
@@ -362,12 +386,23 @@ html, body {
 }
 
 .btn-circular {
-  display:block;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
   height: 60px;
   width: 60px;
   border-radius: 50%;
-  border: 1px solid red;
+  border: 1px solid navy;
+  background: rgb(66, 103, 178);
+	color: white;
+  font-size: 25px;
+}
 
+.button-info {
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
 }
 
 .center-button {
@@ -377,4 +412,12 @@ html, body {
   justify-content: center;
   margin: auto;
   max-width: 45em;
+}
+
+#importantActions {
+  margin-bottom: 10px;
+}
+
+.small-text {
+  font-size:small;
 }
