@@ -312,6 +312,7 @@ function addHowToPlay(showHeaderText, forDialog) {
             <u><b>Important</b></u>: To be able to generate a <a class="lnkTicket" href="#">ticket</a>, you need to be logged in. We highly recommend that you <a href="login.html">login now</a> itself in order to avoid last minute hassle while generating the <a class="lnkTicket" href="#">ticket</a>.
         </div>
         ` + gotItButton + `
+        <br><div class="small-text">You can always refer back to it using "How To Play" from the top-right Menu.</div></br>
     </div>
     `;
 
@@ -351,24 +352,24 @@ function generateImportantActions() {
     let actionHtml = `
         <div class="row">
             <div class="col hide" id="action_login">
-                <a class="btn btn-primary btn-circular" href="login.html" role="button">L</a>
-                Register Login
+                <a class="btn btn-primary btn-circular" href="login.html" role="button"><i class="fas fa-user-plus"></i></a>
+                <div class="button-info">Login</div>
             </div>
             <div class="col hide" id="action_questions">
-                <a class="btn btn-primary btn-circular" href="questions.html" role="button">Q</a>
-                Questions
+                <a class="btn btn-primary btn-circular" href="questions.html" role="button"><i class="fas fa-list-ol"></i></a>
+                <div class="button-info">Questions</div>
             </div>
             <div class="col lnkTicket" id="action_ticket">
-                <a class="btn btn-primary btn-circular" href="#" role="button">T</a>
-                Ticket
+                <a class="btn btn-primary btn-circular" href="#" role="button"><i class="fas fa-ticket-alt"></i></a>
+                <div class="button-info">Ticket</div>
             </div>
             <div class="col" id="action_winners">
-                <a class="btn btn-primary btn-circular" href="winners.html" role="button">W</a>
-                Winners
+                <a class="btn btn-primary btn-circular" href="winners.html" role="button"><i class="fas fa-trophy"></i></a>
+                <div class="button-info">Winners</div>
             </div>
             <div class="col" id="action_mysettings">
-                <a class="btn btn-primary btn-circular" href="mysettings.html" role="button">S</a>
-                Settings
+                <a class="btn btn-primary btn-circular" href="mysettings.html" role="button"><i class="fas fa-user-cog"></i></a>
+                <div class="button-info">My Settings</div>
             </div>
         </div>`;
     document.getElementById("importantActions").innerHTML += actionHtml;
