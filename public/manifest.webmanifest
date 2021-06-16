@@ -1,6 +1,6 @@
 {
     "short_name": "Sikhi Tambola",
-    "name": "Sikhi Tambola: Play without paying, Get paid on winning. Let's play.",
+    "name": "Sikhi Tambola: Let's play.",
     "icons": [
       {
         "src": "/img/android-chrome-192x192.png",
@@ -14,10 +14,10 @@
       }
     ],
     "start_url": "/?source=pwa",
-    "background_color": "#3367D6",
+    "background_color": "#ffffff",
     "display": "standalone",
     "scope": "/",
-    "theme_color": "#3367D6",
+    "theme_color": "#ffffff",
     "shortcuts": [
       {
         "name": "Open Ticket",
@@ -34,6 +34,22 @@
         "icons": [{ "src": "/img/android-chrome-192x192.png", "sizes": "192x192" }]
       }
     ],
-    "description": "Sikhi Tambola: Play without paying, Get paid on winning. Let's play."
-    
+    "description": "Sikhi Tambola: Play without paying, Get paid on winning. Let's play.",
+    "screenshots": [
+      {
+        "src": "/img/ST_Questions.png",
+        "type": "image/png",
+        "sizes": "540x720"
+      },
+      {
+        "src": "/img/ST_Ticket.png",
+        "type": "image/png",
+        "sizes": "720x540"
+      },
+      {
+        "src": "/img/ST_Winners.png",
+        "type": "image/jpg",
+        "sizes": "540x720"
+      }
+    ]
   }
