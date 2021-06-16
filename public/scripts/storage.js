@@ -11,6 +11,7 @@ const messaging = typeof(firebase.messaging) === 'function' ? firebase.messaging
 // firebase.firestore.setLogLevel("debug");
 var secondsInterval = 21;
 let minBeforeTktAvailable = 15; // 60*24*365*2;
+if (location.hostname === "localhost") { minBeforeTktAvailable = 60*24*365*2; }
 let gameid;
 let userEmail;
 let uid;
