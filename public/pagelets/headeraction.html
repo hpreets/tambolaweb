@@ -1,41 +1,50 @@
-<nav class="navbar sticky-top  navbar-expand-sm navbar-dark" style="background: rgb(66, 103, 178);">
-    <a class="" href="#"></a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
+<div class="container-fluid" id="dialogs" style="text-align: left;"></div>
+
+<nav class="navbar fixed-top navbar-dark" style="background: rgb(66, 103, 178); box-shadow: rgba(50, 50, 93, 0.25) 0px 30px 60px -12px inset, rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset;">
+
+    <a class="navbar-brand" href="/questions.html">
+      <img src="/img/apple-touch-icon.png" width="32" height="32" />
+    </a>
+    <button class="navbar-toggler color-white-08 border-color-white-05" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span> Menu
     </button>
     
-  
     <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
       <ul class="navbar-nav mr-auto mt-2 mt-lg-0" style="margin:0.5rem">
         <span class="navbar-text text-white" id="loggedInUser"></span>
         &nbsp;
         <li class="nav-item" id="btnHome">
-          <a class="nav-link" href="questions.html">Home</a>
+          <a class="nav-link color-white-08" href="questions.html"><i class="fas fa-home"></i>&ensp;Home</a>
         </li>
         <li class="nav-item" style="display:none" id="btnAdminHome">
-          <a class="nav-link" href="admconsole.html">Admin Home</a>
+          <a class="nav-link" href="admconsole.html"><i class="fas fa-user-shield"></i>&ensp;Admin Home</a>
         </li>
         <li class="nav-item" style="display:none" id="btnTicketLi">
-            <a class="nav-link" id="btnTicket" href="#">Ticket</a>
+            <a class="nav-link" id="btnTicket" href="#"><i class="fas fa-ticket-alt"></i>&ensp;Ticket</a>
         </li>
         <li class="nav-item" id="btnWinners">
-            <a class="nav-link" href="winners.html">Winners</a>
+            <a class="nav-link" href="winners.html"><i class="fas fa-trophy"></i>&ensp;Winners</a>
         </li>
         <!-- <li class="nav-item" id="btnDonate">
           <a class="nav-link" href="donate.html">Donate</a>
         </li> -->
         <li class="nav-item" style="display:none" id="btnLogin">
-            <a class="nav-link" href="login.html">Login</a>
+            <a class="nav-link" href="login.html"><i class="fas fa-user-plus"></i>&ensp;Login</a>
         </li>
         <li class="nav-item" style="display:none" id="btnMySettingsLi">
-          <a class="nav-link" id="btnMySettings" href="mysettings.html">My Settings</a>
+          <a class="nav-link" id="btnMySettings" href="mysettings.html"><i class="fas fa-user-cog"></i>&ensp;My Settings</a>
         </li>
         <li class="nav-item" style="display:none" id="btnLogoutLi">
-            <a class="nav-link" id="btnLogout" href="#">Log Out</a>
+            <a class="nav-link" id="btnLogout" href="#"><i class="fas fa-sign-out-alt"></i>&ensp;Log Out</a>
+        </li>
+        <li class="nav-item" id="btnHowToPlayLi">
+          <a class="nav-link" id="btnHowToPlay" href="#"><i class="fas fa-gamepad"></i>&ensp;How To Play</a>
         </li>
         <li class="nav-item" id="btnFeedback">
-          <a class="nav-link" href="https://docs.google.com/forms/d/e/1FAIpQLSeSQdN5JeHFpgjb_wB5Pw_sSNlLcpNAsJ_YhmEggDRlK-sGew/viewform?usp=sf_link" target="_blank">Feedback</a>
+          <a class="nav-link" href="https://docs.google.com/forms/d/e/1FAIpQLSeSQdN5JeHFpgjb_wB5Pw_sSNlLcpNAsJ_YhmEggDRlK-sGew/viewform?usp=sf_link" target="_blank"><i class="fas fa-comments"></i>&ensp;Feedback</a>
       </li>
+
+      
       <!-- <li class="nav-item" id="btnHelp">
             <a class="nav-link" href="help.html">Help</a>
         </li> -->
@@ -43,3 +52,5 @@
       
     </div>
   </nav>
+
+  

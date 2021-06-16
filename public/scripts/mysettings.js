@@ -12,6 +12,12 @@ function setUserDetailOnUI(doc) {
         $('#inputIFSC').val(doc.data().ifsc);
         $('#inputBankAccount').val(doc.data().accNumber);
     }
+    if (doc.data() != undefined  &&  doc.data().emailUnsub != undefined  &&  doc.data().emailUnsub == true) {
+        $('#emailNotSubscribed').show();
+    }
+    else {
+        $('#emailSubscribed').show();
+    }
 }
 
 function saveDisplayName() {
@@ -59,9 +65,61 @@ function savePaymentInfo() {
 }
 
 function saveLanguage() {
-
+    
 }
 
+function emailUnsubscribe() {
+    doEmailUnsubscribe(true);
+}
+function emailSubscribe() {
+    doEmailUnsubscribe(false);
+}
+
+function doEmailUnsubscribe(isUnsub) {
+    let inputJson = {
+        emailUnsub: isUnsub,
+        uid: uid
+    };
+    saveMerge(
+        'users', 
+        userEmail, 
+        inputJson, 
+        function(doc) {
+            let msgText = 'Unsubscribed from email successfully';
+            if (!isUnsub) {
+                msgText = 'Subscribed to emails successfully'
+            }
+            showToast(
+                '#toastNotif', 
+                '#msgNotif', 
+                'text-success', 
+                msgText);
+
+            if (isUnsub) {
+                $('#emailNotSubscribed').show();
+                $('#emailSubscribed').hide();
+            }
+            else {
+                $('#emailNotSubscribed').hide();
+                $('#emailSubscribed').show();
+            }
+        }, 
+        function(doc) {
+            showToast(
+                '#toastNotif', 
+                '#msgNotif', 
+                'text-danger', 
+                'Error while saving. Please try again later. Err::' + JSON.stringify(error));
+        }
+    );
+}
+
+
+function showToast(toastId, toastMsgId, toastClass, toastText) {
+    $(toastMsgId).addClass(toastClass)
+    $(toastMsgId).text(toastText);
+    $(toastId).toast('show');
+}
 
 /**
  * Method called when current game settings data is fetched from firestore.
@@ -83,11 +141,14 @@ function init() {
 
 $(function onDocReady() {
 	logMessage('Inside onDocReady');
+    addHTMLToPage();
     loadHeaderActions();
     loadSharingButtons();
     $('#btnLogout').click(signout);
     $('#btnSaveDisplayName').click(saveDisplayName);
     $('#btnSavePayment').click(savePaymentInfo);
+    $('#btnEmailUnsubscribe').click(emailUnsubscribe);
+    $('#btnEmailSubscribe').click(emailSubscribe);
 });
 
 

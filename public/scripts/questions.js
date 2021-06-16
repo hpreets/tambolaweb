@@ -96,7 +96,7 @@ function successCurrGameFetch(doc) {
     }
 
     let gDate = new Date(getFromStorage('gamedatetime')*1000);
-    $('.gamedate').text( gDate.toDateString() + ' ' + gDate.toLocaleTimeString() + ' India Time' );
+    $('.gamedate').text( gDate.toDateString() + ' ' + gDate.toLocaleTimeString().replace(':00 ', ' ') + '' );
     // $('.gamedate').text( gDate );
     logMessage('HIDING SPINNER');
     $('#spinnerModal').modal('hide');
@@ -157,16 +157,79 @@ function displaySubHeadingBar(checkButtonsToo) {
     }
 }
 
+function toggleHowToPlay() {
+    if (getFromLocalStorage('howToPlay') === '0') {
+        $('#howToPlayDiv').hide(1000);
+    }
+    else {
+        $('#howToPlayDiv').show();
+        document.getElementById("howToPlayHelpArea").innerHTML += addHowToPlay(true, false);
+        $('#btnHowToPlay').click(handleBtnHowToPlay);
+    }
+}
+
+function handleBtnHowToPlay(e) {
+    // console.log('Inside handleBtnHowToPlay');
+    e.preventDefault();
+    addToLocalStorage('howToPlay', '0');
+    // console.log(getFromLocalStorage('howToPlay'));
+    toggleHowToPlay();
+}
+
+/**
+ * Notification: Conditional showing of Notification permission button.
+ */
+function displayNotifyLink() {
+    // if (isNotificationAccessGranted()) {
+    if ((getFromLocalStorage('allowNotif') === '1')) {
+        $('#allowNotifyLink').hide();
+        if (!isNotificationAccessGranted()) {
+            getNotificationPermission(function() {
+                addToLocalStorage('allowNotif', '1');
+                // displayNotifyLink();
+            });
+        }
+    }
+    else {
+        $('#allowNotifyLink').show(300);
+        $('#allowNotifyLink').on('click', function() {
+            $('#allowNotifyLink').hide();
+            getNotificationPermission(function() {
+                addToLocalStorage('allowNotif', '1');
+                // displayNotifyLink();
+            });
+        });
+    }
+}
+
 /**
  * On page load function
  */
 $(function onDocReady() {
 	logMessage('Inside onDocReady');
     // $('#spinnerModal').modal('show');
+    addHTMLToPage();
     loadHeaderActions();
     loadSharingButtons();
-    // displaySubHeadingBar(false);
-    // checkLogin(firebase.auth(), successLogin, failureLogin);
+    
+    sleep(2000).then(displayNotifyLink); // Notifications: Taking permission to send notifications.
+    toggleHowToPlay();
+    trackOnMessageReceived(); // Notifications: Show message on receiving
+
+
+    // $('#btnHowToPlay').click(createAndShowNotification);
+
+    
+    /* sleep(2000).then(() => {
+        if (!isNotificationAccessGranted()) {
+            // getNotificationPermission();
+            $('#btnHowToPlay').click(getNotificationPermission);
+        }
+        if (isNotificationAccessGranted()) {
+            createAndShowNotification('titleText', 'bodyText', 'http://localhost:5000/img/apple-touch-icon.png', 'http://localhost:5000/', false, 3);
+        }
+    }); */
+
 });
 
 function checkDisplaySubHeadingBar() {

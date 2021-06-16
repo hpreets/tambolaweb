@@ -1,6 +1,8 @@
 .main-heading {
 	text-align: center;
 	font-weight: 500;
+
+  margin-top: 25px;
 }
 
 .jumbotron {
@@ -8,6 +10,9 @@
 	color: white;
 	position: relative;
   border-radius: 0;
+
+  padding: 2rem 1rem 1rem 1rem;
+  margin-bottom: 10px;
 }
 
 .buttons {
@@ -21,6 +26,29 @@
 .games {
 	text-align: center;
 	margin-top: 2%;
+
+  color: white;
+  -webkit-animation: colorchange 4s infinite; 
+  animation: colorchange 4s infinite;
+}
+
+.gamedate {
+  text-decoration: underline;
+}
+
+@keyframes colorchange {
+  0% {
+    color: white;
+  }
+  33% {
+    color: lightcyan;
+  }
+  67% {
+    color: cyan;
+  }
+  100% {
+    color: lightcyan;
+  }
 }
 
 .line {
@@ -187,11 +215,16 @@
   margin: 25px auto;
 }
 
-@media screen and (max-width: 575px) {
+/* @media screen and (max-width: 575px) {
   .main-heading {
-    margin-top: 10px;
+    margin-top: 25px;
   }
-}
+} */
+/* @media screen and (min-width: 575px) {
+  .jumbotron {
+    padding: 2rem 1rem 1rem 1rem;
+  }
+} */
 
 html, body {
   overflow-x: hidden;
@@ -335,4 +368,56 @@ html, body {
   margin-top: -2rem;
   padding: 10px 0;
   background:goldenrod;
+}
+
+.banner {
+  font-size: 16px;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+.loginInstruction {
+  padding: 5px 5px 15px 5px;
+}
+
+#howToPlayDiv.hide {
+  transition: transform 400ms ease 0ms;
+}
+
+.btn-circular {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  height: 60px;
+  width: 60px;
+  border-radius: 50%;
+  border: 1px solid navy;
+  background: rgb(66, 103, 178);
+	color: white;
+  font-size: 25px;
+}
+
+.button-info {
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.center-button {
+  /* position: absolute; */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: auto;
+  max-width: 45em;
+}
+
+#importantActions {
+  margin-bottom: 10px;
+}
+
+.small-text {
+  font-size:small;
 }

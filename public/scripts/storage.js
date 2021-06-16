@@ -1,10 +1,21 @@
+// const { triggerAsyncId } = require("async_hooks");
+
 var db = firebase.firestore();
-if (location.hostname === "localhost") { db.useEmulator("localhost", 8090); }
+if (location.hostname === "localhost") { db.useEmulator("localhost", 8189); }
+
+var functions = firebase.app().functions('asia-south1');
+if (location.hostname === "localhost") { functions.useEmulator("localhost", 5001); }
+
+const messaging = typeof(firebase.messaging) === 'function' ? firebase.messaging() : null;
+
 // firebase.firestore.setLogLevel("debug");
 var secondsInterval = 21;
+let minBeforeTktAvailable = 15; // 60*24*365*2;
+if (location.hostname === "localhost") { minBeforeTktAvailable = 60*24*365*2; }
 let gameid;
 let userEmail;
 let uid;
+const constVapidKey = 'BLmeZfIWsloraH9TUrVQ8H0m5sWtWhugxcSuj0SwRWYsuk74ZDjp91KR0erW_Aw5V5QR4k-e5MMgkY7P1bg1bX4';
 
 /* ************************************************** */
 /* ******************** CACHE *********************** */
@@ -29,7 +40,18 @@ function removeFromStorage(key) {
     sessionStorage.removeItem(key);
 }
 
+function addToLocalStorage(key, value) {
+    let sikhitambola = {};
+    if (localStorage.getItem('sikhitambola') != null) sikhitambola = JSON.parse(localStorage.getItem('sikhitambola'));
+    sikhitambola[key] = value;
+    localStorage.setItem('sikhitambola', JSON.stringify(sikhitambola));
+}
 
+function getFromLocalStorage(key) {
+    let stJson = JSON.parse(localStorage.getItem('sikhitambola'));
+    if (stJson == null) return null;
+    return stJson[key];
+}
 
 /* ************************************************** */
 /* ******************* LOGGING ********************** */
@@ -49,11 +71,11 @@ function checkLogin(auth, successFunction, failureFunction) {
             $('#loggedInUser').text(user.displayName);
             uid = user.uid;
             userEmail = user.email;
-            hideHeaderButtons(true);
+            hideHeaderButtons(true, location.pathname.replace('.html', '').replace('/', ''));
             if (successFunction !== null  &&  successFunction !== undefined) successFunction(user);
         } else {
             logMessage('User is NULL');
-            hideHeaderButtons(false);
+            hideHeaderButtons(false, location.pathname.replace('.html', '').replace('/', ''));
             if (failureFunction !== null  &&  failureFunction !== undefined) failureFunction(user);
         }
     });
@@ -76,27 +98,30 @@ noLogin = function(user) {
 /* ************************************************** */
 /* ****************** COMMON UI ********************* */
 /* ************************************************** */
-function hideHeaderButtons(loggedIn) {
+function hideHeaderButtons(loggedIn, pageId) {
     if (!loggedIn) {
         $('#btnSignup').hide();
-        $('#btnLogin').show();
-        $('#btnTicketLi').hide();
+        $('#btnLogin').show(); $('#action_login').show();
+        $('#btnTicketLi').hide(); $('#action_ticket').hide();
         $('#btnLogoutLi').hide();
-        $('#btnMySettingsLi').hide();
+        $('#btnMySettingsLi').hide(); $('#action_mysettings').hide();
         $('.loginInstruction').show();
     }
     else {
-        $('#btnTicketLi').show();
+        $('#btnTicketLi').show(); $('#action_ticket').show();
         $('#btnLogoutLi').show();
-        $('#btnMySettingsLi').show();
+        $('#btnMySettingsLi').show(); $('#action_mysettings').show();
         $('#btnSignup').hide();
-        $('#btnLogin').hide();
+        $('#btnLogin').hide(); $('#action_login').hide();
         logMessage(isAdmin());
         $('.loginInstruction').hide();
         if (isAdmin()) $('#btnAdminHome').show();
     }
+
     $('#btnHome').show();
     $('#btnWinners').show();
+    if (pageId !== undefined) $('#action_'+pageId).hide();
+    $('#importantActions').show();
 }
 
 function createNode(element) {
@@ -130,9 +155,11 @@ function loadSharingButtons() {
 function loadHeaderActions(success) {
     $('#headerActions').load('pagelets/headeraction.html', 
         function() {
+            addHowToPlayDialog();
             $('#btnLogout').click(signout);
             $('#btnTicket').click(generateTicket);
             $('.lnkTicket').click(generateTicket);
+            // $('#action_ticket').click(generateTicket);
             if (success !== undefined) success();
         }
     );
@@ -147,8 +174,8 @@ function generateTicket(e) {
     logMessage( getFromStorage('gamedatetime') );
     let gameDateTime = new Date(getFromStorage('gamedatetime')*1000);
     var currDateTime = new Date();
-    currDateTime.setMinutes( currDateTime.getMinutes() + 15 );
-    if (isLocalhost()) currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
+    currDateTime.setMinutes( currDateTime.getMinutes() + minBeforeTktAvailable );
+    if (isLocalhost()) currDateTime.setDate( currDateTime.getDate() + minBeforeTktAvailable ); // TODO: Uncomment after testing
     logMessage( currDateTime );
     logMessage( gameDateTime );
     if (currDateTime > gameDateTime) {
@@ -161,7 +188,7 @@ function generateTicket(e) {
         }
     }
     else {
-        alert('The ticket would be available 15 minutes before the game.');
+        alert('The ticket would be available ' + minBeforeTktAvailable + ' minutes before the game.');
     }
 }
 
@@ -171,6 +198,188 @@ function appendLeadingZeroes(n){
     }
     return n
 }
+
+
+function displayBanner(doc) {
+    // console.log('Inside displayBanner');
+    // code for banner
+    let startDate = doc.data().bannerStartDateTime;
+    let currentDate = new Date().getTime();
+    let endDate = doc.data().bannerEndDateTime;
+    // console.log(startDate);
+    // console.log(endDate);
+
+    if (startDate == undefined) startDate = 1; else startDate = startDate.seconds * 1000;
+    if (endDate == undefined) endDate = currentDate + 1000; else endDate = endDate.seconds * 1000;
+    // console.log(doc.data().bannerText);
+    // console.log(startDate);
+    // console.log(currentDate);
+    // console.log(endDate);
+
+    if (doc.data().bannerText != undefined && currentDate > startDate && currentDate < endDate) {
+        $('.banner').show();
+        // $('.banner').html('Latest Updates!&ensp; <a href="login.html" class="btn btn-light">Go to Updates</a>');
+        $('.banner').html(doc.data().bannerText);
+
+        // bootstrap themes for banner - primary, secondary, success, danger, warning, info, light, dark and white
+        let bannerTheme = doc.data().bannerTheme; // 'success';
+        // console.log(doc.data().bannerTheme);
+        if (bannerTheme === undefined) bannerTheme = 'success';
+        $('.banner').addClass('bg-' + bannerTheme);
+        $('.banner').css('color', 'white');
+
+    } else {
+        $('.banner').hide();
+    }
+
+}
+
+function checkOrientation() {
+    var currMode = "";
+    let orientation = window.orientation;
+    if (orientation === undefined) orientation = (screen.orientation || {}).type || screen.mozOrientation || screen.msOrientation;
+    switch(orientation) {
+
+        case 0:
+        case 'portrait-secondary':
+        case 'portrait-primary':
+        currMode = "portrait";
+        break;
+
+        case -90:
+        case 90:
+        case 180:
+        case 'landscape-primary':
+        case 'landscape-secondary':
+        case '':
+        currMode = "landscape";
+        break;
+
+        case undefined:
+            if (window.innerWidth < window.innerHeight) {
+                currMode = 'portrait';
+            }
+            else {
+                currMode = 'landscape';
+            }
+            break;
+   }
+//    console.log('checkOrientation ::' + currMode);
+   return currMode;
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function addHowToPlayDialog() {
+    // console.log(document.getElementById("dialogs"));
+    document.getElementById("dialogs").innerHTML += addHowToPlay(false, true);
+    $('#btnHowToPlay').click(() => { $('#howToPlayDialogModal').modal('show'); });
+}
+function addHowToPlay(showHeaderText, forDialog) {
+    let htmlId = 'howToPlay';
+    let dialogTitleText = 'How to Play';
+    let dialogIdSuffix = 'Dialog';
+    let headerText = ``;
+    let gotItButton = `
+        <button class="btn btn-primary btn-sm" type="button" id="btnHowToPlay" data-toggle="howtoplay" data-target="#howtoplay" aria-expanded="true" aria-controls="howtoplayExample">
+            Got it, don't show again.
+        </button>
+        <br><div class="small-text">You can always refer back to it using "How To Play" from the top-right Menu.</div></br>`;
+    
+    if (showHeaderText) headerText = `
+        <div class="d-flex justify-content-between">
+            <h2>How to play:</h2>
+        </div>`;
+    
+    if (!forDialog) dialogIdSuffix = '';
+    if (forDialog) gotItButton = '';
+    let htmlDialogId = htmlId + dialogIdSuffix;
+
+    let varHowToPlayTextHTML = `
+    <div class="howtoplay" id="`+ htmlDialogId + `Div" style="padding-bottom: 25px;">
+        ` + headerText + `
+        <ul class="collapse show" id="instructions-info`+ htmlDialogId + `">
+            <li>Every month we play Sikh Tambola game where rather than showing 15 numbers on the <a class="lnkTicket" href="#">tambola ticket</a>, we show 15 answers on it. </li>
+            <li>Every user gets a <b>FREE ticket</b> for each game; no payment required.</li>
+            <li>Instead of announcing numbers as happens in normal Tambola, here, we display a question randomly from the below list, one by one. </li>
+            <li>If your <a class="lnkTicket" href="#">ticket</a> has the answer to the current question, you tap on answer to select it. </li>
+            <li>As soon as you get 5 answers correctly tapped, you win Early Five prize.</li>
+            <li>Similarly, you win First Line, Middle Line or Last Line when all answers from your respective lines are selected correctly.</li>
+            <li>Finally, when all answers from your ticket are selected correctly, you win Full House. The winners of the game are shown on the <a href="winners.html">winners page</a>. Details of various cash prizes are also mentioned on the <a href="winners.html">winners page</a>.</li>
+            <li><b><u>So, all in all - Play without paying; Get paid on winning.</u></b></li>
+        </ul>
+        <div class="loginInstruction">
+            <u><b>Important</b></u>: To be able to generate a <a class="lnkTicket" href="#">ticket</a>, you need to be logged in. We highly recommend that you <a href="login.html">login now</a> itself in order to avoid last minute hassle while generating the <a class="lnkTicket" href="#">ticket</a>.
+        </div>
+        ` + gotItButton + `
+    </div>
+    `;
+
+    let varHowToPlayDialogHTML = ``;
+    if (!forDialog) varHowToPlayDialogHTML = varHowToPlayTextHTML;
+    else {
+        varHowToPlayDialogHTML = `  <!-- Rotate Screen Modal -->
+        <div class="modal fade" id="` + htmlDialogId + `Modal" tabindex="-1" role="dialog" aria-labelledby="` + htmlDialogId + `ModalTitle" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="` + htmlDialogId + `ModalTitle">` + dialogTitleText + `</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body row">
+                <div class="col-12">
+                <span class="list-group" id="` + htmlDialogId + `Text">
+                    ` + varHowToPlayTextHTML + `
+                </span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+            </div>
+        </div>
+        </div>
+        `;
+    }
+
+    return varHowToPlayDialogHTML;
+}
+
+function generateImportantActions() {
+    let actionHtml = `
+        <div class="row">
+            <div class="col hide" id="action_login">
+                <a class="btn btn-primary btn-circular" href="login.html" role="button"><i class="fas fa-user-plus"></i></a>
+                <div class="button-info">Login</div>
+            </div>
+            <div class="col hide" id="action_questions">
+                <a class="btn btn-primary btn-circular" href="questions.html" role="button"><i class="fas fa-list-ol"></i></a>
+                <div class="button-info">Questions</div>
+            </div>
+            <div class="col lnkTicket" id="action_ticket">
+                <a class="btn btn-primary btn-circular" href="#" role="button"><i class="fas fa-ticket-alt"></i></a>
+                <div class="button-info">Ticket</div>
+            </div>
+            <div class="col" id="action_winners">
+                <a class="btn btn-primary btn-circular" href="winners.html" role="button"><i class="fas fa-trophy"></i></a>
+                <div class="button-info">Winners</div>
+            </div>
+            <div class="col" id="action_mysettings">
+                <a class="btn btn-primary btn-circular" href="mysettings.html" role="button"><i class="fas fa-user-cog"></i></a>
+                <div class="button-info">My Settings</div>
+            </div>
+        </div>`;
+    document.getElementById("importantActions").innerHTML += actionHtml;
+}
+
+function addHTMLToPage() {
+    generateImportantActions();
+}
+
 
 /* ************************************************** */
 /* ****************** FIRESTORE ********************* */
@@ -200,7 +409,6 @@ function getFSQuestionList(where, order, limit, success, failure) {
 function getFirestoreData(collName, docName, success, failure) {
     db.collection(collName).doc(docName).get()
     .then((doc) => {
-        logMessage('Calling success');
         if (success !== null  &&  success !== undefined) success(doc);
     })
     .catch((error) => {
@@ -235,6 +443,7 @@ function getFSSettingsData(success, failure) {
             
             addSettingsToCache(doc);
             if (success !== undefined) success(doc);
+            displayBanner(doc);
         }, 
         function (err) {
             logMessage(err);
@@ -326,7 +535,7 @@ function updateQuestionInColl(qDocId, data, success, failure) {
 }
 
 function saveMerge(collName, docName, docJSON, success, failure) {
-    db.collection(collName).doc(docName).set(docJSON)
+    db.collection(collName).doc(docName).set(docJSON, { merge: true })
     .then(function(doc) {
         logMessage("saveMerge :: Document written with ID: ", doc);
         if (success !== null  &&  success !== undefined) success(doc);
@@ -352,20 +561,112 @@ function deleteQuestion(docName, success, failure) {
     deleteRec("questions", docName, success, failure);
 }
 
+
+/* function addUserNotifToken(tokenMonth, data, success, failure) {
+    db.collection("tokens").doc(tokenMonth).set(data, {merge: true })
+    .then(function(doc) {
+        // logMessage("Document written with ID: ", doc.id);
+        if (success !== null  &&  success !== undefined) success(doc);
+    })
+    .catch(function(error) {
+        console.error("Error adding document: ", error);
+        if (failure !== null  &&  failure !== undefined) failure(error);
+    });
+} */
+
+
 /* ************************************************** */
 /* ****************** FUNCTION ********************** */
 /* ************************************************** */
 function callCloudFunction(functionName, params, success, failure) {
+    logMessage('Inside callCloudFunction ' + functionName);
     var addMessage = functions.httpsCallable(functionName);
     addMessage(params)
     .then((result) => {
+        logMessage('Inside callCloudFunction success');
         if (success !== undefined) success(result);
     })
     .catch((e) => {
+        logMessage('Inside callCloudFunction failure');
         console.error(e);
         if (failure !== undefined) failure(e);
     });
 }
+
+
+/* ************************************************** */
+/* ****************** MESSAGING ********************* */
+/* ************************************************** */
+function isNotificationAccessGranted() {
+    if (Notification.permission === 'denied' || Notification.permission === 'default') {
+        console.log('Notification access NOT granted');
+        return false;
+    }
+    console.log('Notification access IS granted');
+    return true;
+}
+
+function setClientTokenSubscription(token, isEnabled, success, failure) {
+    console.log('Inside setClientTokenSubscription');
+    callCloudFunction('subscribeToNotification', { 
+        clienttoken : token,
+        tokenSubscribed: isEnabled
+    }, success, failure);
+}
+
+function getNotificationPermission(success, failure) {
+    if (messaging != null) {
+        messaging.getToken({ vapidKey: constVapidKey })
+        .then((currentToken) => {
+            if (currentToken) {
+                console.log(currentToken);
+                setClientTokenSubscription(currentToken, true, success, failure);
+            } else {
+                // Show permission request UI
+                console.log('No registration token available. Request permission to generate one.');
+                if (failure !== undefined) failure();
+                // ...
+            }
+        })
+        .catch((err) => {
+            console.log('An error occurred while retrieving token. ', err);
+            if (failure !== undefined) failure();
+            // ...
+        });
+    }
+}
+
+function createAndShowNotification(titleText, bodyText, imgUrl, clickUrl, isVibrate, autoCloseAfterSec) {
+    // var notification = new Notification("Hi there!");
+    let notification = new Notification(titleText, {
+        body: bodyText,
+        icon: imgUrl,
+        vibrate: isVibrate
+    });
+
+    // close the notification after 10 seconds
+    if (autoCloseAfterSec != undefined) {
+        setTimeout(() => {
+            notification.close();
+        }, autoCloseAfterSec * 1000);
+    }
+
+    // navigate to a URL
+    notification.onclick = function() {
+        window.location = clickUrl;
+    };
+}
+
+function trackOnMessageReceived() {
+    if (messaging != null) {
+        messaging.onMessage((payload) => {
+            console.log('Message received. ', payload);
+            createAndShowNotification('titleText', 'bodyText', 'https://sikhitambola.web.app/img/apple-touch-icon.png', 'https://sikhitambola.web.app/', true);
+            // ...
+        });
+    }
+}
+
 
 /* ************************************************** */
 /* ****************** ADMIN UI ********************** */
