@@ -1,12 +1,12 @@
 // const { triggerAsyncId } = require("async_hooks");
 
 var db = firebase.firestore();
-const messaging = typeof(firebase.messaging) === 'function' ? firebase.messaging() : null;
 if (location.hostname === "localhost") { db.useEmulator("localhost", 8189); }
 
 var functions = firebase.app().functions('asia-south1');
 if (location.hostname === "localhost") { functions.useEmulator("localhost", 5001); }
 
+const messaging = typeof(firebase.messaging) === 'function' ? firebase.messaging() : null;
 
 // firebase.firestore.setLogLevel("debug");
 var secondsInterval = 21;
@@ -103,13 +103,13 @@ function hideHeaderButtons(loggedIn, pageId) {
         $('#btnLogin').show(); $('#action_login').show();
         $('#btnTicketLi').hide(); $('#action_ticket').hide();
         $('#btnLogoutLi').hide();
-        $('#btnMySettingsLi').hide(); $('#action_settings').hide();
+        $('#btnMySettingsLi').hide(); $('#action_mysettings').hide();
         $('.loginInstruction').show();
     }
     else {
         $('#btnTicketLi').show(); $('#action_ticket').show();
         $('#btnLogoutLi').show();
-        $('#btnMySettingsLi').show(); $('#action_settings').show();
+        $('#btnMySettingsLi').show(); $('#action_mysettings').show();
         $('#btnSignup').hide();
         $('#btnLogin').hide(); $('#action_login').hide();
         logMessage(isAdmin());
@@ -284,7 +284,8 @@ function addHowToPlay(showHeaderText, forDialog) {
     let gotItButton = `
         <button class="btn btn-primary btn-sm" type="button" id="btnHowToPlay" data-toggle="howtoplay" data-target="#howtoplay" aria-expanded="true" aria-controls="howtoplayExample">
             Got it, don't show again.
-        </button>`;
+        </button>
+        <br><div class="small-text">You can always refer back to it using "How To Play" from the top-right Menu.</div></br>`;
     
     if (showHeaderText) headerText = `
         <div class="d-flex justify-content-between">
@@ -312,7 +313,6 @@ function addHowToPlay(showHeaderText, forDialog) {
             <u><b>Important</b></u>: To be able to generate a <a class="lnkTicket" href="#">ticket</a>, you need to be logged in. We highly recommend that you <a href="login.html">login now</a> itself in order to avoid last minute hassle while generating the <a class="lnkTicket" href="#">ticket</a>.
         </div>
         ` + gotItButton + `
-        <br><div class="small-text">You can always refer back to it using "How To Play" from the top-right Menu.</div></br>
     </div>
     `;
 
@@ -614,23 +614,25 @@ function setClientTokenSubscription(token, isEnabled, success, failure) {
 }
 
 function getNotificationPermission(success, failure) {
-    messaging.getToken({ vapidKey: constVapidKey })
-    .then((currentToken) => {
-        if (currentToken) {
-            console.log(currentToken);
-            setClientTokenSubscription(currentToken, true, success, failure);
-        } else {
-            // Show permission request UI
-            console.log('No registration token available. Request permission to generate one.');
+    if (messaging != null) {
+        messaging.getToken({ vapidKey: constVapidKey })
+        .then((currentToken) => {
+            if (currentToken) {
+                console.log(currentToken);
+                setClientTokenSubscription(currentToken, true, success, failure);
+            } else {
+                // Show permission request UI
+                console.log('No registration token available. Request permission to generate one.');
+                if (failure !== undefined) failure();
+                // ...
+            }
+        })
+        .catch((err) => {
+            console.log('An error occurred while retrieving token. ', err);
             if (failure !== undefined) failure();
             // ...
-        }
-    })
-    .catch((err) => {
-        console.log('An error occurred while retrieving token. ', err);
-        if (failure !== undefined) failure();
-        // ...
-    });
+        });
+    }
 }
 
 function createAndShowNotification(titleText, bodyText, imgUrl, clickUrl, isVibrate, autoCloseAfterSec) {
@@ -642,9 +644,11 @@ function createAndShowNotification(titleText, bodyText, imgUrl, clickUrl, isVibr
     });
 
     // close the notification after 10 seconds
-    setTimeout(() => {
-        notification.close();
-    }, autoCloseAfterSec * 1000);
+    if (autoCloseAfterSec != undefined) {
+        setTimeout(() => {
+            notification.close();
+        }, autoCloseAfterSec * 1000);
+    }
 
     // navigate to a URL
     notification.onclick = function() {
@@ -653,11 +657,13 @@ function createAndShowNotification(titleText, bodyText, imgUrl, clickUrl, isVibr
 }
 
 function trackOnMessageReceived() {
-    messaging.onMessage((payload) => {
-        console.log('Message received. ', payload);
-        createAndShowNotification('titleText', 'bodyText', 'imgUrl', 'https://sikhitambola.web.app/', true);
-        // ...
-    });
+    if (messaging != null) {
+        messaging.onMessage((payload) => {
+            console.log('Message received. ', payload);
+            createAndShowNotification('titleText', 'bodyText', 'https://sikhitambola.web.app/img/apple-touch-icon.png', 'https://sikhitambola.web.app/', true);
+            // ...
+        });
+    }
 }
 
 
