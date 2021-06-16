@@ -186,16 +186,17 @@ function displayNotifyLink() {
         if (!isNotificationAccessGranted()) {
             getNotificationPermission(function() {
                 addToLocalStorage('allowNotif', '1');
-                displayNotifyLink();
+                // displayNotifyLink();
             });
         }
     }
     else {
         $('#allowNotifyLink').show(300);
         $('#allowNotifyLink').on('click', function() {
+            $('#allowNotifyLink').hide();
             getNotificationPermission(function() {
                 addToLocalStorage('allowNotif', '1');
-                displayNotifyLink();
+                // displayNotifyLink();
             });
         });
     }
@@ -211,9 +212,9 @@ $(function onDocReady() {
     loadHeaderActions();
     loadSharingButtons();
     
-    // sleep(2000).then(displayNotifyLink); // Notifications: Taking permission to send notifications.
+    sleep(2000).then(displayNotifyLink); // Notifications: Taking permission to send notifications.
     toggleHowToPlay();
-    // trackOnMessageReceived(); // Notifications: Show message on receiving
+    trackOnMessageReceived(); // Notifications: Show message on receiving
 
 
     // $('#btnHowToPlay').click(createAndShowNotification);
