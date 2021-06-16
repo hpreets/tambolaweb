@@ -288,6 +288,7 @@ function checkforPrizeAndClaim() {
     }
 
     if (prizeIds !== '') {
+        // TODO: Add additional check that game is started.
         let prizeRet = registerPrize(prizeIds, retStr);
         logMessage('prizeRet ::' + prizeRet);
         // logMessage('prizeRet.bogie ::' + prizeRet.bogie);
