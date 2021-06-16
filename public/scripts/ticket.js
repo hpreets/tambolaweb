@@ -404,7 +404,8 @@ function successListenToQuestions(doc) {
 
 function updateUIOnQuestions(qList) {
     if (qList._gameover == true) {
-        alert('Game is over; \'Full House\' won. Please join us again for the next game. \n\nDon\'t forget to check winners by clicking on "Winners" button.');
+        // alert('Game is over; \'Full House\' won. Please join us again for the next game. \n\nDon\'t forget to check winners by clicking on "Winners" button.');
+        $('#gameOverModal').modal('show');
         clearInterval(counter);
     }
 
@@ -695,7 +696,6 @@ $(function onDocReady() {
     });
 
     /* alert(checkOrientation()); */
-
     $( window ).on( "orientationchange", function( event ) {
         checkOrientationAndDisplayMsg();
     });

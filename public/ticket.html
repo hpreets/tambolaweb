@@ -99,6 +99,34 @@
 		</div>
 		
 
+		<!-- GameOver Modal -->
+		<div class="modal fade" id="gameOverModal" tabindex="-1" role="dialog" aria-labelledby="gameOverModalTitle" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+					<h5 class="modal-title" id="gameOverModalTitle">Game Over</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					</div>
+					<div class="modal-body row">
+						<div class="col-4 text-center">
+							<i class="fas fa-ticket-alt fa-5x"></i>
+						</div>
+						<div class="col-8">
+							<span class="list-group" id="gameOverText">
+								Game is over; 'Full House' won. Please join us again for the next game. <p></p>Don't forget to check winners by clicking on "Winners" button.
+							</span>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						<a href="winners.html" class="btn btn-primary">Winners</a>
+					</div>
+				</div>
+			</div>
+		</div>
+		
 		<div class="outercontainer">
 		<div class="container">
 			<div class="ticket ticketrow1 ticketcol1 tktcell11"></div>
@@ -145,6 +173,9 @@
 	    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
 	    <!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script> -->
 	    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+		<!-- Font Awesome Script -->
+		<script src="https://kit.fontawesome.com/7ab8e18817.js" crossorigin="anonymous"></script>
 
 		<!-- update the version number as needed -->
 		<script defer src="/__/firebase/8.1.1/firebase-app.js"></script>
