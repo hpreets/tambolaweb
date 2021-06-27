@@ -10,17 +10,16 @@
 body {
 	box-sizing: border-box;
 	background-color: #333;
-	
 	margin: 1vh;		
 }
 
 .container {
 	display: grid;
 	grid-gap: 3px;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
 	grid-template-rows: 18vh 18vh 18vh minmax(auto, 25vh) 15vh ;
-    background-color: #333;
-    color: #ddd;
+  background-color: #333;
+  color: #ddd;
 	text-align: center;
 	font-size: 70%;
 	max-width: 100%;
@@ -37,7 +36,7 @@ body {
 
 .ticket, .question, .lastrow {
 	background-color: #b3d9ff;
-    color: #000;
+  color: #000;
 }
 
 .btnSubscript {
@@ -45,35 +44,34 @@ body {
 }
 
 .ticket {
-	
-    border-radius: 5px;
+	border-radius: 5px;
 }
 	
 .ticketcol1 {
-    grid-column: 1 / span 2;
+  grid-column: 1 / span 2;
 }
 
 .ticketcol2 {
-    grid-column: 3 / span 2;
+  grid-column: 3 / span 2;
 }
 
 .ticketcol3 {
-    grid-column: 5 / span 2;
+  grid-column: 5 / span 2;
 }
 
 .ticketcol4 {
-    grid-column: 7 / span 2;
+  grid-column: 7 / span 2;
 }
 
 .ticketcol5 {
-    grid-column: 9 / span 2;
+  grid-column: 9 / span 2;
 }
 	
 .question {
 	grid-column: 1 / span 10;
 }
 .lastrow {
-    grid-column: span 1;
+  grid-column: span 1;
 }
 
 .questionAnimation {
@@ -138,13 +136,9 @@ body {
 }
 
 .modal .modal-body {
-   max-height: 300px;
-   overflow-y: auto;
+  max-height: 300px;
+  overflow-y: auto;
 }
-
-/* .modal-dialog {
-    max-width: 80%;
-} */
 
 .questionCellInstructions {
 	font-style: italic;

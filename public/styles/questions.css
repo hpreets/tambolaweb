@@ -10,9 +10,8 @@
 	color: white;
 	position: relative;
   border-radius: 0;
-
   padding: 2rem 1rem 1rem 1rem;
-  margin-bottom: 10px;
+  margin-bottom: 0px;
 }
 
 .buttons {
@@ -204,12 +203,6 @@
   border-color: #1DA851;
 }
 
-.nav-item {
-  border-left: #ffffff;
-  border-left-width: thin;
-  border-left-style: solid;
-}
-
 .ques-form {
   width: 75%;
   margin: 25px auto;
@@ -362,12 +355,11 @@ html, body {
 }
 
 .subheadingbar {
-  /* flex-direction: column; */
   justify-content: space-around;
   align-items: center;
-  margin-top: -2rem;
-  padding: 10px 0;
-  background:goldenrod;
+  margin-bottom: 10px;
+  padding: 10px;
+  background: lightpink;
 }
 
 .banner {
@@ -389,7 +381,6 @@ html, body {
   display: inline-flex;
   justify-content: center;
   align-items: center;
-
   height: 60px;
   width: 60px;
   border-radius: 50%;
@@ -420,4 +411,8 @@ html, body {
 
 .small-text {
   font-size:small;
+}
+
+.menu {
+  outline: none !important;
 }
