@@ -119,6 +119,8 @@ $(function onDocReady() {
     loadHeaderActions();
     loadSharingButtons();
     $('#btnLogout').click(signout);
+    // navbar collapse functionality
+    menuCollapse();
 });
 
 
