@@ -7,6 +7,7 @@
  1. `firebase serve` - Run current code locally - Refer to https://firebase.google.com/docs/hosting/test-preview-deploy
  1. `firebase hosting:channel:deploy release-02-210102` - Preview deploy - Refer to https://firebase.google.com/docs/hosting/test-preview-deploy
  1. `firebase hosting:channel:delete CHANNEL_ID` - Commands for preview channels - https://firebase.google.com/docs/hosting/manage-hosting-resources?authuser=0#cli-commands-preview-channels
+ 1. `firebase deploy --only hosting` - Commands to deploy live. More options check here - https://firebase.google.com/docs/hosting/test-preview-deploy
 
 ### Functions
 
@@ -21,4 +22,4 @@
 
 ### General
 
- 1. `npm install -g firebase-tools` - Update Firebase
+ 1. `npm install -g firebase-tools` - Update Firebase or if you want to setup your machine for this project.
