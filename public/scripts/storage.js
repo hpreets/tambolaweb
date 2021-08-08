@@ -1,7 +1,7 @@
 // const { triggerAsyncId } = require("async_hooks");
 
 var db = firebase.firestore();
-if (location.hostname === "localhost") { db.useEmulator("localhost", 8189); }
+if (location.hostname === "localhost") { db.useEmulator("localhost", 8082); }
 
 var functions = firebase.app().functions('asia-south1');
 if (location.hostname === "localhost") { functions.useEmulator("localhost", 5001); }
@@ -380,6 +380,18 @@ function addHTMLToPage() {
     generateImportantActions();
 }
 
+// navbar collapse functionality
+function menuCollapse(){
+    $(document).click(
+        function (event) {
+            var target = $(event.target);
+            var _mobileMenuOpen = $(".navbar-collapse").hasClass("show");
+            if (_mobileMenuOpen === true && !target.hasClass("navbar-toggler")) {
+                $("button.navbar-toggler").click();
+            }
+        }
+    );
+}
 
 /* ************************************************** */
 /* ****************** FIRESTORE ********************* */
@@ -603,6 +615,14 @@ function isNotificationAccessGranted() {
         return false;
     }
     console.log('Notification access IS granted');
+    /* if (messaging) {
+        messaging.getToken({ vapidKey: constVapidKey })
+        .then((currentToken) => {
+            if (currentToken) {
+                console.log(currentToken);
+            }
+        });
+    } */
     return true;
 }
 
@@ -661,8 +681,7 @@ function trackOnMessageReceived() {
     if (messaging != null) {
         messaging.onMessage((payload) => {
             console.log('Message received. ', payload);
-            createAndShowNotification('titleText', 'bodyText', 'https://sikhitambola.web.app/img/apple-touch-icon.png', 'https://sikhitambola.web.app/', true);
-            // ...
+            createAndShowNotification('titleText onMessage', 'bodyText onMessage', 'https://sikhitambola.web.app/img/apple-touch-icon.png', 'https://sikhitambola.web.app/', true);
         });
     }
 }

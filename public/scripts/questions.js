@@ -137,7 +137,7 @@ function displaySubHeadingBar(checkButtonsToo) {
     let gameDateTime = new Date(getFromStorage('gamedatetime')*1000);
     var currDateTime = new Date();
     currDateTime.setMinutes( currDateTime.getMinutes() + 15 );
-    // if (isLocalhost()) currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
+    // if (isLocalhost()) currDateTime.setDate( currDateTime.getDate() + 1500 ); // TODO: Uncomment after testing
     logMessage( 'displaySubHeadingBar :: currDateTime ::' + currDateTime );
     logMessage( 'displaySubHeadingBar :: gameDateTime ::' + gameDateTime );
     logMessage( 'displaySubHeadingBar :: currGameSettings.gameover ::' + currGameSettings.gameover );
@@ -189,17 +189,79 @@ function displayNotifyLink() {
                 // displayNotifyLink();
             });
         }
+        /* else {
+            addToLocalStorage('allowNotif', '0');
+            displayNotifyLink();
+        } */
     }
     else {
         $('#allowNotifyLink').show(300);
         $('#allowNotifyLink').on('click', function() {
-            $('#allowNotifyLink').hide();
-            getNotificationPermission(function() {
-                addToLocalStorage('allowNotif', '1');
-                // displayNotifyLink();
-            });
+            if ('Notification' in window && navigator.serviceWorker) {
+                $('#allowNotifyLink').hide();
+                getNotificationPermission(function() {
+                    addToLocalStorage('allowNotif', '1');
+                    // displayNotifyLink();
+                });
+            }
+            else {
+                alert('Your browser does not support notifications. Please open Sikhi Tambola in Chrome browser and try again.');
+            }
         });
     }
+}
+
+
+/**
+ * Notification: Conditional showing of Notification permission button.
+ */
+function handleshowNotificationClick() {
+    $('#showNotification').on('click', () => {
+        if ('Notification' in window && navigator.serviceWorker) {
+            const notificationTitle = 'payload.notification.title'; // 'Background Message Title FB-SW';
+            const notificationOptions = {
+                body: 'payload.notification.body', // 'Background Message body. FB-SW',
+                // icon: 'https://sikhitambola.web.app/img/apple-touch-icon.png',
+                // image: 'https://sikhitambola.web.app/img/apple-touch-icon.png',
+                badge: 'http://localhost:5000/img/logo_transparent.png',
+                // click_action: 'https://sikhitambola.web.app/',
+                // requireInteraction: true,
+                /* actions: [
+                {
+                    action: 'question-action',
+                    title: 'Questions'
+                },
+                {
+                    action: 'winner-action',
+                    title: 'Winners'
+                }
+                ], */
+                // tag: 'tag-reminder',
+                // renotify: true,
+                // vibrate: [200, 100, 200, 100, 200, 100, 200]
+                // data: {
+                //     options: {
+                //     action: 'default',
+                //     close: true,
+                //     notificationCloseEvent: false,
+                //     url: 'https://sikhitambola.web.app/',
+                //     }
+                // }
+            };
+
+            let notification = new Notification(notificationTitle, notificationOptions);
+            // navigate to a URL
+            notification.onclick = function() {
+                window.location = 'http://localhost:5000/';
+            };
+        }
+        else {
+            alert('Your browser does not support notifications. Please open Sikhi Tambola in Chrome browser and try again.');
+        }
+
+        /* Notification.showNotification(notificationTitle,
+            notificationOptions); */
+    });
 }
 
 /**
@@ -214,7 +276,8 @@ $(function onDocReady() {
     
     sleep(2000).then(displayNotifyLink); // Notifications: Taking permission to send notifications.
     toggleHowToPlay();
-    trackOnMessageReceived(); // Notifications: Show message on receiving
+    handleshowNotificationClick();
+    // trackOnMessageReceived(); // Notifications: Show message on receiving
 
 
     // $('#btnHowToPlay').click(createAndShowNotification);
@@ -229,6 +292,9 @@ $(function onDocReady() {
             createAndShowNotification('titleText', 'bodyText', 'http://localhost:5000/img/apple-touch-icon.png', 'http://localhost:5000/', false, 3);
         }
     }); */
+
+    // navbar collapse functionality
+    menuCollapse();
 
 });
 
