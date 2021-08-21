@@ -4,6 +4,7 @@ let currGameSettings = null;
 
 
 
+
 /**
  * Called when user is logged in
  */
@@ -25,7 +26,7 @@ failureLogin = function() {
  * @param {*} index - The counter
  * @param {*} container - Parent element to which this row is added
  */
-function createQuestionRow(ques, answ, index, container, isNew) {
+function createQuestionRow(ques, answ, index, container, isNew, newquesinfourl) {
     let rowsno = index + 1 + '.';
     let rowquestion = ques;
     let rowanswer = answ;
@@ -52,8 +53,14 @@ function createQuestionRow(ques, answ, index, container, isNew) {
 
     if(counter % 10 == 0){
         let ad = createNode('div');
-        $(ad).text('adv.');
-        $(ad).addClass('display-3');
+        if (newquesinfourl) {
+            $(ad).html(`For detailed information on new questions, click <a href="${newquesinfourl}" target="_blank">here</a>`);
+            $(ad).addClass('display-5').addClass('colored-closed-box');
+        }
+        else {
+            $(ad).text('adv.');
+            $(ad).addClass('display-3');
+        }
         container.append(ad);
     }
 }
@@ -127,7 +134,7 @@ function iterateQuestions(qList) {
         let qdoc = qList[qdockey];
         if (qdockey !== '_gameover') {
             // logMessage('qdockey ::' + qdockey + '; qdoc ::' + qdoc);
-            createQuestionRow(qdoc.question, qdoc.answer, index, container, qdoc.new);
+            createQuestionRow(qdoc.question, qdoc.answer, index, container, qdoc.new, currGameSettings.newquesinfourl);
             index++
         }
     });
@@ -223,7 +230,7 @@ function handleshowNotificationClick() {
                 body: 'payload.notification.body', // 'Background Message body. FB-SW',
                 // icon: 'https://sikhitambola.web.app/img/apple-touch-icon.png',
                 // image: 'https://sikhitambola.web.app/img/apple-touch-icon.png',
-                badge: 'http://localhost:5000/img/logo_transparent.png',
+                badge: 'https://sikhitambola.web.app/img/logo_transparent.png',
                 // click_action: 'https://sikhitambola.web.app/',
                 // requireInteraction: true,
                 /* actions: [
