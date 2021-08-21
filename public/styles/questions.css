@@ -429,3 +429,11 @@ html, body {
 .top-menu-btn {
   outline: none !important;
 } 
+
+.colored-closed-box {
+  outline: dashed;
+  margin: 0px -12px;
+  padding: 25px;
+  background-color: lightcyan;
+  /* font-size: large; */
+}
