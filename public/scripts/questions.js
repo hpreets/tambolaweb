@@ -103,7 +103,7 @@ function successCurrGameFetch(doc) {
     }
 
     let gDate = new Date(getFromStorage('gamedatetime')*1000);
-    $('.gamedate').text( gDate.toDateString() + ' ' + gDate.toLocaleTimeString().replace(':00 ', ' ') + '' );
+    $('.gamedate').text( gDate.toDateString() + ' ' + gDate.toLocaleTimeString().replace(':00 ', ' ').replace(':00', '') + '' );
     // $('.gamedate').text( gDate );
     logMessage('HIDING SPINNER');
     $('#spinnerModal').modal('hide');
@@ -187,8 +187,29 @@ function handleBtnHowToPlay(e) {
  * Notification: Conditional showing of Notification permission button.
  */
 function displayNotifyLink() {
+    console.log('isNotificationAccessResponded()', isNotificationAccessResponded());
+    console.log('isNotificationAccessGranted()', isNotificationAccessGranted());
+    if (!isNotificationAccessResponded()) {
+        $('#allowNotifyLink').show();
+        $('#allowNotifyLink').on('click', function() {
+            if ('Notification' in window && navigator.serviceWorker) {
+                $('#allowNotifyLink').hide();
+                getNotificationPermission();
+                trackOnMessageReceived();
+            }
+            else {
+                alert('Your browser does not support notifications. Please open Sikhi Tambola in Chrome browser and try again.');
+            }
+        });
+    }
+    else if (isNotificationAccessGranted()) {
+        // If it has already been granted, save details again, in case there is a change.
+        getNotificationPermission();
+        trackOnMessageReceived();
+    }
+    
     // if (isNotificationAccessGranted()) {
-    if ((getFromLocalStorage('allowNotif') === '1')) {
+    /* if ((getFromLocalStorage('allowNotif') === '1')) {
         $('#allowNotifyLink').hide();
         if (!isNotificationAccessGranted()) {
             getNotificationPermission(function() {
@@ -196,10 +217,10 @@ function displayNotifyLink() {
                 // displayNotifyLink();
             });
         }
-        /* else {
+        /-* else {
             addToLocalStorage('allowNotif', '0');
             displayNotifyLink();
-        } */
+        } *-/
     }
     else {
         $('#allowNotifyLink').show(300);
@@ -215,7 +236,7 @@ function displayNotifyLink() {
                 alert('Your browser does not support notifications. Please open Sikhi Tambola in Chrome browser and try again.');
             }
         });
-    }
+    } */
 }
 
 
@@ -228,9 +249,9 @@ function handleshowNotificationClick() {
             const notificationTitle = 'payload.notification.title'; // 'Background Message Title FB-SW';
             const notificationOptions = {
                 body: 'payload.notification.body', // 'Background Message body. FB-SW',
-                // icon: 'https://sikhitambola.web.app/img/apple-touch-icon.png',
+                icon: 'img/apple-touch-icon.png',
                 // image: 'https://sikhitambola.web.app/img/apple-touch-icon.png',
-                badge: 'https://sikhitambola.web.app/img/logo_transparent.png',
+                badge: 'img/logo_transparent.png',
                 // click_action: 'https://sikhitambola.web.app/',
                 // requireInteraction: true,
                 /* actions: [
@@ -284,21 +305,6 @@ $(function onDocReady() {
     sleep(2000).then(displayNotifyLink); // Notifications: Taking permission to send notifications.
     toggleHowToPlay();
     handleshowNotificationClick();
-    // trackOnMessageReceived(); // Notifications: Show message on receiving
-
-
-    // $('#btnHowToPlay').click(createAndShowNotification);
-
-    
-    /* sleep(2000).then(() => {
-        if (!isNotificationAccessGranted()) {
-            // getNotificationPermission();
-            $('#btnHowToPlay').click(getNotificationPermission);
-        }
-        if (isNotificationAccessGranted()) {
-            createAndShowNotification('titleText', 'bodyText', 'http://localhost:5000/img/apple-touch-icon.png', 'http://localhost:5000/', false, 3);
-        }
-    }); */
 
     // navbar collapse functionality
     menuCollapse();
