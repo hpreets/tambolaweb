@@ -609,31 +609,67 @@ function callCloudFunction(functionName, params, success, failure) {
 /* ************************************************** */
 /* ****************** MESSAGING ********************* */
 /* ************************************************** */
+
+/**
+ * Has notification access been granted?
+ * @returns true only when Notification.permission is neither denied nor default
+ */
 function isNotificationAccessGranted() {
+    console.log('Notification.permission', Notification.permission);
     if (Notification.permission === 'denied' || Notification.permission === 'default') {
         console.log('Notification access NOT granted');
         return false;
     }
     console.log('Notification access IS granted');
-    /* if (messaging) {
-        messaging.getToken({ vapidKey: constVapidKey })
-        .then((currentToken) => {
-            if (currentToken) {
-                console.log(currentToken);
-            }
-        });
-    } */
     return true;
 }
 
-function setClientTokenSubscription(token, isEnabled, success, failure) {
-    console.log('Inside setClientTokenSubscription');
-    callCloudFunction('subscribeToNotification', { 
-        clienttoken : token,
-        tokenSubscribed: isEnabled
-    }, success, failure);
+
+/**
+ * Has user responded on notification access
+ * @returns 
+ */
+function isNotificationAccessResponded() {
+    if (Notification.permission === 'default') {
+        return false;
+    }
+    return true;
 }
 
+
+/**
+ * Saves client token to firebase and subscribes it to reminder channel
+ * @param {*} token user token used for notification subscription. Makes a call to firebase function.
+ * @param {*} isEnabled enable notification
+ * @param {*} success function on successful subscription
+ * @param {*} failure function on failure of subscription
+ */
+function setClientTokenSubscription(token, isEnabled, success, failure) {
+    console.log('Inside setClientTokenSubscription');
+    let tokenSavedKey = 'tokenSavedOn';
+    let saveTokenAgainAfter = 7*24*60*60*1000;
+    console.log('getFromStorage(tokenSaved)', getFromLocalStorage(tokenSavedKey), Date.now());
+    if (!getFromLocalStorage(tokenSavedKey)  ||  getFromLocalStorage(tokenSavedKey) < Date.now()) {
+        console.log('Calling cloud function');
+        callCloudFunction('subscribeToNotification', { 
+            clienttoken : token,
+            tokenSubscribed: isEnabled
+        }, 
+        function() {
+            addToLocalStorage(tokenSavedKey, Date.now() + (saveTokenAgainAfter));
+            console.log('getFromStorage(tokenSaved)', getFromLocalStorage(tokenSavedKey));
+            if (success !== undefined) success();
+        }, 
+        failure);
+    }
+}
+
+
+/**
+ * If token is allowed and available, it makes a call to Firebase function to store token and subscribe it for notification.
+ * @param {*} success Success function when token is subscribed
+ * @param {*} failure Failure function when token fails to subscribe
+ */
 function getNotificationPermission(success, failure) {
     if (messaging != null) {
         messaging.getToken({ vapidKey: constVapidKey })
@@ -645,17 +681,25 @@ function getNotificationPermission(success, failure) {
                 // Show permission request UI
                 console.log('No registration token available. Request permission to generate one.');
                 if (failure !== undefined) failure();
-                // ...
             }
         })
         .catch((err) => {
             console.log('An error occurred while retrieving token. ', err);
             if (failure !== undefined) failure();
-            // ...
         });
     }
 }
 
+
+/**
+ * Displays notification while browser is still open
+ * @param {*} titleText notification title text
+ * @param {*} bodyText notification body text
+ * @param {*} imgUrl notification icon
+ * @param {*} clickUrl url to open on notification click
+ * @param {*} isVibrate virbrate on notification
+ * @param {*} autoCloseAfterSec auto close after how many seconds
+ */
 function createAndShowNotification(titleText, bodyText, imgUrl, clickUrl, isVibrate, autoCloseAfterSec) {
     // var notification = new Notification("Hi there!");
     let notification = new Notification(titleText, {
@@ -677,11 +721,15 @@ function createAndShowNotification(titleText, bodyText, imgUrl, clickUrl, isVibr
     };
 }
 
+
+/**
+ * Listen to notification foreground message; while browser is open.
+ */
 function trackOnMessageReceived() {
     if (messaging != null) {
         messaging.onMessage((payload) => {
             console.log('Message received. ', payload);
-            createAndShowNotification('titleText onMessage', 'bodyText onMessage', 'https://sikhitambola.web.app/img/apple-touch-icon.png', 'https://sikhitambola.web.app/', true);
+            createAndShowNotification(payload.notification.title, payload.notification.body, 'https://sikhitambola.web.app/img/apple-touch-icon.png', 'https://sikhitambola.web.app/', true);
         });
     }
 }
