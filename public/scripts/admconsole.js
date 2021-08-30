@@ -87,7 +87,10 @@ function createQuestions() {
         for (var key in obj){
             var attrName = key;
             var attrValue = obj[key];
-            if (key == 'question') qjson.question = attrValue;
+            if (key == 'question') {
+                qjson.question = attrValue;
+                qjson.info = `https://gurduarablock33.wordpress.com/${attrValue.replaceAll(' ', '-')}`;
+            }
             else if (key == 'answer') qjson.answer = attrValue;
             else if (key == 'keywords') qjson.keywords = attrValue;
         }
