@@ -2,6 +2,7 @@ const container = $('.container-fluid');
 var table;
 var nextGameDate;
 let nextGameId;
+let currGameSettings;
 
 /**
  * First method that initiates data fetch and UI creation
@@ -18,13 +19,13 @@ function init() {
 }
 
 function successQListFetch(querySnapshot) {
-	console.log("inside successQListFetch :: ");
+	// console.log("inside successQListFetch :: ");
 	let datajson = [];
 	let rowArr = [];
 	let innerjson = {};
 	querySnapshot.forEach(function(doc) {
 		rowArr = [];
-		console.log(doc.id, " => ", doc.data());
+		// console.log(doc.id, " => ", doc.data());
 		rowArr.push(doc.id);
 		rowArr.push(doc.data().question);
 		rowArr.push(doc.data().answer);
@@ -38,10 +39,11 @@ function successQListFetch(querySnapshot) {
 		innerjson['2']=doc.data().answer;
 		innerjson['3']=doc.data().status == undefined ? '' : doc.data().status;
 		innerjson['4']=doc.data().addedOn.seconds;
+		innerjson['5']=doc.data().info == undefined ? '' : doc.data().info;
 		datajson.push(innerjson);
 	});
 	let datajson1 = { data : datajson };
-	console.log(JSON.stringify(datajson1));
+	// console.log(JSON.stringify(datajson1));
 	$(document).ready(function() {
 		var selected = [];
 
@@ -52,28 +54,30 @@ function successQListFetch(querySnapshot) {
 				{ title: "Question" },
 				{ title: "Answer" },
 				{ title: "Status" },
-				{ title: "Added On" }
+				{ title: "Added On" },
+				{ title: "Info URL" }
 			],
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
 			
 		} );
+		// console.log(JSON.stringify(datajson));
 
 		$('#questionList tbody').on('click', 'tr', function () {
 			$(this).toggleClass('selected');
-			console.log(table.rows('.selected').data());
+			// console.log(table.rows('.selected').data());
 			$('#selectedCount').text(table.rows('.selected').data().length +' row(s) selected');
 		} );
 	} );
 
 	
 
-	console.log('Returning from successQListFetch');
+	// console.log('Returning from successQListFetch');
 }
 
 /**
  * method to create a new question in "questions" collection
  */
-function createQues() {
+/* function createQues() {
 	var ques;
 	var ans;
 	var pques;
@@ -82,19 +86,19 @@ function createQues() {
 	var status;
 	var keywords;
 	addToQuestionCollection(ques, ans, pques, pans, info, status, keywords, successCreateQues, failureCreateQues);
-}
-function successCreateQues(doc) {
+} */
+/* function successCreateQues(doc) {
 	console.log('SuccessCreateQues :::');
 	console.log(doc.id);
-}
-function failureCreateQues(error) {
+} */
+/* function failureCreateQues(error) {
 	console.log('FailureCreateQues :::' + error);
-}
+} */
 
 /**
  * method to update a new question in "questions" collection
  */
-function updateQues() {
+/* function updateQues() {
 	var quesDocId
 	var ques;
 	var ans;
@@ -104,19 +108,19 @@ function updateQues() {
 	var status;
 	var keywords;
 	updateQuestionInCollection(quesDocId, ques, ans, pques, pans, info, status, keywords, successUpdateQues, failureUpdateQues);
-}
-function successUpdateQues(doc) {
+} */
+/* function successUpdateQues(doc) {
 	console.log('SuccessUpdateQues :::');
 	console.log(doc.id);
-}
-function failureUpdateQues(error) {
+} */
+/* function failureUpdateQues(error) {
 	console.log('FailureUpdateQues :::' + error);
-}
+} */
 
 function getNextGameDate() {
-    console.log($('#inputNextGameYear').val());
-    console.log($('#inputNextGameMonth').val());
-    console.log($('#inputNextGameDate').val());
+    // console.log($('#inputNextGameYear').val());
+    // console.log($('#inputNextGameMonth').val());
+    // console.log($('#inputNextGameDate').val());
     nextGameDate 
 		= new Date(
 			$('#inputNextGameYear').val(), 
@@ -126,13 +130,13 @@ function getNextGameDate() {
             $('#inputNextGameMinute').val(), 
 			0
 		);
-    console.log(nextGameDate);
+    // console.log(nextGameDate);
 	return nextGameDate;
 }
 
 function getNextGameId() {
     nextGameDate = getNextGameDate();
-    console.log(nextGameDate);
+    // console.log(nextGameDate);
     
     // var d = new Date();
     // d.setDate(d.getDate() + 10);
@@ -140,8 +144,8 @@ function getNextGameId() {
 }
 
 function isNextGameDateInFuture() {
-    console.log(getNextGameDate());
-    console.log(new Date());
+    // console.log(getNextGameDate());
+    // console.log(new Date());
     if (getNextGameDate() < new Date()) {
         alert('Please set the Next Game date correctly');
         return false;
@@ -166,8 +170,8 @@ function validateBeforeCreatingGame() {
 function createGameQues() {
 	if (!validateBeforeCreatingGame()) return;
 
-	console.log(table.rows('.selected').data());
-	console.log(table.rows('.selected').data().length);
+	// console.log(table.rows('.selected').data());
+	// console.log(table.rows('.selected').data().length);
     nextGameId = getNextGameId();
 
 	let quesList = {};
@@ -177,10 +181,11 @@ function createGameQues() {
 		let qdoc = {};
 		qdoc.question = table.rows('.selected').data()[ctr]['1'];
 		qdoc.answer = table.rows('.selected').data()[ctr]['2'];
+		qdoc.info = table.rows('.selected').data()[ctr]['5'];
 		quesList[qdoc.answer] = qdoc;
 	}
 
-	console.log(JSON.stringify(quesList));
+	// console.log(JSON.stringify(quesList));
 	gameques.update(quesList, { merge: true })
 	.then(() => {
 		$('#messageText').text('Game questions created successfully');
@@ -206,21 +211,24 @@ function createCurrGameSetting() {
 	getFSSettingsData(successFetchSettingsData, successFetchSettingsData); // For failure too call same function.
 }
 
-function successFetchSettingsData() {
+function successFetchSettingsData(doc) {
+	currGameSettings = doc.data();
+	// console.log('this.currGameSettings ::' + JSON.stringify(currGameSettings));
 	getFSCurrGameQuestions(getNextGameId(), successGameQuesFetch);
 }
 
 function successGameQuesFetch(doc) {
     var qList = doc.data();
-    console.log(JSON.stringify(qList));
+    // console.log(JSON.stringify(qList));
     var answers = '';
     Object.keys(qList).forEach((qdockey) => {
-        console.log('qdockey ::' + qdockey);
+        // console.log('qdockey ::' + qdockey);
         if (qdockey !== '_gameover') {
             answers += qdockey + '#';
         }
     });
-    console.log('answers ::' + answers);
+    // console.log('this.currGameSettings ::' + JSON.parse(JSON.stringify(currGameSettings)));
+    // console.log('answers ::' + answers);
     db.collection("settings").doc("currgame").set({});
     let settigs = db.collection("settings").doc("currgame");
     var settjson = {};
@@ -228,15 +236,24 @@ function successGameQuesFetch(doc) {
 
     var d = nextGameDate;
 	settjson.gamedatetime = firebase.firestore.Timestamp.fromDate(new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), 0, 0));
-	console.log(getNextGameId());
+	// console.log(getNextGameId());
     settjson.gameid = getNextGameId();
     gameid = getFromStorage('gameid');
-    console.log('gameid ::' + gameid);
+    // console.log('gameid ::' + gameid);
     settjson.prevgameid = gameid === undefined ? null : gameid;
     settjson.queschanged = firebase.firestore.Timestamp.now();
     settjson.gameover = false;
     settjson.coveredAnswers = null;
-    console.log('settjson ::' + JSON.stringify(settjson));
+
+	// Reuse properties from existing currgame
+	try {
+		if (currGameSettings.links) settjson.links = currGameSettings.links; // Reuse 'links' properties
+	}
+	catch (ex) {
+		console.error('Error while setting existing properties from currgame', ex);
+	}
+
+    // console.log('settjson ::' + JSON.stringify(settjson));
     settigs.update(settjson, { merge: true }).then(() => {
         $('#messageText').text('Settings created successfully');
     })
@@ -258,7 +275,7 @@ function successGameQuesFetch(doc) {
 
 
 $(function onDocReady() {
-	console.log('Inside onDocReady');
+	// console.log('Inside onDocReady');
     loadHeaderActionsAdmin();
     loadSharingButtons();
     $('#btnLogout').click(signout);
