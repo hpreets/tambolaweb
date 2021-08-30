@@ -26,7 +26,7 @@ failureLogin = function() {
  * @param {*} index - The counter
  * @param {*} container - Parent element to which this row is added
  */
-function createQuestionRow(ques, answ, index, container, isNew, newquesinfourl) {
+function createQuestionRow(ques, answ, index, container, isNew, link /* newquesinfourl */) {
     let rowsno = index + 1 + '.';
     let rowquestion = ques;
     let rowanswer = answ;
@@ -53,9 +53,9 @@ function createQuestionRow(ques, answ, index, container, isNew, newquesinfourl) 
 
     if(counter % 10 == 0){
         let ad = createNode('div');
-        if (newquesinfourl) {
-            $(ad).html(`For detailed information on new questions, click <a href="${newquesinfourl}" target="_blank">here</a>`);
-            $(ad).addClass('display-5').addClass('colored-closed-box');
+        if (link) {
+            $(ad).html(`${link.text}, click <a href="${link.url}" target="_blank">here</a>`);
+            $(ad).addClass('display-5').addClass('colored-closed-box').prop('style', `background-color: ${link.color};`);
         }
         else {
             $(ad).text('adv.');
@@ -83,6 +83,10 @@ function successCurrGameFetch(doc) {
     currGameSettings = doc.data();
     gameid = doc.data().gameid;
 
+    let gDate = new Date(getFromStorage('gamedatetime')*1000);
+    $('.gamedate').text( gDate.toDateString() + ' ' + gDate.toLocaleTimeString().replace(':00 ', ' ').replace(':00', '') + '' );
+    // $('.gamedate').text( gDate );
+
     if (/* getFromStorage('gameid') != null  
             &&  doc.data().gameid == getFromStorage('gameid')  
             &&  doc.data().queschanged.seconds == getFromStorage('queschanged')
@@ -92,6 +96,8 @@ function successCurrGameFetch(doc) {
         logMessage("Picking data from Cache");
         qList = JSON.parse(getFromStorage("qlist"));
         iterateQuestions(qList);
+
+        spinnerVisible(false);
     }
     else {
         // Clear all storage including storage of ticket and other pages
@@ -102,11 +108,6 @@ function successCurrGameFetch(doc) {
         getFSCurrGameQuestions(gameid, successQuestionListFetch, null);
     }
 
-    let gDate = new Date(getFromStorage('gamedatetime')*1000);
-    $('.gamedate').text( gDate.toDateString() + ' ' + gDate.toLocaleTimeString().replace(':00 ', ' ').replace(':00', '') + '' );
-    // $('.gamedate').text( gDate );
-    logMessage('HIDING SPINNER');
-    $('#spinnerModal').modal('hide');
     displaySubHeadingBar(true);
 }
 
@@ -121,8 +122,21 @@ function successQuestionListFetch(doc) {
   addToStorage("qlist", JSON.stringify(qList));
   qList = JSON.parse(getFromStorage("qlist"));
   iterateQuestions(qList);
+
+  spinnerVisible(false);
 }
 
+function spinnerVisible(isVisible) {
+    if (isVisible) {
+        // $('#spinnerModal').modal('show');
+        $('.spinner').show();
+    }
+    else {
+        logMessage('HIDING SPINNER');
+        // $('#spinnerModal').modal('hide');
+        $('.spinner').hide();
+    }
+}
 
 /**
  * Iterate JSON data to create UI
@@ -130,12 +144,18 @@ function successQuestionListFetch(doc) {
  */
 function iterateQuestions(qList) {
     let index = 0;
+    let linkIndex = 0;
     Object.keys(qList).forEach((qdockey) => {
         let qdoc = qList[qdockey];
         if (qdockey !== '_gameover') {
             // logMessage('qdockey ::' + qdockey + '; qdoc ::' + qdoc);
-            createQuestionRow(qdoc.question, qdoc.answer, index, container, qdoc.new, currGameSettings.newquesinfourl);
+            // console.log(currGameSettings.links);
+            createQuestionRow(qdoc.question, qdoc.answer, index, container, qdoc.new, currGameSettings.links ? currGameSettings.links[linkIndex] : currGameSettings.links /* newquesinfourl */);
             index++
+            if (index % 10 === 0) {
+                linkIndex++;
+                if (currGameSettings.links && currGameSettings.links.length <= linkIndex) linkIndex = 0;
+            }
         }
     });
 }
@@ -187,10 +207,27 @@ function handleBtnHowToPlay(e) {
  * Notification: Conditional showing of Notification permission button.
  */
 function displayNotifyLink() {
-    console.log('isNotificationAccessResponded()', isNotificationAccessResponded());
-    console.log('isNotificationAccessGranted()', isNotificationAccessGranted());
-    if (!isNotificationAccessResponded()) {
-        $('#allowNotifyLink').show();
+
+    try {
+        if ('Notification' in window && navigator.serviceWorker) {
+            console.log('isNotificationAccessResponded()', isNotificationAccessResponded());
+            console.log('isNotificationAccessGranted()', isNotificationAccessGranted());
+            if (!isNotificationAccessResponded()) {
+                $('#allowNotifyLink').show();
+            }
+            else if (isNotificationAccessGranted()) {
+                // If it has already been granted, save details again, in case there is a change.
+                getNotificationPermission();
+                trackOnMessageReceived();
+            }
+            /* else {
+                $('#allowNotifyLink').show();
+            } */
+        }
+        else {
+            $('#allowNotifyLink').show();
+        }
+
         $('#allowNotifyLink').on('click', function() {
             if ('Notification' in window && navigator.serviceWorker) {
                 $('#allowNotifyLink').hide();
@@ -198,14 +235,13 @@ function displayNotifyLink() {
                 trackOnMessageReceived();
             }
             else {
-                alert('Your browser does not support notifications. Please open Sikhi Tambola in Chrome browser and try again.');
+                alert('Your browser does not support notifications. Please open SikhiTambola in Chrome browser (or other supported browser) and try again.');
             }
         });
     }
-    else if (isNotificationAccessGranted()) {
-        // If it has already been granted, save details again, in case there is a change.
-        getNotificationPermission();
-        trackOnMessageReceived();
+    catch (ex) {
+        // alert('Your browser does not support notifications. Please open SikhiTambola in Chrome browser (or other supported browser) and try again.');
+        console.log(ex);
     }
     
     // if (isNotificationAccessGranted()) {
@@ -297,7 +333,6 @@ function handleshowNotificationClick() {
  */
 $(function onDocReady() {
 	logMessage('Inside onDocReady');
-    // $('#spinnerModal').modal('show');
     addHTMLToPage();
     loadHeaderActions();
     loadSharingButtons();
@@ -323,3 +358,4 @@ init();
 var subheader = null;
 if (subheader == null) subheader = setInterval(checkDisplaySubHeadingBar, 60000);
 
+spinnerVisible(true);
