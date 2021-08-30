@@ -615,7 +615,7 @@ function callCloudFunction(functionName, params, success, failure) {
  * @returns true only when Notification.permission is neither denied nor default
  */
 function isNotificationAccessGranted() {
-    console.log('Notification.permission', Notification.permission);
+    // console.log('Notification.permission', Notification.permission);
     if (Notification.permission === 'denied' || Notification.permission === 'default') {
         console.log('Notification access NOT granted');
         return false;
@@ -645,19 +645,19 @@ function isNotificationAccessResponded() {
  * @param {*} failure function on failure of subscription
  */
 function setClientTokenSubscription(token, isEnabled, success, failure) {
-    console.log('Inside setClientTokenSubscription');
+    // console.log('Inside setClientTokenSubscription');
     let tokenSavedKey = 'tokenSavedOn';
     let saveTokenAgainAfter = 7*24*60*60*1000;
-    console.log('getFromStorage(tokenSaved)', getFromLocalStorage(tokenSavedKey), Date.now());
+    // console.log('getFromStorage(tokenSaved)', getFromLocalStorage(tokenSavedKey), Date.now());
     if (!getFromLocalStorage(tokenSavedKey)  ||  getFromLocalStorage(tokenSavedKey) < Date.now()) {
-        console.log('Calling cloud function');
+        // console.log('Calling cloud function');
         callCloudFunction('subscribeToNotification', { 
             clienttoken : token,
             tokenSubscribed: isEnabled
         }, 
         function() {
             addToLocalStorage(tokenSavedKey, Date.now() + (saveTokenAgainAfter));
-            console.log('getFromStorage(tokenSaved)', getFromLocalStorage(tokenSavedKey));
+            // console.log('getFromStorage(tokenSaved)', getFromLocalStorage(tokenSavedKey));
             if (success !== undefined) success();
         }, 
         failure);
