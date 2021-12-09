@@ -227,7 +227,7 @@
 } */
 
 html, body {
-  overflow-x: hidden;
+  /* overflow-x: hidden; */
   height: 100vh;
 }
 
@@ -436,4 +436,11 @@ html, body {
   padding: 25px;
   background-color: lightcyan;
   /* font-size: large; */
+}
+
+#back-to-top {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  display: none;
 }
