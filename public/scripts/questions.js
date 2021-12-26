@@ -1,9 +1,8 @@
 const container = $('.quesDiv');
 let qList = null;
 let currGameSettings = null;
-
-
-
+let doSort = false;
+let showNewOnly = false;
 
 /**
  * Called when user is logged in
@@ -55,11 +54,11 @@ function createQuestionRow(ques, answ, index, container, isNew, link /* newquesi
         let ad = createNode('div');
         if (link) {
             $(ad).html(`${link.text}, click <a href="${link.url}" target="_blank">here</a>`);
-            $(ad).addClass('display-5').addClass('colored-closed-box').prop('style', `background-color: ${link.color};`);
+            $(ad).addClass('line display-5').addClass('colored-closed-box').prop('style', `background-color: ${link.color};`);
         }
         else {
             $(ad).text('adv.');
-            $(ad).addClass('display-3');
+            $(ad).addClass('line adv display-3');
         }
         container.append(ad);
     }
@@ -108,6 +107,7 @@ function successCurrGameFetch(doc) {
         getFSCurrGameQuestions(gameid, successQuestionListFetch, null);
     }
 
+    spinnerVisible(false);
     displaySubHeadingBar(true);
 }
 
@@ -145,12 +145,21 @@ function spinnerVisible(isVisible) {
 function iterateQuestions(qList) {
     let index = 0;
     let linkIndex = 0;
+    if (doSort) {
+        // console.log('qList ::' + JSON.stringify(qList));
+        qList = createJsonArr(qList);
+        // console.log('qList ::' + JSON.stringify(qList));
+        qList = sortJson(qList, 'answer');
+        // console.log('qList ::' + JSON.stringify(qList));
+    }
     Object.keys(qList).forEach((qdockey) => {
         let qdoc = qList[qdockey];
         if (qdockey !== '_gameover') {
             // logMessage('qdockey ::' + qdockey + '; qdoc ::' + qdoc);
             // console.log(currGameSettings.links);
-            createQuestionRow(qdoc.question, qdoc.answer, index, container, qdoc.new, currGameSettings.links ? currGameSettings.links[linkIndex] : currGameSettings.links /* newquesinfourl */);
+            if (showNewOnly == false || (showNewOnly == true && qdoc.new)) {
+                createQuestionRow(qdoc.question, qdoc.answer, index, container, qdoc.new, currGameSettings.links ? currGameSettings.links[linkIndex] : currGameSettings.links /* newquesinfourl */);
+            }
             index++
             if (index % 10 === 0) {
                 linkIndex++;
@@ -328,6 +337,57 @@ function handleshowNotificationClick() {
     });
 }
 
+//******************* go to top button functionality**************************** */
+function gototop() {
+    $(window).scroll(function () {
+      if ($(this).scrollTop() > 800) {
+        $('#back-to-top').fadeIn();
+      } else {
+        $('#back-to-top').fadeOut();
+      }
+    });
+    // scroll body to 0px on click
+    $('#back-to-top').click(function () {
+      $('body,html').animate({
+        scrollTop: 0
+      }, 400);
+      return false;
+    });
+}
+
+/**
+ * Display all questions - triggered from button group
+ */
+function showAllQues() {
+    doSort = false;
+    showNewOnly = false;
+    logMessage('Inside ques-filter-all');
+    $('.quesDiv .line').remove();
+    iterateQuestions(qList);
+}
+
+/**
+ * Display only new questions - triggered from button group
+ */
+ function showNewQues() {
+    doSort = false;
+    showNewOnly = true;
+    logMessage('Inside ques-filter-new');
+    $('.quesDiv .line').remove();
+    iterateQuestions(qList);
+}
+
+/**
+ * Display all questions sorted - triggered from button group
+ */
+ function showSortedQues() {
+    doSort = true;
+    showNewOnly = false;
+    logMessage('Inside ques-filter-sort');
+    $('.quesDiv .line').remove();
+    iterateQuestions(qList);
+}
+
 /**
  * On page load function
  */
@@ -344,6 +404,17 @@ $(function onDocReady() {
     // navbar collapse functionality
     menuCollapse();
 
+    gototop();
+
+    $('#ques-filter-selector button').click(function() {
+        $(this).addClass('active').siblings().removeClass('active');
+    });
+
+    $('#ques-filter-sort').click(function() { showSortedQues(); });
+    $('#ques-filter-all').click(function() { showAllQues(); });
+    $('#ques-filter-new').click(function() { showNewQues(); });
+
+    $('#ques-filter-all').addClass('active').siblings().removeClass('active');
 });
 
 function checkDisplaySubHeadingBar() {
