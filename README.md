@@ -23,3 +23,4 @@
 ### General
 
  1. `npm install -g firebase-tools` - Update Firebase or if you want to setup your machine for this project.
+ 1. `firebase auth:export usersyymmdd.csv --format=CSV` - Export users data in csv format.
