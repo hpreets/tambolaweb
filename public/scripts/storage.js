@@ -1,12 +1,20 @@
 // const { triggerAsyncId } = require("async_hooks");
 
 var db = firebase.firestore();
-if (location.hostname === "localhost") { db.useEmulator("localhost", 8082); }
+if (location.hostname === "localhost") { db.useEmulator("localhost", 8083); }
+if (location.hostname.indexOf('192.168.1') >= 0) { db.useEmulator("localhost", 8083); }
 
 var functions = firebase.app().functions('asia-south1');
 if (location.hostname === "localhost") { functions.useEmulator("localhost", 5001); }
 
-const messaging = typeof(firebase.messaging) === 'function' ? firebase.messaging() : null;
+// HS 21-Dec-2021; Messaging not available on all browsers
+var messaging;
+try {
+    messaging = typeof(firebase.messaging) === 'function' ? firebase.messaging() : null;
+}
+catch (e) {
+    messaging = null;
+}
 
 // firebase.firestore.setLogLevel("debug");
 var secondsInterval = 21;
@@ -68,7 +76,7 @@ function checkLogin(auth, successFunction, failureFunction) {
     auth.onAuthStateChanged((user) => {
         if (user) {
             logMessage('User is NOT NULL ::' + user.uid + "; displayname ::" + user.displayName + '; email ::' + user.email);
-            $('#loggedInUser').text(user.displayName);
+            $('#loggedInUser').text(user.displayName + ' (' + user.email + ')');
             uid = user.uid;
             userEmail = user.email;
             hideHeaderButtons(true, location.pathname.replace('.html', '').replace('/', ''));
@@ -391,6 +399,33 @@ function menuCollapse(){
             }
         }
     );
+}
+
+function sortJson(jsn, sortOn) {
+	if (jsn.length > 0) {
+		jsn.sort((a, b) => {
+			let fa = a[sortOn], fb = b[sortOn];
+            var retVal = 0;
+            
+			if (fa > fb) {
+				retVal = 1;
+			}
+			if (fa < fb) {
+				retVal = -1;
+			}
+            return retVal;
+		});
+    }
+    return jsn;
+}
+
+function createJsonArr(qList) {
+    var retJson = [];
+    Object.keys(qList).forEach((qdockey) => {
+        let qdoc = qList[qdockey];
+        retJson.push(qdoc);
+    });
+    return retJson;
 }
 
 /* ************************************************** */
@@ -785,4 +820,3 @@ function loadHeaderActionsAdmin(success) {
         }
     );
 }
-
