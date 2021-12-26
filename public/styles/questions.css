@@ -1,8 +1,7 @@
 .main-heading {
 	text-align: center;
 	font-weight: 500;
-
-  margin-top: 25px;
+  margin-top: -20px;
 }
 
 .jumbotron {
@@ -227,7 +226,7 @@
 } */
 
 html, body {
-  overflow-x: hidden;
+  /* overflow-x: hidden; */
   height: 100vh;
 }
 
@@ -378,6 +377,7 @@ html, body {
   align-items: center;
   display: flex;
   justify-content: center;
+  margin-top: 20px;
 }
 
 .loginInstruction {
@@ -437,3 +437,11 @@ html, body {
   background-color: lightcyan;
   /* font-size: large; */
 }
+
+#back-to-top {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  display: none;
+  border-radius: 50%;
+} 
