@@ -1,8 +1,8 @@
 const container = $('.quesDiv');
 let qList = null;
 let currGameSettings = null;
-
-
+let doSort = false;
+let showNewOnly = false;
 
 /**
  * Called when user is logged in
@@ -25,7 +25,7 @@ failureLogin = function() {
  * @param {*} index - The counter
  * @param {*} container - Parent element to which this row is added
  */
-function createQuestionRow(ques, answ, index, container, isNew) {
+function createQuestionRow(ques, answ, index, container, isNew, link /* newquesinfourl */) {
     let rowsno = index + 1 + '.';
     let rowquestion = ques;
     let rowanswer = answ;
@@ -52,8 +52,14 @@ function createQuestionRow(ques, answ, index, container, isNew) {
 
     if(counter % 10 == 0){
         let ad = createNode('div');
-        $(ad).text('adv.');
-        $(ad).addClass('display-3');
+        if (link) {
+            $(ad).html(`${link.text}, click <a href="${link.url}" target="_blank">here</a>`);
+            $(ad).addClass('line display-5').addClass('colored-closed-box').prop('style', `background-color: ${link.color};`);
+        }
+        else {
+            $(ad).text('adv.');
+            $(ad).addClass('line adv display-3');
+        }
         container.append(ad);
     }
 }
@@ -76,6 +82,10 @@ function successCurrGameFetch(doc) {
     currGameSettings = doc.data();
     gameid = doc.data().gameid;
 
+    let gDate = new Date(getFromStorage('gamedatetime')*1000);
+    $('.gamedate').text( gDate.toDateString() + ' ' + gDate.toLocaleTimeString().replace(':00 ', ' ').replace(':00', '') + '' );
+    // $('.gamedate').text( gDate );
+
     if (/* getFromStorage('gameid') != null  
             &&  doc.data().gameid == getFromStorage('gameid')  
             &&  doc.data().queschanged.seconds == getFromStorage('queschanged')
@@ -85,6 +95,8 @@ function successCurrGameFetch(doc) {
         logMessage("Picking data from Cache");
         qList = JSON.parse(getFromStorage("qlist"));
         iterateQuestions(qList);
+
+        spinnerVisible(false);
     }
     else {
         // Clear all storage including storage of ticket and other pages
@@ -95,11 +107,7 @@ function successCurrGameFetch(doc) {
         getFSCurrGameQuestions(gameid, successQuestionListFetch, null);
     }
 
-    let gDate = new Date(getFromStorage('gamedatetime')*1000);
-    $('.gamedate').text( gDate.toDateString() + ' ' + gDate.toLocaleTimeString().replace(':00 ', ' ') + '' );
-    // $('.gamedate').text( gDate );
-    logMessage('HIDING SPINNER');
-    $('#spinnerModal').modal('hide');
+    spinnerVisible(false);
     displaySubHeadingBar(true);
 }
 
@@ -114,8 +122,21 @@ function successQuestionListFetch(doc) {
   addToStorage("qlist", JSON.stringify(qList));
   qList = JSON.parse(getFromStorage("qlist"));
   iterateQuestions(qList);
+
+  spinnerVisible(false);
 }
 
+function spinnerVisible(isVisible) {
+    if (isVisible) {
+        // $('#spinnerModal').modal('show');
+        $('.spinner').show();
+    }
+    else {
+        logMessage('HIDING SPINNER');
+        // $('#spinnerModal').modal('hide');
+        $('.spinner').hide();
+    }
+}
 
 /**
  * Iterate JSON data to create UI
@@ -123,12 +144,27 @@ function successQuestionListFetch(doc) {
  */
 function iterateQuestions(qList) {
     let index = 0;
+    let linkIndex = 0;
+    if (doSort) {
+        // console.log('qList ::' + JSON.stringify(qList));
+        qList = createJsonArr(qList);
+        // console.log('qList ::' + JSON.stringify(qList));
+        qList = sortJson(qList, 'answer');
+        // console.log('qList ::' + JSON.stringify(qList));
+    }
     Object.keys(qList).forEach((qdockey) => {
         let qdoc = qList[qdockey];
         if (qdockey !== '_gameover') {
             // logMessage('qdockey ::' + qdockey + '; qdoc ::' + qdoc);
-            createQuestionRow(qdoc.question, qdoc.answer, index, container, qdoc.new);
+            // console.log(currGameSettings.links);
+            if (showNewOnly == false || (showNewOnly == true && qdoc.new)) {
+                createQuestionRow(qdoc.question, qdoc.answer, index, container, qdoc.new, currGameSettings.links ? currGameSettings.links[linkIndex] : currGameSettings.links /* newquesinfourl */);
+            }
             index++
+            if (index % 10 === 0) {
+                linkIndex++;
+                if (currGameSettings.links && currGameSettings.links.length <= linkIndex) linkIndex = 0;
+            }
         }
     });
 }
@@ -137,7 +173,7 @@ function displaySubHeadingBar(checkButtonsToo) {
     let gameDateTime = new Date(getFromStorage('gamedatetime')*1000);
     var currDateTime = new Date();
     currDateTime.setMinutes( currDateTime.getMinutes() + 15 );
-    // if (isLocalhost()) currDateTime.setDate( currDateTime.getDate() + 15 ); // TODO: Uncomment after testing
+    // if (isLocalhost()) currDateTime.setDate( currDateTime.getDate() + 1500 ); // TODO: Uncomment after testing
     logMessage( 'displaySubHeadingBar :: currDateTime ::' + currDateTime );
     logMessage( 'displaySubHeadingBar :: gameDateTime ::' + gameDateTime );
     logMessage( 'displaySubHeadingBar :: currGameSettings.gameover ::' + currGameSettings.gameover );
@@ -180,8 +216,45 @@ function handleBtnHowToPlay(e) {
  * Notification: Conditional showing of Notification permission button.
  */
 function displayNotifyLink() {
+
+    try {
+        if ('Notification' in window && navigator.serviceWorker) {
+            console.log('isNotificationAccessResponded()', isNotificationAccessResponded());
+            console.log('isNotificationAccessGranted()', isNotificationAccessGranted());
+            if (!isNotificationAccessResponded()) {
+                $('#allowNotifyLink').show();
+            }
+            else if (isNotificationAccessGranted()) {
+                // If it has already been granted, save details again, in case there is a change.
+                getNotificationPermission();
+                trackOnMessageReceived();
+            }
+            /* else {
+                $('#allowNotifyLink').show();
+            } */
+        }
+        else {
+            $('#allowNotifyLink').show();
+        }
+
+        $('#allowNotifyLink').on('click', function() {
+            if ('Notification' in window && navigator.serviceWorker) {
+                $('#allowNotifyLink').hide();
+                getNotificationPermission();
+                trackOnMessageReceived();
+            }
+            else {
+                alert('Your browser does not support notifications. Please open SikhiTambola in Chrome browser (or other supported browser) and try again.');
+            }
+        });
+    }
+    catch (ex) {
+        // alert('Your browser does not support notifications. Please open SikhiTambola in Chrome browser (or other supported browser) and try again.');
+        console.log(ex);
+    }
+    
     // if (isNotificationAccessGranted()) {
-    if ((getFromLocalStorage('allowNotif') === '1')) {
+    /* if ((getFromLocalStorage('allowNotif') === '1')) {
         $('#allowNotifyLink').hide();
         if (!isNotificationAccessGranted()) {
             getNotificationPermission(function() {
@@ -189,17 +262,130 @@ function displayNotifyLink() {
                 // displayNotifyLink();
             });
         }
+        /-* else {
+            addToLocalStorage('allowNotif', '0');
+            displayNotifyLink();
+        } *-/
     }
     else {
         $('#allowNotifyLink').show(300);
         $('#allowNotifyLink').on('click', function() {
-            $('#allowNotifyLink').hide();
-            getNotificationPermission(function() {
-                addToLocalStorage('allowNotif', '1');
-                // displayNotifyLink();
-            });
+            if ('Notification' in window && navigator.serviceWorker) {
+                $('#allowNotifyLink').hide();
+                getNotificationPermission(function() {
+                    addToLocalStorage('allowNotif', '1');
+                    // displayNotifyLink();
+                });
+            }
+            else {
+                alert('Your browser does not support notifications. Please open Sikhi Tambola in Chrome browser and try again.');
+            }
         });
-    }
+    } */
+}
+
+
+/**
+ * Notification: Conditional showing of Notification permission button.
+ */
+function handleshowNotificationClick() {
+    $('#showNotification').on('click', () => {
+        if ('Notification' in window && navigator.serviceWorker) {
+            const notificationTitle = 'payload.notification.title'; // 'Background Message Title FB-SW';
+            const notificationOptions = {
+                body: 'payload.notification.body', // 'Background Message body. FB-SW',
+                icon: 'img/apple-touch-icon.png',
+                // image: 'https://sikhitambola.web.app/img/apple-touch-icon.png',
+                badge: 'img/logo_transparent.png',
+                // click_action: 'https://sikhitambola.web.app/',
+                // requireInteraction: true,
+                /* actions: [
+                {
+                    action: 'question-action',
+                    title: 'Questions'
+                },
+                {
+                    action: 'winner-action',
+                    title: 'Winners'
+                }
+                ], */
+                // tag: 'tag-reminder',
+                // renotify: true,
+                // vibrate: [200, 100, 200, 100, 200, 100, 200]
+                // data: {
+                //     options: {
+                //     action: 'default',
+                //     close: true,
+                //     notificationCloseEvent: false,
+                //     url: 'https://sikhitambola.web.app/',
+                //     }
+                // }
+            };
+
+            let notification = new Notification(notificationTitle, notificationOptions);
+            // navigate to a URL
+            notification.onclick = function() {
+                window.location = 'http://localhost:5000/';
+            };
+        }
+        else {
+            alert('Your browser does not support notifications. Please open Sikhi Tambola in Chrome browser and try again.');
+        }
+
+        /* Notification.showNotification(notificationTitle,
+            notificationOptions); */
+    });
+}
+
+//******************* go to top button functionality**************************** */
+function gototop() {
+    $(window).scroll(function () {
+      if ($(this).scrollTop() > 800) {
+        $('#back-to-top').fadeIn();
+      } else {
+        $('#back-to-top').fadeOut();
+      }
+    });
+    // scroll body to 0px on click
+    $('#back-to-top').click(function () {
+      $('body,html').animate({
+        scrollTop: 0
+      }, 400);
+      return false;
+    });
+}
+
+/**
+ * Display all questions - triggered from button group
+ */
+function showAllQues() {
+    doSort = false;
+    showNewOnly = false;
+    logMessage('Inside ques-filter-all');
+    $('.quesDiv .line').remove();
+    iterateQuestions(qList);
+}
+
+/**
+ * Display only new questions - triggered from button group
+ */
+ function showNewQues() {
+    doSort = false;
+    showNewOnly = true;
+    logMessage('Inside ques-filter-new');
+    $('.quesDiv .line').remove();
+    iterateQuestions(qList);
+}
+
+/**
+ * Display all questions sorted - triggered from button group
+ */
+ function showSortedQues() {
+    doSort = true;
+    showNewOnly = false;
+    logMessage('Inside ques-filter-sort');
+    $('.quesDiv .line').remove();
+    iterateQuestions(qList);
 }
 
 /**
@@ -207,29 +393,28 @@ function displayNotifyLink() {
  */
 $(function onDocReady() {
 	logMessage('Inside onDocReady');
-    // $('#spinnerModal').modal('show');
     addHTMLToPage();
     loadHeaderActions();
     loadSharingButtons();
     
     sleep(2000).then(displayNotifyLink); // Notifications: Taking permission to send notifications.
     toggleHowToPlay();
-    trackOnMessageReceived(); // Notifications: Show message on receiving
+    handleshowNotificationClick();
 
+    // navbar collapse functionality
+    menuCollapse();
 
-    // $('#btnHowToPlay').click(createAndShowNotification);
+    gototop();
 
-    
-    /* sleep(2000).then(() => {
-        if (!isNotificationAccessGranted()) {
-            // getNotificationPermission();
-            $('#btnHowToPlay').click(getNotificationPermission);
-        }
-        if (isNotificationAccessGranted()) {
-            createAndShowNotification('titleText', 'bodyText', 'http://localhost:5000/img/apple-touch-icon.png', 'http://localhost:5000/', false, 3);
-        }
-    }); */
+    $('#ques-filter-selector button').click(function() {
+        $(this).addClass('active').siblings().removeClass('active');
+    });
 
+    $('#ques-filter-sort').click(function() { showSortedQues(); });
+    $('#ques-filter-all').click(function() { showAllQues(); });
+    $('#ques-filter-new').click(function() { showNewQues(); });
+
+    $('#ques-filter-all').addClass('active').siblings().removeClass('active');
 });
 
 function checkDisplaySubHeadingBar() {
@@ -244,3 +429,4 @@ init();
 var subheader = null;
 if (subheader == null) subheader = setInterval(checkDisplaySubHeadingBar, 60000);
 
+spinnerVisible(true);

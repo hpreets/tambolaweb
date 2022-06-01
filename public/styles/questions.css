@@ -1,8 +1,7 @@
 .main-heading {
 	text-align: center;
 	font-weight: 500;
-
-  margin-top: 25px;
+  margin-top: -20px;
 }
 
 .jumbotron {
@@ -204,11 +203,11 @@
   border-color: #1DA851;
 }
 
-.nav-item {
+/* .nav-item {
   border-left: #ffffff;
   border-left-width: thin;
   border-left-style: solid;
-}
+} */
 
 .ques-form {
   width: 75%;
@@ -227,7 +226,7 @@
 } */
 
 html, body {
-  overflow-x: hidden;
+  /* overflow-x: hidden; */
   height: 100vh;
 }
 
@@ -365,9 +364,12 @@ html, body {
   /* flex-direction: column; */
   justify-content: space-around;
   align-items: center;
-  margin-top: -2rem;
+  /* margin-top: -2rem;
   padding: 10px 0;
-  background:goldenrod;
+  background:goldenrod; */
+  margin-top: -0.7rem;
+  padding: 10px;
+  background: lightpink;
 }
 
 .banner {
@@ -375,6 +377,7 @@ html, body {
   align-items: center;
   display: flex;
   justify-content: center;
+  margin-top: 20px;
 }
 
 .loginInstruction {
@@ -415,9 +418,30 @@ html, body {
 }
 
 #importantActions {
-  margin-bottom: 10px;
+  /* margin-bottom: 10px; */
+  margin: 10px auto;
 }
 
 .small-text {
   font-size:small;
 }
+
+.top-menu-btn {
+  outline: none !important;
+} 
+
+.colored-closed-box {
+  outline: dashed;
+  margin: 0px -12px;
+  padding: 25px;
+  background-color: lightcyan;
+  /* font-size: large; */
+}
+
+#back-to-top {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  display: none;
+  border-radius: 50%;
+} 

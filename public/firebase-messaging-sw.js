@@ -51,14 +51,117 @@ messaging.getToken({ vapidKey: constVapidKey })
 messaging.onBackgroundMessage((payload) => {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
   // Customize notification here
-  const notificationTitle = 'Background Message Title';
+  const notificationTitle = payload.notification.title; // 'Background Message Title FB-SW';
   const notificationOptions = {
-    body: 'Background Message body.'
+    body: payload.notification.body, // 'Background Message body. FB-SW',
+    icon: 'https://sikhitambola.web.app/img/apple-touch-icon.png',
+    // image: 'https://sikhitambola.web.app/img/apple-touch-icon.png',
+    badge: 'https://sikhitambola.web.app/img/logo_transparent.png',
+    // click_action: 'https://sikhitambola.web.app/',
+    // requireInteraction: true,
+    /* actions: [
+      {
+        action: 'question-action',
+        title: 'Questions'
+      },
+      {
+        action: 'winner-action',
+        title: 'Winners'
+      }
+    ],
+    tag: 'tag-reminder',
+    // renotify: true,
+    vibrate: [200, 100, 200, 100, 200, 100, 200] */
   };
 
-  return self.registration.showNotification(notificationTitle,
-    notificationOptions);
+  e.waitUntil(
+    self.registration.showNotification(notificationTitle,
+    notificationOptions)
+  );
 });
+
+
+self.addEventListener('push', function(event) {
+  console.log('[Service Worker] Push Received.');
+  console.log(`[Service Worker] Push had this data: "${JSON.stringify(event)}"`);
+  console.log(`[Service Worker] Push had this data: "${JSON.stringify(event.data)}"`);
+  console.log(`[Service Worker] Push had this notification: "${JSON.stringify(event.notification)}"`);
+  /* console.log(`[Service Worker] Push had this data: "${event.data.text()}"`); */
+
+  /* let title = event.notification.title;
+  let body = event.notification.body;
+  if (title == null) {
+    title = event.data.text();
+    body = 'Don\'t forget to play';
+  } */
+
+  let title = 'Sikhi Tambola';
+  let body = 'Don\'t forget to play';
+
+  var data = {};
+  if (event.data) {
+    data = event.data.json();
+  }
+  title = data.title || title;
+  body = data.message || body;
+
+  const options = {
+    body: body,
+    icon: 'img/apple-touch-icon.png',
+    badge: 'img/logo_transparent.png'
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+
+//Code for adding event on click of notification
+self.addEventListener('notificationclick', function(event) {
+  console.log('[Service Worker] Notification click Received.');
+  let url = 'https://sikhitambola.web.app';
+  if (!event.action) {
+    // Was a normal notification click
+    console.log('Notification Click.');
+  }
+  else {
+
+    /* switch (event.action) {
+      case 'question-action':
+        url = 'https://sikhitambola.web.app'
+        break;
+      case 'winner-action':
+        url = 'https://sikhitambola.web.app/winners.html'
+        break;
+    } */
+  }
+
+  event.notification.close(); 
+  event.waitUntil(clients.openWindow(url));
+
+
+  /* event.waitUntil(
+    clients.matchAll({type: 'window'})
+    .then( 
+      windowClients => {
+        // Check if there is already a window/tab open with the target URL
+        for (var i = 0; i < windowClients.length; i++) {
+          var client = windowClients[i];
+          
+          // If so, just focus it.
+          if (client.url === url && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        
+        // If not, then open the target URL in a new window/tab.
+        if (clients.openWindow) {
+          return clients.openWindow(url);
+        }
+      }
+    )
+  ); */
+});
+
 
 
 /*

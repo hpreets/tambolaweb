@@ -1,12 +1,20 @@
 // const { triggerAsyncId } = require("async_hooks");
 
 var db = firebase.firestore();
-if (location.hostname === "localhost") { db.useEmulator("localhost", 8189); }
+if (location.hostname === "localhost") { db.useEmulator("localhost", 8083); }
+if (location.hostname.indexOf('192.168.1') >= 0) { db.useEmulator("localhost", 8083); }
 
 var functions = firebase.app().functions('asia-south1');
 if (location.hostname === "localhost") { functions.useEmulator("localhost", 5001); }
 
-const messaging = typeof(firebase.messaging) === 'function' ? firebase.messaging() : null;
+// HS 21-Dec-2021; Messaging not available on all browsers
+var messaging;
+try {
+    messaging = typeof(firebase.messaging) === 'function' ? firebase.messaging() : null;
+}
+catch (e) {
+    messaging = null;
+}
 
 // firebase.firestore.setLogLevel("debug");
 var secondsInterval = 21;
@@ -68,7 +76,7 @@ function checkLogin(auth, successFunction, failureFunction) {
     auth.onAuthStateChanged((user) => {
         if (user) {
             logMessage('User is NOT NULL ::' + user.uid + "; displayname ::" + user.displayName + '; email ::' + user.email);
-            $('#loggedInUser').text(user.displayName);
+            $('#loggedInUser').text(user.displayName + ' (' + user.email + ')');
             uid = user.uid;
             userEmail = user.email;
             hideHeaderButtons(true, location.pathname.replace('.html', '').replace('/', ''));
@@ -380,6 +388,45 @@ function addHTMLToPage() {
     generateImportantActions();
 }
 
+// navbar collapse functionality
+function menuCollapse(){
+    $(document).click(
+        function (event) {
+            var target = $(event.target);
+            var _mobileMenuOpen = $(".navbar-collapse").hasClass("show");
+            if (_mobileMenuOpen === true && !target.hasClass("navbar-toggler")) {
+                $("button.navbar-toggler").click();
+            }
+        }
+    );
+}
+
+function sortJson(jsn, sortOn) {
+	if (jsn.length > 0) {
+		jsn.sort((a, b) => {
+			let fa = a[sortOn], fb = b[sortOn];
+            var retVal = 0;
+            
+			if (fa > fb) {
+				retVal = 1;
+			}
+			if (fa < fb) {
+				retVal = -1;
+			}
+            return retVal;
+		});
+    }
+    return jsn;
+}
+
+function createJsonArr(qList) {
+    var retJson = [];
+    Object.keys(qList).forEach((qdockey) => {
+        let qdoc = qList[qdockey];
+        retJson.push(qdoc);
+    });
+    return retJson;
+}
 
 /* ************************************************** */
 /* ****************** FIRESTORE ********************* */
@@ -597,7 +644,13 @@ function callCloudFunction(functionName, params, success, failure) {
 /* ************************************************** */
 /* ****************** MESSAGING ********************* */
 /* ************************************************** */
+
+/**
+ * Has notification access been granted?
+ * @returns true only when Notification.permission is neither denied nor default
+ */
 function isNotificationAccessGranted() {
+    // console.log('Notification.permission', Notification.permission);
     if (Notification.permission === 'denied' || Notification.permission === 'default') {
         console.log('Notification access NOT granted');
         return false;
@@ -606,14 +659,52 @@ function isNotificationAccessGranted() {
     return true;
 }
 
-function setClientTokenSubscription(token, isEnabled, success, failure) {
-    console.log('Inside setClientTokenSubscription');
-    callCloudFunction('subscribeToNotification', { 
-        clienttoken : token,
-        tokenSubscribed: isEnabled
-    }, success, failure);
+
+/**
+ * Has user responded on notification access
+ * @returns 
+ */
+function isNotificationAccessResponded() {
+    if (Notification.permission === 'default') {
+        return false;
+    }
+    return true;
 }
 
+
+/**
+ * Saves client token to firebase and subscribes it to reminder channel
+ * @param {*} token user token used for notification subscription. Makes a call to firebase function.
+ * @param {*} isEnabled enable notification
+ * @param {*} success function on successful subscription
+ * @param {*} failure function on failure of subscription
+ */
+function setClientTokenSubscription(token, isEnabled, success, failure) {
+    // console.log('Inside setClientTokenSubscription');
+    let tokenSavedKey = 'tokenSavedOn';
+    let saveTokenAgainAfter = 7*24*60*60*1000;
+    // console.log('getFromStorage(tokenSaved)', getFromLocalStorage(tokenSavedKey), Date.now());
+    if (!getFromLocalStorage(tokenSavedKey)  ||  getFromLocalStorage(tokenSavedKey) < Date.now()) {
+        // console.log('Calling cloud function');
+        callCloudFunction('subscribeToNotification', { 
+            clienttoken : token,
+            tokenSubscribed: isEnabled
+        }, 
+        function() {
+            addToLocalStorage(tokenSavedKey, Date.now() + (saveTokenAgainAfter));
+            // console.log('getFromStorage(tokenSaved)', getFromLocalStorage(tokenSavedKey));
+            if (success !== undefined) success();
+        }, 
+        failure);
+    }
+}
+
+
+/**
+ * If token is allowed and available, it makes a call to Firebase function to store token and subscribe it for notification.
+ * @param {*} success Success function when token is subscribed
+ * @param {*} failure Failure function when token fails to subscribe
+ */
 function getNotificationPermission(success, failure) {
     if (messaging != null) {
         messaging.getToken({ vapidKey: constVapidKey })
@@ -625,17 +716,25 @@ function getNotificationPermission(success, failure) {
                 // Show permission request UI
                 console.log('No registration token available. Request permission to generate one.');
                 if (failure !== undefined) failure();
-                // ...
             }
         })
         .catch((err) => {
             console.log('An error occurred while retrieving token. ', err);
             if (failure !== undefined) failure();
-            // ...
         });
     }
 }
 
+
+/**
+ * Displays notification while browser is still open
+ * @param {*} titleText notification title text
+ * @param {*} bodyText notification body text
+ * @param {*} imgUrl notification icon
+ * @param {*} clickUrl url to open on notification click
+ * @param {*} isVibrate virbrate on notification
+ * @param {*} autoCloseAfterSec auto close after how many seconds
+ */
 function createAndShowNotification(titleText, bodyText, imgUrl, clickUrl, isVibrate, autoCloseAfterSec) {
     // var notification = new Notification("Hi there!");
     let notification = new Notification(titleText, {
@@ -657,12 +756,15 @@ function createAndShowNotification(titleText, bodyText, imgUrl, clickUrl, isVibr
     };
 }
 
+
+/**
+ * Listen to notification foreground message; while browser is open.
+ */
 function trackOnMessageReceived() {
     if (messaging != null) {
         messaging.onMessage((payload) => {
             console.log('Message received. ', payload);
-            createAndShowNotification('titleText', 'bodyText', 'https://sikhitambola.web.app/img/apple-touch-icon.png', 'https://sikhitambola.web.app/', true);
-            // ...
+            createAndShowNotification(payload.notification.title, payload.notification.body, 'https://sikhitambola.web.app/img/apple-touch-icon.png', 'https://sikhitambola.web.app/', true);
         });
     }
 }
@@ -718,4 +820,3 @@ function loadHeaderActionsAdmin(success) {
         }
     );
 }
-

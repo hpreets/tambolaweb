@@ -19,6 +19,7 @@ let realTimePrizeUpdateUnsubscribe;
 let bogieCount = 0;
 var noSleep = new NoSleep();
 var wakeLockEnabled = false;
+var redirectToWinnersPageInMilliSecs = 10000;
 
 
 /**
@@ -408,6 +409,8 @@ function updateUIOnQuestions(qList) {
         // alert('Game is over; \'Full House\' won. Please join us again for the next game. \n\nDon\'t forget to check winners by clicking on "Winners" button.');
         $('#gameOverModal').modal('show');
         clearInterval(counter);
+
+        setInterval(function() {window.location.href="winners.html"}, redirectToWinnersPageInMilliSecs);
     }
 
     let covQues = [];
@@ -700,7 +703,10 @@ $(function onDocReady() {
     $( window ).on( "orientationchange", function( event ) {
         checkOrientationAndDisplayMsg();
     });
-    sleep(1000).then(() => { checkOrientationAndDisplayMsg(); });
+    sleep(1000).then(() => { 
+        checkOrientationAndDisplayMsg();
+        // $('.language').trigger('click');
+    });
 });
 
 

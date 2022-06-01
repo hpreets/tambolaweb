@@ -149,6 +149,8 @@ $(function onDocReady() {
     $('#btnSavePayment').click(savePaymentInfo);
     $('#btnEmailUnsubscribe').click(emailUnsubscribe);
     $('#btnEmailSubscribe').click(emailSubscribe);
+    // navbar collapse functionality
+    menuCollapse();
 });
 
 
