@@ -424,9 +424,8 @@ function checkDisplaySubHeadingBar() {
 }
 
 function displayTimer() {
-	let timerTxt = getCountdownTimer(getFromStorage('gamedatetime')*1000);
-	console.log('displayTimer :: ' + timerTxt);
-	$('.gamestartsin').text( 'starts ' + timerTxt ); 
+    let timerTxt = getCountdownTimer(getFromStorage('gamedatetime')*1000);
+    $('.gamestartsin').text( 'starts ' + timerTxt ); 
 }
 
 checkLogin(firebase.auth(), successLogin, failureLogin);
