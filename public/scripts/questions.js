@@ -423,6 +423,12 @@ function checkDisplaySubHeadingBar() {
     logMessage('Going out of checkDisplaySubHeadingBar');
 }
 
+function displayTimer() {
+	let timerTxt = getCountdownTimer(getFromStorage('gamedatetime')*1000);
+	console.log('displayTimer :: ' + timerTxt);
+	$('.gamestartsin').text( 'starts ' + timerTxt ); 
+}
+
 checkLogin(firebase.auth(), successLogin, failureLogin);
 init();
 
@@ -430,3 +436,4 @@ var subheader = null;
 if (subheader == null) subheader = setInterval(checkDisplaySubHeadingBar, 60000);
 
 spinnerVisible(true);
+setInterval(displayTimer, 1000);

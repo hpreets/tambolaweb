@@ -35,6 +35,10 @@
   text-decoration: underline;
 }
 
+.gamestartsin {
+	font-size: 70%;
+}
+
 @keyframes colorchange {
   0% {
     color: white;
