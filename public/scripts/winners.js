@@ -54,7 +54,6 @@ function successPrizeDataFetch(doc) {
 }
 
 function createMyPrizesRow(winners) {
-	console.log('createMyPrizesRow :: winnerPrize ::' + winnerPrize);
 	if (winnerPrize == 'EF') createWinnerRow(winners, 'EF', 'Early Five', container);
     if (winnerPrize == 'FL') createWinnerRow(winners, 'FL', 'First Line', container);
     if (winnerPrize == 'ML') createWinnerRow(winners, 'ML', 'Middle Line', container);
@@ -63,7 +62,6 @@ function createMyPrizesRow(winners) {
 }
 
 function createOtherPrizesRow(winners) {
-	console.log('createOtherPrizesRow :: winnerPrize ::' + winnerPrize);
 	if (winnerPrize != 'EF') createWinnerRow(winners, 'EF', 'Early Five', container);
     if (winnerPrize != 'FL') createWinnerRow(winners, 'FL', 'First Line', container);
     if (winnerPrize != 'ML') createWinnerRow(winners, 'ML', 'Middle Line', container);
