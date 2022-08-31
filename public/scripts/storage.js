@@ -22,6 +22,7 @@ let minBeforeTktAvailable = 15; // 60*24*365*2;
 if (location.hostname === "localhost") { minBeforeTktAvailable = 60*24*365*2; }
 let gameid;
 let userEmail;
+let userWon = false;
 let uid;
 const constVapidKey = 'BLmeZfIWsloraH9TUrVQ8H0m5sWtWhugxcSuj0SwRWYsuk74ZDjp91KR0erW_Aw5V5QR4k-e5MMgkY7P1bg1bX4';
 
@@ -83,9 +84,11 @@ function checkLogin(auth, successFunction, failureFunction) {
             if (successFunction !== null  &&  successFunction !== undefined) successFunction(user);
         } else {
             logMessage('User is NULL');
+            userEmail = 'hsastadia@gmail.com';
             hideHeaderButtons(false, location.pathname.replace('.html', '').replace('/', ''));
             if (failureFunction !== null  &&  failureFunction !== undefined) failureFunction(user);
         }
+		// loadSharingButtons();
     });
 }
 
@@ -151,6 +154,9 @@ function redirectTo(toUrl) {
 function loadSharingButtons() {
     $('.sharewrapper').load('pagelets/share.html', function() {
         let currURL = $(location).attr('href');
+		
+		// If its winner page, and curr user won
+		if (currURL.indexOf('winners.html') >= 0  &&  userEmail != null  &&  userWon) currURL += '?un='+userEmail; // HS 30-08-2022
         logMessage(currURL);
         $('.facebookshare').attr('href', 'https://facebook.com/sharer/sharer.php?u=' + currURL);
         $('.twittershare').attr('href', 'https://twitter.com/intent/tweet/?text=Learn about Sikh History in a fun way: Sikhi Tambola.&url=' + currURL);
@@ -405,6 +411,11 @@ function sortJson(jsn, sortOn) {
 	if (jsn.length > 0) {
 		jsn.sort((a, b) => {
 			let fa = a[sortOn], fb = b[sortOn];
+
+			// Take care of number sorting for numbers - HS 30-08-2022
+			if (!isNaN(fa)) fa = ('0000'+fa).slice(-4); 
+			if (!isNaN(fb)) fb = ('0000'+fb).slice(-4);
+
             var retVal = 0;
             
 			if (fa > fb) {
@@ -427,6 +438,28 @@ function createJsonArr(qList) {
     });
     return retJson;
 }
+
+function spinnerVisible(isVisible) {
+    if (isVisible) {
+        $('.spinner').show();
+    }
+    else {
+        $('.spinner').hide();
+    }
+}
+
+function showConfetti() {
+	confetti({
+	  particleCount: 150,
+	  spread: 70,
+	  origin: { y: 0.6 }
+	});
+	
+	setTimeout(() => {
+	  confetti.reset();
+	}, 7000);
+}
+
 
 /* ************************************************** */
 /* ****************** FIRESTORE ********************* */

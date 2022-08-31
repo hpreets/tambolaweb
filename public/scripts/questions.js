@@ -1,7 +1,7 @@
 const container = $('.quesDiv');
 let qList = null;
 let currGameSettings = null;
-let doSort = false;
+let doSort = true; // default list is sorted - HS 30-08-2022
 let showNewOnly = false;
 
 /**
@@ -124,18 +124,6 @@ function successQuestionListFetch(doc) {
   iterateQuestions(qList);
 
   spinnerVisible(false);
-}
-
-function spinnerVisible(isVisible) {
-    if (isVisible) {
-        // $('#spinnerModal').modal('show');
-        $('.spinner').show();
-    }
-    else {
-        logMessage('HIDING SPINNER');
-        // $('#spinnerModal').modal('hide');
-        $('.spinner').hide();
-    }
 }
 
 /**
@@ -410,8 +398,8 @@ $(function onDocReady() {
         $(this).addClass('active').siblings().removeClass('active');
     });
 
-    $('#ques-filter-sort').click(function() { showSortedQues(); });
-    $('#ques-filter-all').click(function() { showAllQues(); });
+    // $('#ques-filter-sort').click(function() { showSortedQues(); }); // 'Sorted' is no longer a filter. 'All' shows sorted by default - HS 30-08-2022
+    $('#ques-filter-all').click(function() { showSortedQues(); });
     $('#ques-filter-new').click(function() { showNewQues(); });
 
     $('#ques-filter-all').addClass('active').siblings().removeClass('active');
