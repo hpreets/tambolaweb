@@ -110,7 +110,6 @@ function iterateWinners(wList) {
 			
 			// HS 31-08-2022
 			if (wdoc == true) {
-				wdoc = ' <span class="badge badge-warning"><i class="fas fa-regular fa-circle-exclamation"></i> UPI Id not set </span> ';
 				wdoc = '';
 				wdocTick = ' <span class="badge badge-warning"><i class="fas fa-regular fa-circle-exclamation"></i> UPI Id not set </span> ';
 			}
