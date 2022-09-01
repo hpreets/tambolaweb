@@ -84,7 +84,7 @@ function checkLogin(auth, successFunction, failureFunction) {
             if (successFunction !== null  &&  successFunction !== undefined) successFunction(user);
         } else {
             logMessage('User is NULL');
-            hideHeaderButtons(false, location.pathname.replace('.html', '').replace('/', ''));
+			hideHeaderButtons(false, location.pathname.replace('.html', '').replace('/', ''));
             if (failureFunction !== null  &&  failureFunction !== undefined) failureFunction(user);
         }
     });
