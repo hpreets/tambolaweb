@@ -152,15 +152,27 @@ function redirectTo(toUrl) {
 function loadSharingButtons() {
     $('.sharewrapper').load('pagelets/share.html', function() {
         let currURL = $(location).attr('href');
+		let msg = 'Learn about Sikh History in a fun way: Sikhi Tambola.';
 		
-		// If its winner page, and curr user won
-		if (currURL.indexOf('winners.html') >= 0  &&  userEmail != null  &&  userWon) currURL += '?un='+userEmail; // HS 30-08-2022
+		
+		// Remove all params from url
+		if (currURL.indexOf('winners.html?un') >= 0) {
+			currURL = currURL.split('?un')[0];
+		}
+		
+		// If its winner page, and curr user won - HS 30-08-2022
+		if (currURL.indexOf('winners.html') >= 0  &&  userEmail != null  &&  userWon) {
+			currURL += '?un='+userEmail;
+			msg = 'I just won cash prize in Sikhi Tamobola. You too could. ' + msg;
+		}
+		
         logMessage(currURL);
+		logMessage(msg);
         $('.facebookshare').attr('href', 'https://facebook.com/sharer/sharer.php?u=' + currURL);
-        $('.twittershare').attr('href', 'https://twitter.com/intent/tweet/?text=Learn about Sikh History in a fun way: Sikhi Tambola.&url=' + currURL);
-        $('.linkedinshare').attr('href', 'https://www.linkedin.com/shareArticle?mini=true&title=Learn about Sikh History in a fun way: Sikhi Tambola.&summary=Learn about Sikh History in a fun way: Sikhi Tambola.&url=' + currURL);
-        $('.emailshare').attr('href', 'mailto:?subject=Learn about Sikh History in a fun way: Sikhi Tambola.&body=' + currURL);
-        $('.whatsappshare').attr('href', 'whatsapp://send?text=Learn about Sikh History in a fun way: Sikhi Tambola. ' + currURL);
+        $('.twittershare').attr('href', 'https://twitter.com/intent/tweet/?text=' + msg + '&url=' + currURL);
+        $('.linkedinshare').attr('href', 'https://www.linkedin.com/shareArticle?mini=true&title=' + msg + '&summary=' + msg + '&url=' + currURL);
+        $('.emailshare').attr('href', 'mailto:?subject=' + msg + '&body=' + currURL);
+        $('.whatsappshare').attr('href', 'whatsapp://send?text=' + msg + currURL);
     });
 }
 

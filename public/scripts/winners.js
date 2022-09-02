@@ -51,8 +51,8 @@ function successPrizeDataFetch(doc) {
     createWinnerRow(winners, 'FH', 'Full House', container);*/
 
 	createAllPrizesRow(winners);
-    spinnerVisible(false); // Hide spinner once data is created
 	
+    spinnerVisible(false); // Hide spinner once data is created	
 	if (userWon) loadSharingButtons(); // Update sharing buttons to include winner's email address
 }
 
