@@ -452,3 +452,8 @@ html, body {
   display: none;
   border-radius: 50%;
 } 
+
+/* countdown timer */
+.gamestartsin {
+	font-size: 70%;
+}	

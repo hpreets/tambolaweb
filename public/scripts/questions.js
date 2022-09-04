@@ -109,6 +109,7 @@ function successCurrGameFetch(doc) {
 
     spinnerVisible(false);
     displaySubHeadingBar(true);
+	setInterval(displayTimer, 1000);
 }
 
 
@@ -207,8 +208,8 @@ function displayNotifyLink() {
 
     try {
         if ('Notification' in window && navigator.serviceWorker) {
-            console.log('isNotificationAccessResponded()', isNotificationAccessResponded());
-            console.log('isNotificationAccessGranted()', isNotificationAccessGranted());
+            logMessage('isNotificationAccessResponded()', isNotificationAccessResponded());
+            logMessage('isNotificationAccessGranted()', isNotificationAccessGranted());
             if (!isNotificationAccessResponded()) {
                 $('#allowNotifyLink').show();
             }
@@ -241,35 +242,6 @@ function displayNotifyLink() {
         console.log(ex);
     }
     
-    // if (isNotificationAccessGranted()) {
-    /* if ((getFromLocalStorage('allowNotif') === '1')) {
-        $('#allowNotifyLink').hide();
-        if (!isNotificationAccessGranted()) {
-            getNotificationPermission(function() {
-                addToLocalStorage('allowNotif', '1');
-                // displayNotifyLink();
-            });
-        }
-        /-* else {
-            addToLocalStorage('allowNotif', '0');
-            displayNotifyLink();
-        } *-/
-    }
-    else {
-        $('#allowNotifyLink').show(300);
-        $('#allowNotifyLink').on('click', function() {
-            if ('Notification' in window && navigator.serviceWorker) {
-                $('#allowNotifyLink').hide();
-                getNotificationPermission(function() {
-                    addToLocalStorage('allowNotif', '1');
-                    // displayNotifyLink();
-                });
-            }
-            else {
-                alert('Your browser does not support notifications. Please open Sikhi Tambola in Chrome browser and try again.');
-            }
-        });
-    } */
 }
 
 
@@ -325,7 +297,7 @@ function handleshowNotificationClick() {
     });
 }
 
-//******************* go to top button functionality**************************** */
+// go to top button functionality
 function gototop() {
     $(window).scroll(function () {
       if ($(this).scrollTop() > 800) {
@@ -410,6 +382,19 @@ function checkDisplaySubHeadingBar() {
     displaySubHeadingBar(true);
     logMessage('Going out of checkDisplaySubHeadingBar');
 }
+
+// To display the countdown timer
+function displayTimer() {
+	let timerTxt = getCountdownTimer(getFromStorage('gamedatetime')*1000);
+	if (timerTxt) {
+		$('.gamestartsin').text( 'starts ' + timerTxt ); 
+		$('.gamestartsin').show();
+	}
+	else {
+		$('.gamestartsin').hide();
+	}
+}
+
 
 checkLogin(firebase.auth(), successLogin, failureLogin);
 init();

@@ -163,7 +163,7 @@ function loadSharingButtons() {
 		// If its winner page, and curr user won - HS 30-08-2022
 		if (currURL.indexOf('winners.html') >= 0  &&  userEmail != null  &&  userWon) {
 			currURL += '?un='+userEmail;
-			msg = 'I just won cash prize in Sikhi Tamobola. You too could. ' + msg;
+			msg = 'Woohoo! I won cash prize in Sikhi Tambola without paying a dime. You too could. ' + msg;
 		}
 		
         logMessage(currURL);
@@ -225,20 +225,13 @@ function appendLeadingZeroes(n){
 
 
 function displayBanner(doc) {
-    // console.log('Inside displayBanner');
     // code for banner
     let startDate = doc.data().bannerStartDateTime;
     let currentDate = new Date().getTime();
     let endDate = doc.data().bannerEndDateTime;
-    // console.log(startDate);
-    // console.log(endDate);
 
     if (startDate == undefined) startDate = 1; else startDate = startDate.seconds * 1000;
     if (endDate == undefined) endDate = currentDate + 1000; else endDate = endDate.seconds * 1000;
-    // console.log(doc.data().bannerText);
-    // console.log(startDate);
-    // console.log(currentDate);
-    // console.log(endDate);
 
     if (doc.data().bannerText != undefined && currentDate > startDate && currentDate < endDate) {
         $('.banner').show();
@@ -247,7 +240,6 @@ function displayBanner(doc) {
 
         // bootstrap themes for banner - primary, secondary, success, danger, warning, info, light, dark and white
         let bannerTheme = doc.data().bannerTheme; // 'success';
-        // console.log(doc.data().bannerTheme);
         if (bannerTheme === undefined) bannerTheme = 'success';
         $('.banner').addClass('bg-' + bannerTheme);
         $('.banner').css('color', 'white');
@@ -288,7 +280,6 @@ function checkOrientation() {
             }
             break;
    }
-//    console.log('checkOrientation ::' + currMode);
    return currMode;
 }
 
@@ -297,7 +288,6 @@ function sleep(ms) {
 }
 
 function addHowToPlayDialog() {
-    // console.log(document.getElementById("dialogs"));
     document.getElementById("dialogs").innerHTML += addHowToPlay(false, true);
     $('#btnHowToPlay').click(() => { $('#howToPlayDialogModal').modal('show'); });
 }
@@ -470,6 +460,28 @@ function showConfetti() {
 	}, 7000);
 }
 
+
+function getCountdownTimer(deadlineDTStr) {
+	// deadlineDTStr = "Sep 5, 2022 15:37:25";
+	var deadline = new Date(deadlineDTStr).getTime();
+	var now = new Date().getTime();
+	var t = deadline - now;
+
+	if (t < 0) {
+		return null;
+	}
+	else {
+		var days = Math.floor(t / (1000 * 60 * 60 * 24));
+		var hours = Math.floor((t%(1000 * 60 * 60 * 24))/(1000 * 60 * 60));
+		var minutes = Math.floor((t % (1000 * 60 * 60)) / (1000 * 60));
+		var seconds = Math.floor((t % (1000 * 60)) / 1000);
+		return ('in ' + days + "d " + hours + "h " + minutes + "m " + seconds + "s ");
+	}
+}
+
+function getRandomInt(max) {
+	return Math.floor(Math.random() * max);
+}
 
 /* ************************************************** */
 /* ****************** FIRESTORE ********************* */
@@ -693,12 +705,11 @@ function callCloudFunction(functionName, params, success, failure) {
  * @returns true only when Notification.permission is neither denied nor default
  */
 function isNotificationAccessGranted() {
-    // console.log('Notification.permission', Notification.permission);
     if (Notification.permission === 'denied' || Notification.permission === 'default') {
-        console.log('Notification access NOT granted');
+        logMessage('Notification access NOT granted');
         return false;
     }
-    console.log('Notification access IS granted');
+    logMessage('Notification access IS granted');
     return true;
 }
 
@@ -723,19 +734,15 @@ function isNotificationAccessResponded() {
  * @param {*} failure function on failure of subscription
  */
 function setClientTokenSubscription(token, isEnabled, success, failure) {
-    // console.log('Inside setClientTokenSubscription');
     let tokenSavedKey = 'tokenSavedOn';
     let saveTokenAgainAfter = 7*24*60*60*1000;
-    // console.log('getFromStorage(tokenSaved)', getFromLocalStorage(tokenSavedKey), Date.now());
     if (!getFromLocalStorage(tokenSavedKey)  ||  getFromLocalStorage(tokenSavedKey) < Date.now()) {
-        // console.log('Calling cloud function');
         callCloudFunction('subscribeToNotification', { 
             clienttoken : token,
             tokenSubscribed: isEnabled
         }, 
         function() {
             addToLocalStorage(tokenSavedKey, Date.now() + (saveTokenAgainAfter));
-            // console.log('getFromStorage(tokenSaved)', getFromLocalStorage(tokenSavedKey));
             if (success !== undefined) success();
         }, 
         failure);
@@ -753,11 +760,11 @@ function getNotificationPermission(success, failure) {
         messaging.getToken({ vapidKey: constVapidKey })
         .then((currentToken) => {
             if (currentToken) {
-                console.log(currentToken);
+                logMessage(currentToken);
                 setClientTokenSubscription(currentToken, true, success, failure);
             } else {
                 // Show permission request UI
-                console.log('No registration token available. Request permission to generate one.');
+                logMessage('No registration token available. Request permission to generate one.');
                 if (failure !== undefined) failure();
             }
         })
@@ -806,7 +813,7 @@ function createAndShowNotification(titleText, bodyText, imgUrl, clickUrl, isVibr
 function trackOnMessageReceived() {
     if (messaging != null) {
         messaging.onMessage((payload) => {
-            console.log('Message received. ', payload);
+            logMessage('Message received. ', payload);
             createAndShowNotification(payload.notification.title, payload.notification.body, 'https://sikhitambola.web.app/img/apple-touch-icon.png', 'https://sikhitambola.web.app/', true);
         });
     }
