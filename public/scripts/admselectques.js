@@ -330,21 +330,23 @@ function setPrevGameAsCurrGame() {
 function successGetPrevGameQues(doc) {
 	// Retrieve next game id
 	nextGameId = getNextGameId();
-	console.log('nextGameId ::' + nextGameId);
+	// console.log('nextGameId ::' + nextGameId);
 
 	// Iterate through prev gameques doc and create new gameques doc
 	let quesList = {};
 	Object.keys(doc.data()).forEach((qdockey) => {
 		let qdocPrev = doc.data()[qdockey];
 		let qdoc = {};
-		qdoc.question = qdocPrev.question;
-		qdoc.answer = qdocPrev.answer;
-		qdoc.info = qdocPrev.info;
-		if (qdocPrev.new) qdoc.new = qdocPrev.new;
-		quesList[qdoc.answer] = qdoc;
+		if (qdocPrev.question) {
+			qdoc.question = qdocPrev.question;
+			qdoc.answer = qdocPrev.answer;
+			qdoc.info = qdocPrev.info;
+			if (qdocPrev.new) qdoc.new = qdocPrev.new;
+			quesList[qdoc.answer] = qdoc;
+		}
 	});
-	console.log(quesList);
-	console.log(JSON.stringify(quesList));
+	// console.log(quesList);
+	// console.log(JSON.stringify(quesList));
 
 	// Create a new entry in gameques based on nextGameId
 	db.collection("gameques").doc(nextGameId).set({});
