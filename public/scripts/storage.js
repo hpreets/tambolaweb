@@ -22,6 +22,7 @@ let minBeforeTktAvailable = 15; // 60*24*365*2;
 if (location.hostname === "localhost") { minBeforeTktAvailable = 60*24*365*2; }
 let gameid;
 let userEmail;
+let userWon = false;
 let uid;
 const constVapidKey = 'BLmeZfIWsloraH9TUrVQ8H0m5sWtWhugxcSuj0SwRWYsuk74ZDjp91KR0erW_Aw5V5QR4k-e5MMgkY7P1bg1bX4';
 
@@ -83,7 +84,7 @@ function checkLogin(auth, successFunction, failureFunction) {
             if (successFunction !== null  &&  successFunction !== undefined) successFunction(user);
         } else {
             logMessage('User is NULL');
-            hideHeaderButtons(false, location.pathname.replace('.html', '').replace('/', ''));
+			hideHeaderButtons(false, location.pathname.replace('.html', '').replace('/', ''));
             if (failureFunction !== null  &&  failureFunction !== undefined) failureFunction(user);
         }
     });
@@ -151,12 +152,27 @@ function redirectTo(toUrl) {
 function loadSharingButtons() {
     $('.sharewrapper').load('pagelets/share.html', function() {
         let currURL = $(location).attr('href');
+		let msg = 'Learn about Sikh History in a fun way: Sikhi Tambola.';
+		
+		
+		// Remove all params from url
+		if (currURL.indexOf('winners.html?un') >= 0) {
+			currURL = currURL.split('?un')[0];
+		}
+		
+		// If its winner page, and curr user won - HS 30-08-2022
+		if (currURL.indexOf('winners.html') >= 0  &&  userEmail != null  &&  userWon) {
+			currURL += '?un='+userEmail;
+			msg = 'Woohoo! I won cash prize in Sikhi Tambola without paying a dime. You too could. ' + msg;
+		}
+		
         logMessage(currURL);
+		logMessage(msg);
         $('.facebookshare').attr('href', 'https://facebook.com/sharer/sharer.php?u=' + currURL);
-        $('.twittershare').attr('href', 'https://twitter.com/intent/tweet/?text=Learn about Sikh History in a fun way: Sikhi Tambola.&url=' + currURL);
-        $('.linkedinshare').attr('href', 'https://www.linkedin.com/shareArticle?mini=true&title=Learn about Sikh History in a fun way: Sikhi Tambola.&summary=Learn about Sikh History in a fun way: Sikhi Tambola.&url=' + currURL);
-        $('.emailshare').attr('href', 'mailto:?subject=Learn about Sikh History in a fun way: Sikhi Tambola.&body=' + currURL);
-        $('.whatsappshare').attr('href', 'whatsapp://send?text=Learn about Sikh History in a fun way: Sikhi Tambola. ' + currURL);
+        $('.twittershare').attr('href', 'https://twitter.com/intent/tweet/?text=' + msg + '&url=' + currURL);
+        $('.linkedinshare').attr('href', 'https://www.linkedin.com/shareArticle?mini=true&title=' + msg + '&summary=' + msg + '&url=' + currURL);
+        $('.emailshare').attr('href', 'mailto:?subject=' + msg + '&body=' + currURL);
+        $('.whatsappshare').attr('href', 'whatsapp://send?text=' + msg + currURL);
     });
 }
 
@@ -209,20 +225,13 @@ function appendLeadingZeroes(n){
 
 
 function displayBanner(doc) {
-    // console.log('Inside displayBanner');
     // code for banner
     let startDate = doc.data().bannerStartDateTime;
     let currentDate = new Date().getTime();
     let endDate = doc.data().bannerEndDateTime;
-    // console.log(startDate);
-    // console.log(endDate);
 
     if (startDate == undefined) startDate = 1; else startDate = startDate.seconds * 1000;
     if (endDate == undefined) endDate = currentDate + 1000; else endDate = endDate.seconds * 1000;
-    // console.log(doc.data().bannerText);
-    // console.log(startDate);
-    // console.log(currentDate);
-    // console.log(endDate);
 
     if (doc.data().bannerText != undefined && currentDate > startDate && currentDate < endDate) {
         $('.banner').show();
@@ -231,7 +240,6 @@ function displayBanner(doc) {
 
         // bootstrap themes for banner - primary, secondary, success, danger, warning, info, light, dark and white
         let bannerTheme = doc.data().bannerTheme; // 'success';
-        // console.log(doc.data().bannerTheme);
         if (bannerTheme === undefined) bannerTheme = 'success';
         $('.banner').addClass('bg-' + bannerTheme);
         $('.banner').css('color', 'white');
@@ -272,7 +280,6 @@ function checkOrientation() {
             }
             break;
    }
-//    console.log('checkOrientation ::' + currMode);
    return currMode;
 }
 
@@ -281,7 +288,6 @@ function sleep(ms) {
 }
 
 function addHowToPlayDialog() {
-    // console.log(document.getElementById("dialogs"));
     document.getElementById("dialogs").innerHTML += addHowToPlay(false, true);
     $('#btnHowToPlay').click(() => { $('#howToPlayDialogModal').modal('show'); });
 }
@@ -405,6 +411,11 @@ function sortJson(jsn, sortOn) {
 	if (jsn.length > 0) {
 		jsn.sort((a, b) => {
 			let fa = a[sortOn], fb = b[sortOn];
+
+			// Take care of number sorting for numbers - HS 30-08-2022
+			if (!isNaN(fa)) fa = ('0000'+fa).slice(-4); 
+			if (!isNaN(fb)) fb = ('0000'+fb).slice(-4);
+
             var retVal = 0;
             
 			if (fa > fb) {
@@ -426,6 +437,50 @@ function createJsonArr(qList) {
         retJson.push(qdoc);
     });
     return retJson;
+}
+
+function spinnerVisible(isVisible) {
+    if (isVisible) {
+        $('.spinner').show();
+    }
+    else {
+        $('.spinner').hide();
+    }
+}
+
+function showConfetti() {
+	confetti({
+	  particleCount: 150,
+	  spread: 70,
+	  origin: { y: 0.6 }
+	});
+	
+	setTimeout(() => {
+	  confetti.reset();
+	}, 7000);
+}
+
+
+function getCountdownTimer(deadlineDTStr) {
+	// deadlineDTStr = "Sep 5, 2022 15:37:25";
+	var deadline = new Date(deadlineDTStr).getTime();
+	var now = new Date().getTime();
+	var t = deadline - now;
+
+	if (t < 0) {
+		return null;
+	}
+	else {
+		var days = Math.floor(t / (1000 * 60 * 60 * 24));
+		var hours = Math.floor((t%(1000 * 60 * 60 * 24))/(1000 * 60 * 60));
+		var minutes = Math.floor((t % (1000 * 60 * 60)) / (1000 * 60));
+		var seconds = Math.floor((t % (1000 * 60)) / 1000);
+		return ('in ' + days + "d " + hours + "h " + minutes + "m " + seconds + "s ");
+	}
+}
+
+function getRandomInt(max) {
+	return Math.floor(Math.random() * max);
 }
 
 /* ************************************************** */
@@ -650,12 +705,11 @@ function callCloudFunction(functionName, params, success, failure) {
  * @returns true only when Notification.permission is neither denied nor default
  */
 function isNotificationAccessGranted() {
-    // console.log('Notification.permission', Notification.permission);
     if (Notification.permission === 'denied' || Notification.permission === 'default') {
-        console.log('Notification access NOT granted');
+        logMessage('Notification access NOT granted');
         return false;
     }
-    console.log('Notification access IS granted');
+    logMessage('Notification access IS granted');
     return true;
 }
 
@@ -680,19 +734,15 @@ function isNotificationAccessResponded() {
  * @param {*} failure function on failure of subscription
  */
 function setClientTokenSubscription(token, isEnabled, success, failure) {
-    // console.log('Inside setClientTokenSubscription');
     let tokenSavedKey = 'tokenSavedOn';
     let saveTokenAgainAfter = 7*24*60*60*1000;
-    // console.log('getFromStorage(tokenSaved)', getFromLocalStorage(tokenSavedKey), Date.now());
     if (!getFromLocalStorage(tokenSavedKey)  ||  getFromLocalStorage(tokenSavedKey) < Date.now()) {
-        // console.log('Calling cloud function');
         callCloudFunction('subscribeToNotification', { 
             clienttoken : token,
             tokenSubscribed: isEnabled
         }, 
         function() {
             addToLocalStorage(tokenSavedKey, Date.now() + (saveTokenAgainAfter));
-            // console.log('getFromStorage(tokenSaved)', getFromLocalStorage(tokenSavedKey));
             if (success !== undefined) success();
         }, 
         failure);
@@ -710,11 +760,11 @@ function getNotificationPermission(success, failure) {
         messaging.getToken({ vapidKey: constVapidKey })
         .then((currentToken) => {
             if (currentToken) {
-                console.log(currentToken);
+                logMessage(currentToken);
                 setClientTokenSubscription(currentToken, true, success, failure);
             } else {
                 // Show permission request UI
-                console.log('No registration token available. Request permission to generate one.');
+                logMessage('No registration token available. Request permission to generate one.');
                 if (failure !== undefined) failure();
             }
         })
@@ -763,7 +813,7 @@ function createAndShowNotification(titleText, bodyText, imgUrl, clickUrl, isVibr
 function trackOnMessageReceived() {
     if (messaging != null) {
         messaging.onMessage((payload) => {
-            console.log('Message received. ', payload);
+            logMessage('Message received. ', payload);
             createAndShowNotification(payload.notification.title, payload.notification.body, 'https://sikhitambola.web.app/img/apple-touch-icon.png', 'https://sikhitambola.web.app/', true);
         });
     }
