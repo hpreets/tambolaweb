@@ -28,9 +28,11 @@
         <h1 class="display-5 main-heading">Sikhi Tambola</h1>
         <div class="text-center">
             <h4 id="next-game" class="games">
-                Next Game:
+                <span class="small-text">Next Game:</span>
                 <br>
                 <span class="gamedate"></span>
+				<br>
+                <span class="gamestartsin"></span>
             </h4>
         </div>
         <div class="text-center spin-me spinner">
@@ -39,7 +41,7 @@
             </div>
         </div>
         <!-- <a href="#" id="allowNotifyLink000" class="btn btn-light btn-sm btn-block" style="display:none">Click here to allow game reminder notifications</a> -->
-        <a href="#" id="allowNotifyLink" class="btn btn-light btn-sm btn-block" style="display:none">Click here to allow game reminder notifications</a>
+        <a href="#" id="allowNotifyLink" class="btn btn-light btn-sm btn-block" style="display:none">Want game reminders? Click here</a>
     </div>
     <div class="container-fluid subheadingbar" style="display:none">
         <h4>It is time to play!</h4>
@@ -75,9 +77,9 @@
                 <h2 class="col">Questions:</h2>
                 <div class="col-xs-auto">&nbsp;</div>
                 <div id="ques-filter-selector" class="col btn-group" role="group" aria-label="Basic example">
-                    <button id="ques-filter-all" type="button" class="btn btn-secondary">All</button>
-                    <button id="ques-filter-new" type="button" class="btn btn-secondary">New</button>
-                    <button id="ques-filter-sort" type="button" class="btn btn-secondary">Sort</button>
+                    <button id="ques-filter-all" type="button" class="btn btn-primary">All</button>
+                    <button id="ques-filter-new" type="button" class="btn btn-success">Only New</button>
+                    <!-- button id="ques-filter-sort" type="button" class="btn btn-secondary">Sort</button -->
                 </div>
             </div>
             <div class="row">

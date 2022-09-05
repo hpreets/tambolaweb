@@ -1,5 +1,6 @@
 const container = $('.winnerTable');
-
+let winnerUn;
+let winnerPrize = '';
 
 
 
@@ -16,13 +17,17 @@ function createWinnerRow(winners, prizeId, prizeName, container) {
     let prizeNameDiv = createNode('div');
     let winnerDiv = createNode('div');
     
-    $(prizeNameDiv).addClass('col-lg-6 col-sm-12');
-    $(winnerDiv).addClass('col-lg-6 col-md-auto col-sm-12');
+	// Changed column width to 3/9 instead of 6/6 - HS 01-09-2022
+    $(prizeNameDiv).addClass('col-lg-3 col-sm-12');
+    $(winnerDiv).addClass('col-lg-9 col-md-auto col-sm-12');
 
-    $(prizeNameDiv).html(prizeName);
-    $(winnerDiv).html(winners[prizeId].join(', '));
+    $(prizeNameDiv).html('<h6>' + prizeName + '</h6>'); // Made heading prominent - HS 01-09-2022
+    $(winnerDiv).html(winners[prizeId].join('<br/><br/>')); // Used newline instead of comma - HS 01-09-2022
     row.append(prizeNameDiv, winnerDiv);
     $(row).addClass('line row');
+	
+	// Highlighed winning prize row - HS 31-08-2022
+    if (winnerPrize.indexOf(prizeId) >= 0) $(row).addClass('winner-colored-closed-box');
     
     container.append(row);
 }
@@ -37,12 +42,41 @@ function successPrizeDataFetch(doc) {
     wList = doc.data();
     let winners = iterateWinners(wList);
     logMessage(winners);
-    createWinnerRow(winners, 'EF', 'Early Five', container);
+	
+	// Show user's prizes first rather than default order
+    /*createWinnerRow(winners, 'EF', 'Early Five', container);
     createWinnerRow(winners, 'FL', 'First Line', container);
     createWinnerRow(winners, 'ML', 'Middle Line', container);
     createWinnerRow(winners, 'LL', 'Last Line', container);
-    createWinnerRow(winners, 'FH', 'Full House', container);
+    createWinnerRow(winners, 'FH', 'Full House', container);*/
+
+	createAllPrizesRow(winners);
+	
+    spinnerVisible(false); // Hide spinner once data is created	
+	if (userWon) loadSharingButtons(); // Update sharing buttons to include winner's email address
 }
+
+function createMyPrizesRow(winners) {
+	if (winnerPrize.indexOf('EF') >= 0) createWinnerRow(winners, 'EF', 'Early Five', container);
+    if (winnerPrize.indexOf('FL') >= 0) createWinnerRow(winners, 'FL', 'First Line', container);
+    if (winnerPrize.indexOf('ML') >= 0) createWinnerRow(winners, 'ML', 'Middle Line', container);
+    if (winnerPrize.indexOf('LL') >= 0) createWinnerRow(winners, 'LL', 'Last Line', container);
+    if (winnerPrize.indexOf('FH') >= 0) createWinnerRow(winners, 'FH', 'Full House', container);
+}
+
+function createOtherPrizesRow(winners) {
+	if (winnerPrize.indexOf('EF') < 0) createWinnerRow(winners, 'EF', 'Early Five', container);
+    if (winnerPrize.indexOf('FL') < 0) createWinnerRow(winners, 'FL', 'First Line', container);
+    if (winnerPrize.indexOf('ML') < 0) createWinnerRow(winners, 'ML', 'Middle Line', container);
+    if (winnerPrize.indexOf('LL') < 0) createWinnerRow(winners, 'LL', 'Last Line', container);
+    if (winnerPrize.indexOf('FH') < 0) createWinnerRow(winners, 'FH', 'Full House', container);
+}
+
+function createAllPrizesRow(winners) {
+	createMyPrizesRow(winners);
+	createOtherPrizesRow(winners);
+}
+
 
 /**
  * Method called when current game settings data is fetched from firestore.
@@ -71,16 +105,30 @@ function iterateWinners(wList) {
     if (wList) {
         Object.keys(wList).forEach((wdockey) => {
             let wdoc = wList[wdockey];
+            let wdocTick = '';
             logMessage(wdoc);
-            if (wdoc != false) wdoc = ' <sup class="badge badge-secondary">Transaction Ref: '+wdoc.split('_')[0]+'</sup>' + ' <sup class="badge badge-secondary"> Payment Date: '+wdoc.split('_')[1]+'</sup>'; else wdoc = '';
+			
+			// HS 31-08-2022
+			if (wdoc == true) {
+				wdoc = '';
+				wdocTick = ' <span class="badge badge-warning"><i class="fas fa-regular fa-circle-exclamation"></i> UPI Id not set </span> ';
+			}
+			else if (wdoc != false) {
+				wdoc = ' <span class="badge badge-light">Transaction Ref: '+wdoc.split('_')[0]+'</span>' + ' <span class="badge badge-light"> Payment Date: '+wdoc.split('_')[1]+'</span>';
+				wdocTick = '<span class="badge badge-success"><i class="fas fa-circle-check"></i> Paid</span> ';
+			}
+			else wdoc = '';
+
+
             winnerDet = wdockey.split('_');
             let emailAddress = retrieveEmail(winnerDet);
+			if (emailAddress == winnerUn  ||  emailAddress == userEmail) winnerPrize += winnerDet[1] + '_';
             emailAddress = hideEmailAddress(emailAddress);
             if (winners[winnerDet[1]]) {
-                winners[winnerDet[1]].push(emailAddress + wdoc);
+                winners[winnerDet[1]].push(wdocTick + emailAddress + wdoc);
             }
             else {
-                winners[winnerDet[1]] = [ emailAddress + wdoc ];
+                winners[winnerDet[1]] = [ wdocTick + emailAddress + wdoc ];
             }
         });
     }
@@ -89,7 +137,13 @@ function iterateWinners(wList) {
 }
 
 function hideEmailAddress(email) {
-    if (userEmail == email) return 'You (' + email + ')';
+    if (userEmail == email) {
+		$('#personalMsg').show(); // HS 31-08-2022
+		userWon = true;
+		showConfetti(); // HS 31-08-2022
+		return 'You (' + email + ')';
+	}
+    if (winnerUn == email) return email;
     
     let emailChars = email.split('@')[0].split('');
     logMessage(emailChars);
@@ -113,6 +167,16 @@ function retrieveEmail(winnerDet) {
     return retVal;
 }
 
+// Picks up 'un' param from url
+function getWinnerUsername() {
+	let currURL = $(location).attr('href')
+	let paramString = currURL.split('?')[1];
+	let queryString = new URLSearchParams(paramString);
+	for (let pair of queryString.entries()) {
+		if (pair[0] == 'un') winnerUn = pair[1];
+	}
+}
+
 $(function onDocReady() {
 	logMessage('Inside onDocReady');
     addHTMLToPage();
@@ -121,6 +185,7 @@ $(function onDocReady() {
     $('#btnLogout').click(signout);
     // navbar collapse functionality
     menuCollapse();
+	getWinnerUsername(); // HS 31-08-2022
 });
 
 

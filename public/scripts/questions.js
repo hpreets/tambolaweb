@@ -1,7 +1,7 @@
 const container = $('.quesDiv');
 let qList = null;
 let currGameSettings = null;
-let doSort = false;
+let doSort = true; // default list is sorted - HS 30-08-2022
 let showNewOnly = false;
 
 /**
@@ -109,6 +109,7 @@ function successCurrGameFetch(doc) {
 
     spinnerVisible(false);
     displaySubHeadingBar(true);
+	setInterval(displayTimer, 1000);
 }
 
 
@@ -124,18 +125,6 @@ function successQuestionListFetch(doc) {
   iterateQuestions(qList);
 
   spinnerVisible(false);
-}
-
-function spinnerVisible(isVisible) {
-    if (isVisible) {
-        // $('#spinnerModal').modal('show');
-        $('.spinner').show();
-    }
-    else {
-        logMessage('HIDING SPINNER');
-        // $('#spinnerModal').modal('hide');
-        $('.spinner').hide();
-    }
 }
 
 /**
@@ -219,8 +208,8 @@ function displayNotifyLink() {
 
     try {
         if ('Notification' in window && navigator.serviceWorker) {
-            console.log('isNotificationAccessResponded()', isNotificationAccessResponded());
-            console.log('isNotificationAccessGranted()', isNotificationAccessGranted());
+            logMessage('isNotificationAccessResponded()', isNotificationAccessResponded());
+            logMessage('isNotificationAccessGranted()', isNotificationAccessGranted());
             if (!isNotificationAccessResponded()) {
                 $('#allowNotifyLink').show();
             }
@@ -253,35 +242,6 @@ function displayNotifyLink() {
         console.log(ex);
     }
     
-    // if (isNotificationAccessGranted()) {
-    /* if ((getFromLocalStorage('allowNotif') === '1')) {
-        $('#allowNotifyLink').hide();
-        if (!isNotificationAccessGranted()) {
-            getNotificationPermission(function() {
-                addToLocalStorage('allowNotif', '1');
-                // displayNotifyLink();
-            });
-        }
-        /-* else {
-            addToLocalStorage('allowNotif', '0');
-            displayNotifyLink();
-        } *-/
-    }
-    else {
-        $('#allowNotifyLink').show(300);
-        $('#allowNotifyLink').on('click', function() {
-            if ('Notification' in window && navigator.serviceWorker) {
-                $('#allowNotifyLink').hide();
-                getNotificationPermission(function() {
-                    addToLocalStorage('allowNotif', '1');
-                    // displayNotifyLink();
-                });
-            }
-            else {
-                alert('Your browser does not support notifications. Please open Sikhi Tambola in Chrome browser and try again.');
-            }
-        });
-    } */
 }
 
 
@@ -337,7 +297,7 @@ function handleshowNotificationClick() {
     });
 }
 
-//******************* go to top button functionality**************************** */
+// go to top button functionality
 function gototop() {
     $(window).scroll(function () {
       if ($(this).scrollTop() > 800) {
@@ -410,8 +370,8 @@ $(function onDocReady() {
         $(this).addClass('active').siblings().removeClass('active');
     });
 
-    $('#ques-filter-sort').click(function() { showSortedQues(); });
-    $('#ques-filter-all').click(function() { showAllQues(); });
+    // $('#ques-filter-sort').click(function() { showSortedQues(); }); // 'Sorted' is no longer a filter. 'All' shows sorted by default - HS 30-08-2022
+    $('#ques-filter-all').click(function() { showSortedQues(); });
     $('#ques-filter-new').click(function() { showNewQues(); });
 
     $('#ques-filter-all').addClass('active').siblings().removeClass('active');
@@ -422,6 +382,19 @@ function checkDisplaySubHeadingBar() {
     displaySubHeadingBar(true);
     logMessage('Going out of checkDisplaySubHeadingBar');
 }
+
+// To display the countdown timer
+function displayTimer() {
+	let timerTxt = getCountdownTimer(getFromStorage('gamedatetime')*1000);
+	if (timerTxt) {
+		$('.gamestartsin').text( 'starts ' + timerTxt ); 
+		$('.gamestartsin').show();
+	}
+	else {
+		$('.gamestartsin').hide();
+	}
+}
+
 
 checkLogin(firebase.auth(), successLogin, failureLogin);
 init();
