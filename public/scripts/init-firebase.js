@@ -1,5 +1,5 @@
 const firebaseConfig = {
-    apiKey: "AIzaSyA1jFyrKQV6AcntYGZS0Hoj0aMccTxsbto",
+    apiKey: "AIzaSyBncGdJvFEZPsz6UDodLlvB1LJM5swk-aA",
     authDomain: "sikhitambola.firebaseapp.com",
     databaseURL: "https://sikhitambola.firebaseio.com",
     projectId: "sikhitambola",
