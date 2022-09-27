@@ -125,9 +125,10 @@ function successCurrGameFetch(doc) {
  * Called when question list for current game is fetched from Firestore
  * @param {*} doc - JSON Data - question list
  */
-function successQuestionListFetch(qList) {
+function successQuestionListFetch(quesList) {
 	logMessage("Picked data from firestore ::");
-	iterateQuestions(qList);
+	qList = quesList;
+	iterateQuestions(quesList);
 
 	spinnerVisible(false);
 }
