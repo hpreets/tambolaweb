@@ -511,7 +511,7 @@ function getFSQuestionList(where, order, limit, success, failure) {
 function getFirestoreData(collName, docName, success, failure) {
     db.collection(collName).doc(docName).get()
     .then((doc) => {
-        if (success !== null  &&  success !== undefined) success(doc);
+        if (success !== null  &&  success !== undefined) success(doc, arguments[4], arguments[5]);
     })
     .catch((error) => {
         if (jQuery.isFunction(failure)  &&  failure !== null  &&  failure !== undefined) failure(error);
@@ -533,6 +533,7 @@ function addSettingsToCache(doc) {
 }
 
 function getFSSettingsData(success, failure) {
+	let args = arguments;
     getFirestoreData("settings", "currgame", 
         function(doc) {
             if (getFromStorage('gameid') != null  
@@ -544,7 +545,7 @@ function getFSSettingsData(success, failure) {
             else clearStorage();
             
             addSettingsToCache(doc);
-            if (success !== undefined) success(doc);
+			if (success !== undefined) success(doc, args[2], args[3]);
             displayBanner(doc);
         }, 
         function (err) {
@@ -555,8 +556,38 @@ function getFSSettingsData(success, failure) {
 }
 
 function getFSCurrGameQuestions(gameId, success, failure) {
-    getFirestoreData("gameques", gameId, success, failure);
+    getFirestoreData("gameques", gameId, storeCurrGameQues, genericFailFn, success, failure);
 }
+function storeCurrGameQues(doc, success, failure) {
+	let qList = doc.data();
+	addToStorage("qlist", JSON.stringify(qList));
+	qList = JSON.parse(getFromStorage("qlist"));
+	if (success !== undefined) success(qList);
+}
+
+/**
+ * First checks in storage, if not found, makes call to FS
+ */
+function getGameQuestions(gameId, success, failure) {
+	let qlist = getFromStorage('qlist');
+	if (qlist != null) success(qlist);
+    else getFSCurrGameQuestions(gameId, success, failure);
+}
+function genericFailFn(err) {
+	console.log(err);
+}
+
+/**
+ * Fetches currgame, then fetches game questions
+ */
+function getCurrGameQuestions(success, failure) {
+	getFSSettingsData(getGameIdFromFSSettings, genericFailFn, success, failure);
+}
+function getGameIdFromFSSettings(doc, success, failure) {
+    let g_gameid = doc.data().gameid;
+    getGameQuestions(g_gameid, success, failure);
+}
+
 
 function getFSPrizeDetail(gameId, success, failure) {
     getFirestoreData("prizes", gameId, success, failure);

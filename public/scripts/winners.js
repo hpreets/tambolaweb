@@ -108,28 +108,29 @@ function iterateWinners(wList) {
             let wdocTick = '';
             logMessage(wdoc);
 			
-			// HS 31-08-2022
-			if (wdoc == true) {
-				wdoc = '';
-				wdocTick = ' <span class="badge badge-warning"><i class="fas fa-regular fa-circle-exclamation"></i> UPI Id not set </span> ';
-			}
-			else if (wdoc != false) {
-				wdoc = ' <span class="badge badge-light">Transaction Ref: '+wdoc.split('_')[0]+'</span>' + ' <span class="badge badge-light"> Payment Date: '+wdoc.split('_')[1]+'</span>';
-				wdocTick = '<span class="badge badge-success"><i class="fas fa-circle-check"></i> Paid</span> ';
-			}
-			else wdoc = '';
+			if (wdockey.indexOf('_') > -1) {
+				// HS 31-08-2022
+				if (wdoc == true) {
+					wdoc = '';
+					wdocTick = ' <span class="badge badge-warning"><i class="fas fa-regular fa-circle-exclamation"></i> UPI Id not set </span> ';
+				}
+				else if (wdoc != false) {
+					wdoc = ' <span class="badge badge-light">Transaction Ref: '+wdoc.split('_')[0]+'</span>' + ' <span class="badge badge-light"> Payment Date: '+wdoc.split('_')[1]+'</span>';
+					wdocTick = '<span class="badge badge-success"><i class="fas fa-circle-check"></i> Paid</span> ';
+				}
+				else wdoc = '';
 
-
-            winnerDet = wdockey.split('_');
-            let emailAddress = retrieveEmail(winnerDet);
-			if (emailAddress == winnerUn  ||  emailAddress == userEmail) winnerPrize += winnerDet[1] + '_';
-            emailAddress = hideEmailAddress(emailAddress);
-            if (winners[winnerDet[1]]) {
-                winners[winnerDet[1]].push(wdocTick + emailAddress + wdoc);
-            }
-            else {
-                winners[winnerDet[1]] = [ wdocTick + emailAddress + wdoc ];
-            }
+				winnerDet = wdockey.split('_');
+				let emailAddress = retrieveEmail(winnerDet);
+				if (emailAddress == winnerUn  ||  emailAddress == userEmail) winnerPrize += winnerDet[1] + '_';
+				emailAddress = hideEmailAddress(emailAddress);
+				if (winners[winnerDet[1]]) {
+					winners[winnerDet[1]].push(wdocTick + emailAddress + wdoc);
+				}
+				else {
+					winners[winnerDet[1]] = [ wdocTick + emailAddress + wdoc ];
+				}
+			}
         });
     }
 
@@ -188,7 +189,5 @@ $(function onDocReady() {
 	getWinnerUsername(); // HS 31-08-2022
 });
 
-
 checkLogin(firebase.auth());
 init();
-

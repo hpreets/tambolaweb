@@ -456,4 +456,12 @@ html, body {
 /* countdown timer */
 .gamestartsin {
 	font-size: 70%;
-}	
+}
+
+.special-heading-row {
+  margin: 0px -15px;
+  padding: 25px;
+  background-color: lightcyan;
+  font-size: x-large;
+  /* font-size: large; */
+}

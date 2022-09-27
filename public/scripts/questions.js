@@ -1,9 +1,8 @@
 const container = $('.quesDiv');
 let qList = null;
 let currGameSettings = null;
-let doSort = true; // default list is sorted - HS 30-08-2022
 let showNewOnly = false;
-
+let showSpecial = false;
 /**
  * Called when user is logged in
  */
@@ -17,6 +16,15 @@ failureLogin = function() {
   logMessage('Inside failureLogin');
 };
 
+function createSpecialHeadingRow(heading) {
+    let row = createNode('div');
+    let headdiv = createNode('div');
+    $(headdiv).addClass('col-lg-12 col-md-12 col-sm-12');
+    $(headdiv).html(heading);
+    row.append(headdiv);
+	$(row).addClass('line row').addClass('special-heading-row display-5').prop('style', 'background-color:bisque');
+    container.append(row);
+}
 
 /**
  * Creates each UI row while iterating through question list JSON
@@ -117,14 +125,12 @@ function successCurrGameFetch(doc) {
  * Called when question list for current game is fetched from Firestore
  * @param {*} doc - JSON Data - question list
  */
-function successQuestionListFetch(doc) {
-  logMessage("Picked data from firestore ::");
-  qList = doc.data();
-  addToStorage("qlist", JSON.stringify(qList));
-  qList = JSON.parse(getFromStorage("qlist"));
-  iterateQuestions(qList);
+function successQuestionListFetch(quesList) {
+	logMessage("Picked data from firestore ::");
+	qList = quesList;
+	iterateQuestions(quesList);
 
-  spinnerVisible(false);
+	spinnerVisible(false);
 }
 
 /**
@@ -134,28 +140,60 @@ function successQuestionListFetch(doc) {
 function iterateQuestions(qList) {
     let index = 0;
     let linkIndex = 0;
-    if (doSort) {
-        // console.log('qList ::' + JSON.stringify(qList));
-        qList = createJsonArr(qList);
-        // console.log('qList ::' + JSON.stringify(qList));
-        qList = sortJson(qList, 'answer');
-        // console.log('qList ::' + JSON.stringify(qList));
-    }
-    Object.keys(qList).forEach((qdockey) => {
-        let qdoc = qList[qdockey];
-        if (qdockey !== '_gameover') {
-            // logMessage('qdockey ::' + qdockey + '; qdoc ::' + qdoc);
-            // console.log(currGameSettings.links);
-            if (showNewOnly == false || (showNewOnly == true && qdoc.new)) {
+
+	qList = createJsonArr(qList);
+	qList = sortJson(qList, 'answer');
+	
+	let specialQuesMap = {}
+	if (showSpecial) {
+		Object.keys(qList).forEach((qdockey) => {
+			let qdoc = qList[qdockey];
+			console.log(qdockey);
+			if (qdockey !== '_gameover') {
+				console.log(qdoc.special);
+				if (qdoc.special != undefined) {
+					if (specialQuesMap[qdoc.special] == undefined) specialQuesMap[qdoc.special] = [];
+					specialQuesMap[qdoc.special].push(qdoc);
+				}
+			}
+		});
+		console.log(specialQuesMap);
+		
+		Object.keys(specialQuesMap).forEach((qdockey) => {
+			let qdoclist = specialQuesMap[qdockey];
+			console.log(qdockey);
+			console.log(qdoclist);
+			createSpecialHeadingRow(qdockey);
+			for (let qdoc of qdoclist) {
+				console.log(qdoc);
                 createQuestionRow(qdoc.question, qdoc.answer, index, container, qdoc.new, currGameSettings.links ? currGameSettings.links[linkIndex] : currGameSettings.links /* newquesinfourl */);
-            }
-            index++
-            if (index % 10 === 0) {
-                linkIndex++;
-                if (currGameSettings.links && currGameSettings.links.length <= linkIndex) linkIndex = 0;
-            }
-        }
-    });
+				index++;
+			}
+		});
+	}
+	else {
+		let hasNew = false;
+		let hasSpecial = false;
+		Object.keys(qList).forEach((qdockey) => {
+			let qdoc = qList[qdockey];
+			if (qdockey !== '_gameover') {
+				if (qdoc.new != undefined) hasNew = true;
+				if (qdoc.special != undefined) hasSpecial = true;
+				
+				if (showNewOnly == false || (showNewOnly == true && qdoc.new)) {
+					createQuestionRow(qdoc.question, qdoc.answer, index, container, qdoc.new, currGameSettings.links ? currGameSettings.links[linkIndex] : currGameSettings.links /* newquesinfourl */);
+				}
+				index++;
+				if (index % 10 === 0) {
+					linkIndex++;
+					if (currGameSettings.links && currGameSettings.links.length <= linkIndex) linkIndex = 0;
+				}
+			}
+		});
+		
+		if (hasNew) $('#ques-filter-new').show(); else $('#ques-filter-new').hide();
+		if (hasSpecial) $('#ques-filter-special').show(); else $('#ques-filter-special').hide();
+	}
 }
 
 function displaySubHeadingBar(checkButtonsToo) {
@@ -315,13 +353,14 @@ function gototop() {
     });
 }
 
+
 /**
- * Display all questions - triggered from button group
+ * Display only new questions - triggered from button group
  */
-function showAllQues() {
-    doSort = false;
-    showNewOnly = false;
-    logMessage('Inside ques-filter-all');
+ function showNewQues() {
+    showNewOnly = true;
+    showSpecial = false;
+    logMessage('Inside ques-filter-new');
     $('.quesDiv .line').remove();
     iterateQuestions(qList);
 }
@@ -329,9 +368,9 @@ function showAllQues() {
 /**
  * Display only new questions - triggered from button group
  */
- function showNewQues() {
-    doSort = false;
-    showNewOnly = true;
+ function showSpecialQues() {
+    showNewOnly = false;
+    showSpecial = true;
     logMessage('Inside ques-filter-new');
     $('.quesDiv .line').remove();
     iterateQuestions(qList);
@@ -341,8 +380,8 @@ function showAllQues() {
  * Display all questions sorted - triggered from button group
  */
  function showSortedQues() {
-    doSort = true;
     showNewOnly = false;
+    showSpecial = false;
     logMessage('Inside ques-filter-sort');
     $('.quesDiv .line').remove();
     iterateQuestions(qList);
@@ -373,6 +412,7 @@ $(function onDocReady() {
     // $('#ques-filter-sort').click(function() { showSortedQues(); }); // 'Sorted' is no longer a filter. 'All' shows sorted by default - HS 30-08-2022
     $('#ques-filter-all').click(function() { showSortedQues(); });
     $('#ques-filter-new').click(function() { showNewQues(); });
+    $('#ques-filter-special').click(function() { showSpecialQues(); });
 
     $('#ques-filter-all').addClass('active').siblings().removeClass('active');
 });
