@@ -152,7 +152,7 @@ function redirectTo(toUrl) {
 function loadSharingButtons() {
     $('.sharewrapper').load('pagelets/share.html', function() {
         let currURL = $(location).attr('href');
-		let msg = 'Learn about Sikh History in a fun way: Sikhi Tambola.';
+		let msg = 'Learn about Sikh History in a fun way: Sikhi Tambola. ';
 		
 		
 		// Remove all params from url
