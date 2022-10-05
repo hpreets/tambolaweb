@@ -148,24 +148,20 @@ function iterateQuestions(qList) {
 	if (showSpecial) {
 		Object.keys(qList).forEach((qdockey) => {
 			let qdoc = qList[qdockey];
-			console.log(qdockey);
+			// logMessage(qdockey);
 			if (qdockey !== '_gameover') {
-				console.log(qdoc.special);
+				// logMessage(qdoc.special);
 				if (qdoc.special != undefined) {
 					if (specialQuesMap[qdoc.special] == undefined) specialQuesMap[qdoc.special] = [];
 					specialQuesMap[qdoc.special].push(qdoc);
 				}
 			}
 		});
-		console.log(specialQuesMap);
 		
 		Object.keys(specialQuesMap).forEach((qdockey) => {
 			let qdoclist = specialQuesMap[qdockey];
-			console.log(qdockey);
-			console.log(qdoclist);
 			createSpecialHeadingRow(qdockey);
 			for (let qdoc of qdoclist) {
-				console.log(qdoc);
                 createQuestionRow(qdoc.question, qdoc.answer, index, container, qdoc.new, currGameSettings.links ? currGameSettings.links[linkIndex] : currGameSettings.links /* newquesinfourl */);
 				index++;
 			}
