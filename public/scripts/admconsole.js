@@ -150,12 +150,12 @@ function createGameQues() {
 function createCurrGameSetting() {
     if (!isNextGameDateInFuture()) return;
 
-    // console.log('getNextGameId :::' + getNextGameId());
-    getFSCurrGameQuestions(currGameId, successGameQuesFetch, null);
+    // console.log('currGameId :::' + currGameId);
+    getGameQuestions(currGameId, successGameQuesFetch, null);
 }
 
 function successGameQuesFetch(doc) {
-    var qList = doc.data();
+    var qList = doc; // .data();
     console.log(JSON.stringify(qList));
     var answers = '';
     Object.keys(qList).forEach((qdockey) => {
