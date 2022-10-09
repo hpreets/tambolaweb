@@ -28,6 +28,7 @@ function successQListFetch(querySnapshot) {
 	let datajson = [];
 	let rowArr = [];
 	let innerjson = {};
+	let ctr = 0;
 
 	// Iterate through all questions and prepare object for jquery datatable plugin
 	querySnapshot.forEach(function(doc) {
@@ -46,7 +47,11 @@ function successQListFetch(querySnapshot) {
 		innerjson['2']=doc.data().answer;
 		innerjson['3']=doc.data().status == undefined ? '' : doc.data().status;
 		innerjson['4']=doc.data().addedOn.seconds;
-		innerjson['5']=doc.data().info == undefined ? '' : doc.data().info;
+		innerjson['5']=false;
+		innerjson['6']='';
+		innerjson['7']=doc.data().info == undefined ? '' : doc.data().info;
+		innerjson['8']=ctr;
+		ctr++;
 		datajson.push(innerjson);
 	});
 	let datajson1 = { data : datajson };
@@ -65,8 +70,40 @@ function successQListFetch(querySnapshot) {
 				{ title: "Answer" },
 				{ title: "Status" },
 				{ title: "Added On" },
+				{ 
+					title: "Is New", 
+					"data": "isNewValue",
+					render: function (data, type, row) {
+						return '<input class="form-control trackInput isNewInput" data=' + row["8"] + ' id="IsNew' + row["8"] + '" name="IsNew' + row["8"] + '" type="checkbox" value = "' + row["5"] + '"  >';
+					} 
+				},
+				{ 
+					title: "Special", 
+					"data": "specialValue",
+					render: function (data, type, row) {
+						return '<input class="form-control trackInput specialInput" data=' + row["8"] + ' id="Special' + row["8"] + '" name="Special' + row["8"] + '" type="text" value = ' + row["6"] + '  >';
+					} 
+				},
 				{ title: "Info URL" }
 			],
+			"drawCallback": function( settings ) {
+				$(".isNewInput").on("change", function() {
+					// table.rows('.selected').data()[ctr]['1']
+					console.log(this.checked);
+					console.log($(this).attr('data'));
+					console.log($(this).val());
+					var rowId = $(this).attr('data');
+					var rowData = table.row(rowId).data();
+					rowData['5'] = this.checked;
+					console.log(table.row($(this).attr('data')).data());
+				});
+				$(".specialInput").on("change", function() {
+					var rowId = $(this).attr('data');
+					var rowData = table.row(rowId).data();
+					rowData['6'] = $(this).val();
+					console.log(table.row($(this).attr('data')).data());
+				});
+			},
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
 			
 		} );
@@ -171,7 +208,13 @@ function createGameQues() {
 		let qdoc = {};
 		qdoc.question = table.rows('.selected').data()[ctr]['1'];
 		qdoc.answer = table.rows('.selected').data()[ctr]['2'];
-		qdoc.info = table.rows('.selected').data()[ctr]['5'];
+		qdoc.info = table.rows('.selected').data()[ctr]['7'];
+		
+		console.log(table.rows('.selected').data()[ctr]['5']);
+		console.log(table.rows('.selected').data()[ctr]['6']);
+		if (table.rows('.selected').data()[ctr]['5']) qdoc.new = table.rows('.selected').data()[ctr]['5'];
+		if (table.rows('.selected').data()[ctr]['6']) qdoc.special = table.rows('.selected').data()[ctr]['6'];
+		console.log(qdoc);
 		quesList[qdoc.answer] = qdoc;
 	}
 
@@ -306,8 +349,6 @@ function successGetPrevGameQuesIds(gameIds) {
 	console.log('successGetPrevGameQuesIds');
 	var sel = $('#prevGameQuesSelect');
 	gameIds.forEach(function(doc) {
-		console.log(doc.id);
-		console.log(JSON.stringify(doc.id));
 		sel.append($("<option>").attr('value',doc.id).text(doc.id));
 	});
 }

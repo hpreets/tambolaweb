@@ -556,7 +556,13 @@ function getFSSettingsData(success, failure) {
 }
 
 function getFSCurrGameQuestions(gameId, success, failure) {
-    getFirestoreData("gameques", gameId, storeCurrGameQues, genericFailFn, success, failure);
+	// Store ques data only if gameId is same as in storage
+    if (getFromStorage('gameid') == gameId) {
+		getFirestoreData("gameques", gameId, storeCurrGameQues, genericFailFn, success, failure);
+	}
+	else {
+		getFirestoreData("gameques", gameId, success, failure);
+	}
 }
 function storeCurrGameQues(doc, success, failure) {
 	let qList = doc.data();
@@ -569,7 +575,9 @@ function storeCurrGameQues(doc, success, failure) {
  * First checks in storage, if not found, makes call to FS
  */
 function getGameQuestions(gameId, success, failure) {
-	let qlist = getFromStorage('qlist');
+	let qlist = null;
+	if (getFromStorage('gameid') == gameId) qlist = getFromStorage('qlist');
+	
 	if (qlist != null) success(qlist);
     else getFSCurrGameQuestions(gameId, success, failure);
 }

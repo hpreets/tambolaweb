@@ -7,7 +7,7 @@ var functions = firebase.functions();
 // Read Data
 const container = $('.container-fluid');
 let qList = null;
-// let gameid;
+// let gameid; // Already declared in storage.js
 let answerCtr = 0;
 let coveredAnswersArr = [];
 let coveredAnswersStr = '';
@@ -16,6 +16,9 @@ var count = secondsInterval;
 var counter = null;
 let prizeDetails;
 let allPrizesWon = false;
+
+// Harpreet 2022-09-19
+let winners = {};
 
 // alert('Hi');
 
@@ -293,7 +296,81 @@ function successListenToClaimedPrizes(doc) {
 		&&  prizeDetails.ML == true  
 		&&  prizeDetails.LL == true) {
 			allPrizesWon = true;
+			// addWinningQuestions();
 	}
+}
+
+
+function addWinningQuestions() {
+	console.log('Inside addWinningQuestions');
+	getFSSettingsData(successCurrGameFetch, genericFailFn);
+}
+function successCurrGameFetch(doc) {
+	console.log('Inside successCurrGameFetch');
+	gameid = doc.data().gameid;
+    prevgameid = doc.data().prevgameid;
+    if (prevgameid === null  ||  doc.data().gameover == true) prevgameid = gameid;
+
+	console.log('gameid :: ' + gameid);
+	console.log('prevgameid :: ' + prevgameid);
+	// prevgameid = gameid = '20220924';
+    getFSPrizeDetail(gameid, successPrizeDataFetch, null);
+
+	// TODO: Add all questions to prize entry
+	// Fetch curr settings
+	// Fetch prizes for gameid
+	// Fetch gameques for gameid
+	// Create winning entries in prizes for gameid
+	
+}
+function successPrizeDataFetch(doc) {
+	console.log('Inside successPrizeDataFetch');
+    wList = doc.data();
+    iterateWinners(wList);
+	console.log(winners);
+
+	// gameid = '20220924';
+	clearStorage(); // clear it so that it doesn't pick from storage
+	getGameQuestions(gameid, successFn, failureFn); // Or use getCurrGameQuestions if gameid is unknown
+}
+function iterateWinners(wList) {
+    if (wList) {
+        Object.keys(wList).forEach((wdockey) => {
+            winnerDet = wdockey.split('_');
+			winners[parseInt(winnerDet[0]) + 1] = winnerDet[1];
+        });
+    }
+}
+function successFn(doc) {
+	console.log('Inside successFn');
+	let qList = doc;
+	console.log(qList);
+	if (typeof doc.data === "function") {
+		qList = doc.data();
+		console.log(JSON.stringify(qList));
+	}
+	console.log("successFn ::" + qList);
+	
+	Object.keys(qList).forEach((qKey) => {
+		let ques = qList[qKey];
+		if (winners[ques.coveredIndex]) {
+			let prize = winners[ques.coveredIndex];
+			console.log(prize + ' :: ' + ques.question + ' :: ' + ques.answer);
+			
+			let updates = {};
+			updates[prize] = ques;
+			console.log(updates);
+			saveMerge("prizes", gameid, updates, genericSuccessFn, genericFailFn);
+		}
+	});
+}
+function genericSuccessFn(doc) {
+	console.log('Inside genericSuccessFn');
+}
+
+
+function failureFn(doc) { 
+	console.log(doc); 
 }
 
 
@@ -325,6 +402,7 @@ $(function onDocReady() {
 	$('#btnNextQues').click(pickNextQues);
 	$('#startTimer').click(startTimer);
 	$('#stopTimer').click(stopTimer);
+	$('#btnAddWinningQuestions').click(addWinningQuestions);
 });
 
 window.addEventListener('beforeunload', onPageUnload);

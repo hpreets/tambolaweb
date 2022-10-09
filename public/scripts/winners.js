@@ -1,6 +1,7 @@
 const container = $('.winnerTable');
 let winnerUn;
 let winnerPrize = '';
+let winnerQues = {};
 
 
 
@@ -15,15 +16,18 @@ function createWinnerRow(winners, prizeId, prizeName, container) {
     logMessage('winners ::' + winners);
     let row = createNode('div');
     let prizeNameDiv = createNode('div');
+    let quesDiv = createNode('div');
     let winnerDiv = createNode('div');
     
 	// Changed column width to 3/9 instead of 6/6 - HS 01-09-2022
     $(prizeNameDiv).addClass('col-lg-3 col-sm-12');
-    $(winnerDiv).addClass('col-lg-9 col-md-auto col-sm-12');
+    $(quesDiv).addClass('col-lg-4 col-md-auto col-sm-12');
+	$(winnerDiv).addClass('col-lg-5 col-md-auto col-sm-12');
 
     $(prizeNameDiv).html('<h6>' + prizeName + '</h6>'); // Made heading prominent - HS 01-09-2022
-    $(winnerDiv).html(winners[prizeId].join('<br/><br/>')); // Used newline instead of comma - HS 01-09-2022
-    row.append(prizeNameDiv, winnerDiv);
+    $(quesDiv).html(winnerQues[prizeId].coveredIndex + '. ' + winnerQues[prizeId].question + '<br/> - ' + winnerQues[prizeId].answer + '<br/>');
+    $(winnerDiv).html(winners[prizeId].join('<br/><br/>') + '<br/><br/>'); // Used newline instead of comma - HS 01-09-2022
+    row.append(prizeNameDiv, winnerDiv, quesDiv);
     $(row).addClass('line row');
 	
 	// Highlighed winning prize row - HS 31-08-2022
@@ -130,6 +134,9 @@ function iterateWinners(wList) {
 				else {
 					winners[winnerDet[1]] = [ wdocTick + emailAddress + wdoc ];
 				}
+			}
+			else {
+				winnerQues[wdockey] = wdoc;
 			}
         });
     }
