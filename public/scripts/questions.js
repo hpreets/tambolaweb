@@ -164,7 +164,13 @@ function iterateQuestions(qList) {
 			for (let qdoc of qdoclist) {
                 createQuestionRow(qdoc.question, qdoc.answer, index, container, qdoc.new, currGameSettings.links ? currGameSettings.links[linkIndex] : currGameSettings.links /* newquesinfourl */);
 				index++;
+				
+				if (index % 10 === 0) {
+					linkIndex++;
+					if (currGameSettings.links && currGameSettings.links.length <= linkIndex) linkIndex = 0;
+				}
 			}
+			index = 0; // Reset counter for each special heading
 		});
 	}
 	else {
