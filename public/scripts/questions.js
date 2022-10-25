@@ -146,6 +146,7 @@ function iterateQuestions(qList) {
 	
 	let specialQuesMap = {}
 	if (showSpecial) {
+	if (showSpecial) { // For Special section
 		Object.keys(qList).forEach((qdockey) => {
 			let qdoc = qList[qdockey];
 			// logMessage(qdockey);
