@@ -145,7 +145,7 @@ function iterateQuestions(qList) {
 	qList = sortJson(qList, 'answer');
 	
 	let specialQuesMap = {}
-	if (showSpecial) {
+	if (showSpecial) { // For Special section
 		Object.keys(qList).forEach((qdockey) => {
 			let qdoc = qList[qdockey];
 			// logMessage(qdockey);
@@ -173,12 +173,12 @@ function iterateQuestions(qList) {
 			index = 0; // Reset counter for each special heading
 		});
 	}
-	else {
+	else { // For All section
 		let hasNew = false;
 		let hasSpecial = false;
 		Object.keys(qList).forEach((qdockey) => {
 			let qdoc = qList[qdockey];
-			if (qdockey !== '_gameover') {
+			if (qdockey !== '_gameover'  &&  qdoc != true) {
 				if (qdoc.new != undefined) hasNew = true;
 				if (qdoc.special != undefined) hasSpecial = true;
 				
