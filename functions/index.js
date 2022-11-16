@@ -14,12 +14,8 @@ admin.initializeApp();
 //   response.send("Hello from Firebase!");
 // });
 
-
-
-
-// Take the text parameter passed to this HTTP endpoint and insert it into 
-// Cloud Firestore under the path /messages/:documentId/original
-exports.createTicketV2 = functions.region('asia-south1').https.onCall(async (data, context) => {
+// const createtkt = require('./createticket');
+exports.createTicketV3 = functions.region('asia-south1').https.onCall(async (data, context) => {
 
     // functions.logger.info('INSIDE createTicketV2');
     let ticket = {};
@@ -67,6 +63,7 @@ exports.createTicketV2 = functions.region('asia-south1').https.onCall(async (dat
                 ticket.ticket = tjson;
                 ticket.bogiecount = 0;
                 ticket.uid = uid;
+				ticket.gameid = gameid; // Added 16-Nov-2022
                 functions.logger.info("ticket ::" + JSON.stringify(ticket));
                 await db.collection("tickets").doc(gameid + "_" + uid).set(ticket);
             }
