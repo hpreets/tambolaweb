@@ -90,7 +90,7 @@ exports.createTicketV3 = functions.region('asia-south1').https.onCall(async (dat
  *        (2) PrizeId - EF, FL, ML, LL, FH
  *        (3) AnswerIds - Valid only for EF (Early Five)
  */
-exports.registerPrize = functions.region('asia-south1').https.onCall(async (data, context) => {
+exports.registerPrizeV2 = functions.region('asia-south1').https.onCall(async (data, context) => {
 
     console.log('INSIDE registerPrize');
         
@@ -118,7 +118,7 @@ exports.registerPrize = functions.region('asia-south1').https.onCall(async (data
                 gameid = currGame.data().gameid;
                 console.log("gameid ::" + gameid);
                 
-                if (currGame.data().coveredAnswers !== undefined) {
+                if (currGame.data().coveredAnswers !== undefined  &&  currGame.data().coveredAnswers !== null) {
                     covAnswersArr = currGame.data().coveredAnswers.split('#');
                 }
                 if (covAnswersArr.length > 0) {
