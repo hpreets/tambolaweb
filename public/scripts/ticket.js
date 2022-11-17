@@ -142,7 +142,7 @@ function successFetchTicketFirstTime(doc) {
     }
 
     logMessage('Calling createTkt');
-    callCloudFunction('createTicketV2', null, successFunctionCreateTicket, null);
+    callCloudFunction('createTicketV3', null, successFunctionCreateTicket, null);
 }
 
 function successFunctionCreateTicket(retData) {
@@ -631,7 +631,7 @@ function getMarkedAnswersInString() {
 
 
 function registerPrize(prizeIds, efCells) {
-    var addMessage = functions.httpsCallable('registerPrize');
+    var addMessage = functions.httpsCallable('registerPrizeV2');
     addMessage({ 
         emailAddress : uEmailAddress,
         phoneNumber : uPhoneNumber,

@@ -33,7 +33,7 @@ function createSpecialHeadingRow(heading) {
  * @param {*} index - The counter
  * @param {*} container - Parent element to which this row is added
  */
-function createQuestionRow(ques, answ, index, container, isNew, link /* newquesinfourl */) {
+function createQuestionRow(ques, answ, index, container, isNew, link, showLinkAdRow /* newquesinfourl */) {
     let rowsno = index + 1 + '.';
     let rowquestion = ques;
     let rowanswer = answ;
@@ -58,18 +58,20 @@ function createQuestionRow(ques, answ, index, container, isNew, link /* newquesi
     
     container.append(row);
 
-    if(counter % 10 == 0){
-        let ad = createNode('div');
-        if (link) {
-            $(ad).html(`${link.text}, click <a href="${link.url}" target="_blank">here</a>`);
-            $(ad).addClass('line display-5').addClass('colored-closed-box').prop('style', `background-color: ${link.color};`);
-        }
-        else {
-            $(ad).text('adv.');
-            $(ad).addClass('line adv display-3');
-        }
-        container.append(ad);
-    }
+	if (showLinkAdRow) {
+		if(counter % 10 == 0){
+			let ad = createNode('div');
+			if (link) {
+				$(ad).html(`${link.text}, click <a href="${link.url}" target="_blank">here</a>`);
+				$(ad).addClass('line display-5').addClass('colored-closed-box').prop('style', `background-color: ${link.color};`);
+			}
+			else {
+				$(ad).text('adv.');
+				$(ad).addClass('line adv display-3');
+			}
+			container.append(ad);
+		}
+	}
 }
 
 /**
@@ -162,7 +164,7 @@ function iterateQuestions(qList) {
 			let qdoclist = specialQuesMap[qdockey];
 			createSpecialHeadingRow(qdockey);
 			for (let qdoc of qdoclist) {
-                createQuestionRow(qdoc.question, qdoc.answer, index, container, qdoc.new, currGameSettings.links ? currGameSettings.links[linkIndex] : currGameSettings.links /* newquesinfourl */);
+                createQuestionRow(qdoc.question, qdoc.answer, index, container, qdoc.new, currGameSettings.links ? currGameSettings.links[linkIndex] : currGameSettings.links, false);
 				index++;
 				
 				if (index % 10 === 0) {
@@ -183,7 +185,7 @@ function iterateQuestions(qList) {
 				if (qdoc.special != undefined) hasSpecial = true;
 				
 				if (showNewOnly == false || (showNewOnly == true && qdoc.new)) {
-					createQuestionRow(qdoc.question, qdoc.answer, index, container, qdoc.new, currGameSettings.links ? currGameSettings.links[linkIndex] : currGameSettings.links /* newquesinfourl */);
+					createQuestionRow(qdoc.question, qdoc.answer, index, container, qdoc.new, currGameSettings.links ? currGameSettings.links[linkIndex] : currGameSettings.links, true);
 				}
 				index++;
 				if (index % 10 === 0) {
